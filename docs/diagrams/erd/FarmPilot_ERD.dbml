@@ -1,0 +1,127 @@
+Table users {
+  id uuid [pk]
+  full_name varchar(100)
+  email varchar(100) [unique]
+  password varchar(255)
+  phone varchar(20)
+  role varchar(20)
+  address text
+  profile_image text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table categories {
+  id uuid [pk]
+  name varchar(100)
+  description text
+  created_at timestamp
+}
+
+Table products {
+  id uuid [pk]
+  farmer_id uuid [ref: > users.id]
+  category_id uuid [ref: > categories.id]
+  name varchar(150)
+  description text
+  price decimal(10,2)
+  quantity int
+  unit varchar(30)
+  image_url text
+  status varchar(30)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table crops {
+  id uuid [pk]
+  farmer_id uuid [ref: > users.id]
+  crop_name varchar(100)
+  crop_type varchar(100)
+  planting_date date
+  irrigation_schedule varchar(100)
+  fertilization_schedule varchar(100)
+  notes text
+  status varchar(30)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table diagnoses {
+  id uuid [pk]
+  farmer_id uuid [ref: > users.id]
+  crop_id uuid [ref: > crops.id]
+  image_url text
+  disease_name varchar(150)
+  confidence decimal(5,2)
+  description text
+  causes text
+  treatment text
+  prevention text
+  created_at timestamp
+}
+
+Table orders {
+  id uuid [pk]
+  customer_id uuid [ref: > users.id]
+  total_price decimal(10,2)
+  status varchar(30)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table order_items {
+  id uuid [pk]
+  order_id uuid [ref: > orders.id]
+  product_id uuid [ref: > products.id]
+  quantity int
+  price decimal(10,2)
+}
+
+Table reviews {
+  id uuid [pk]
+  customer_id uuid [ref: > users.id]
+  product_id uuid [ref: > products.id]
+  rating int
+  comment text
+  created_at timestamp
+}
+
+Table favorites {
+  id uuid [pk]
+  customer_id uuid [ref: > users.id]
+  product_id uuid [ref: > products.id]
+  created_at timestamp
+}
+
+Table reminders {
+  id uuid [pk]
+  farmer_id uuid [ref: > users.id]
+  crop_id uuid [ref: > crops.id]
+  type varchar(30)
+  reminder_date timestamp
+  status boolean
+  created_at timestamp
+}
+
+Table notifications {
+  id uuid [pk]
+  user_id uuid [ref: > users.id]
+  title varchar(150)
+  message text
+  type varchar(50)
+  is_read boolean
+  created_at timestamp
+}
+
+Table ai_marketing_logs {
+  id uuid [pk]
+  farmer_id uuid [ref: > users.id]
+  product_id uuid [ref: > products.id]
+  input_text text
+  generated_title text
+  generated_description text
+  generated_keywords text
+  suggestions text
+  created_at timestamp
+}
