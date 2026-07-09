@@ -10,6 +10,9 @@ import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
 import { CropsModule } from './crops/crops.module';
 import { DiagnosesModule } from './diagnoses/diagnoses.module';
+import { OrdersModule } from './orders/orders.module';
+import { FavoritesModule } from './favorites/favorites.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -23,6 +26,9 @@ import { DiagnosesModule } from './diagnoses/diagnoses.module';
     ProductsModule,
     CropsModule,
     DiagnosesModule,
+    OrdersModule,
+    FavoritesModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
