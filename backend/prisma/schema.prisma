@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  FARMER
+  CUSTOMER
+  ADMIN
+}
+
+enum ProductStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+  HIDDEN
+}
+
+enum CropStatus {
+  ACTIVE
+  HARVESTED
+  INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum ReminderType {
+  IRRIGATION
+  FERTILIZATION
+  OTHER
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  fullName     String   @map("full_name") @db.VarChar(100)
+  email        String   @unique @db.VarChar(100)
+  password     String   @db.VarChar(255)
+  phone        String?  @db.VarChar(20)
+  role         UserRole
+  address      String?
+  profileImage String?  @map("profile_image")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  products        Product[]
+  crops           Crop[]
+  diagnoses       Diagnosis[]
+  orders          Order[]
+  reviews         Review[]
+  favorites       Favorite[]
+  reminders       Reminder[]
+  notifications   Notification[]
+  aiMarketingLogs AIMarketingLog[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(100)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String        @id @default(uuid()) @db.Uuid
+  farmerId    String        @map("farmer_id") @db.Uuid
+  categoryId  String        @map("category_id") @db.Uuid
+  name        String        @db.VarChar(150)
+  description String?
+  price       Decimal       @db.Decimal(10, 2)
+  quantity    Int
+  unit        String        @db.VarChar(30)
+  imageUrl    String?       @map("image_url")
+  status      ProductStatus @default(AVAILABLE)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  farmer          User             @relation(fields: [farmerId], references: [id])
+  category        Category         @relation(fields: [categoryId], references: [id])
+  orderItems      OrderItem[]
+  reviews         Review[]
+  favorites       Favorite[]
+  aiMarketingLogs AIMarketingLog[]
+
+  @@map("products")
+}
+
+model Crop {
+  id                    String     @id @default(uuid()) @db.Uuid
+  farmerId              String     @map("farmer_id") @db.Uuid
+  cropName              String     @map("crop_name") @db.VarChar(100)
+  cropType              String?    @map("crop_type") @db.VarChar(100)
+  plantingDate          DateTime?  @map("planting_date") @db.Date
+  irrigationSchedule    String?    @map("irrigation_schedule") @db.VarChar(100)
+  fertilizationSchedule String?    @map("fertilization_schedule") @db.VarChar(100)
+  notes                 String?
+  status                CropStatus @default(ACTIVE)
+  createdAt             DateTime   @default(now()) @map("created_at")
+  updatedAt             DateTime   @updatedAt @map("updated_at")
+
+  farmer    User        @relation(fields: [farmerId], references: [id])
+  diagnoses Diagnosis[]
+  reminders Reminder[]
+
+  @@map("crops")
+}
+
+model Diagnosis {
+  id          String   @id @default(uuid()) @db.Uuid
+  farmerId    String   @map("farmer_id") @db.Uuid
+  cropId      String?  @map("crop_id") @db.Uuid
+  imageUrl    String   @map("image_url")
+  diseaseName String?  @map("disease_name") @db.VarChar(150)
+  confidence  Decimal? @db.Decimal(5, 2)
+  description String?
+  causes      String?
+  treatment   String?
+  prevention  String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  farmer User  @relation(fields: [farmerId], references: [id])
+  crop   Crop? @relation(fields: [cropId], references: [id])
+
+  @@map("diagnoses")
+}
+
+model Order {
+  id         String      @id @default(uuid()) @db.Uuid
+  customerId String      @map("customer_id") @db.Uuid
+  totalPrice Decimal     @map("total_price") @db.Decimal(10, 2)
+  status     OrderStatus @default(PENDING)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  customer   User        @relation(fields: [customerId], references: [id])
+  orderItems OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  orderId   String  @map("order_id") @db.Uuid
+  productId String  @map("product_id") @db.Uuid
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Review {
+  id         String   @id @default(uuid()) @db.Uuid
+  customerId String   @map("customer_id") @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  customer User    @relation(fields: [customerId], references: [id])
+  product  Product @relation(fields: [productId], references: [id])
+
+  @@map("reviews")
+}
+
+model Favorite {
+  id         String   @id @default(uuid()) @db.Uuid
+  customerId String   @map("customer_id") @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  customer User    @relation(fields: [customerId], references: [id])
+  product  Product @relation(fields: [productId], references: [id])
+
+  @@unique([customerId, productId])
+  @@map("favorites")
+}
+
+model Reminder {
+  id           String       @id @default(uuid()) @db.Uuid
+  farmerId     String       @map("farmer_id") @db.Uuid
+  cropId       String?      @map("crop_id") @db.Uuid
+  type         ReminderType
+  reminderDate DateTime     @map("reminder_date")
+  status       Boolean      @default(false)
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  farmer User  @relation(fields: [farmerId], references: [id])
+  crop   Crop? @relation(fields: [cropId], references: [id])
+
+  @@map("reminders")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  title     String   @db.VarChar(150)
+  message   String
+  type      String?  @db.VarChar(50)
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model AIMarketingLog {
+  id                   String   @id @default(uuid()) @db.Uuid
+  farmerId             String   @map("farmer_id") @db.Uuid
+  productId            String?  @map("product_id") @db.Uuid
+  inputText            String   @map("input_text")
+  generatedTitle       String?  @map("generated_title")
+  generatedDescription String?  @map("generated_description")
+  generatedKeywords    String?  @map("generated_keywords")
+  suggestions          String?
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  farmer  User     @relation(fields: [farmerId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@map("ai_marketing_logs")
+}
