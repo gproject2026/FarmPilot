@@ -7,10 +7,14 @@ import { PrismaService } from '../prisma/prisma.service';
 
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { UploadsService } from '../uploads/uploads.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+  private readonly prisma: PrismaService,
+  private readonly uploadsService: UploadsService,
+) {}
 
   async create(createProductDto: CreateProductDto, farmerId: string) {
     return this.prisma.product.create({
@@ -61,43 +65,59 @@ export class ProductsService {
   }
 
   async update(
-    id: string,
-    updateProductDto: UpdateProductDto,
-    farmerId: string,
+  id: string,
+  updateProductDto: UpdateProductDto,
+  farmerId: string,
+) {
+  const product = await this.prisma.product.findUnique({
+    where: { id },
+  });
+
+  if (!product) {
+    throw new NotFoundException('Product not found');
+  }
+
+  if (product.farmerId !== farmerId) {
+    throw new ForbiddenException(
+      'You are not allowed to update this product',
+    );
+  }
+
+  if (
+    updateProductDto.imageUrl &&
+    product.imageUrl &&
+    updateProductDto.imageUrl !== product.imageUrl
   ) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
-    });
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    if (product.farmerId !== farmerId) {
-      throw new ForbiddenException('You are not allowed to update this product');
-    }
-
-    return this.prisma.product.update({
-      where: { id },
-      data: updateProductDto,
-    });
+    await this.uploadsService.removeImage(product.imageUrl);
   }
 
-  async remove(id: string, farmerId: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
-    });
+  return this.prisma.product.update({
+    where: { id },
+    data: updateProductDto,
+  });
+}
 
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
+ async remove(id: string, farmerId: string) {
+  const product = await this.prisma.product.findUnique({
+    where: { id },
+  });
 
-    if (product.farmerId !== farmerId) {
-      throw new ForbiddenException('You are not allowed to delete this product');
-    }
-
-    return this.prisma.product.delete({
-      where: { id },
-    });
+  if (!product) {
+    throw new NotFoundException('Product not found');
   }
+
+  if (product.farmerId !== farmerId) {
+    throw new ForbiddenException(
+      'You are not allowed to delete this product',
+    );
+  }
+
+  if (product.imageUrl) {
+    await this.uploadsService.removeImage(product.imageUrl);
+  }
+
+  return this.prisma.product.delete({
+    where: { id },
+  });
+}
 }
