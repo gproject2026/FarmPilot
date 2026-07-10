@@ -17,6 +17,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CategoriesModule } from './categories/categories.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { CategoriesModule } from './categories/categories.module';
     RemindersModule,
     NotificationsModule,
     CategoriesModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
