@@ -9,6 +9,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 
+import { OrderStatus } from '@prisma/client'; import { Patch } from '@nestjs/common';
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
@@ -29,4 +30,14 @@ export class OrdersController {
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
   }
+
+  @Patch(':id/status')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.FARMER)
+updateStatus(
+  @Param('id') id: string,
+  @Body('status') status: OrderStatus,
+) {
+  return this.ordersService.updateStatus(id, status);
+}
 }
