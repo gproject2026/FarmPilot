@@ -15,6 +15,7 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { RemindersModule } from './reminders/reminders.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { RemindersModule } from './reminders/reminders.module';
     ReviewsModule,
     UploadsModule,
     RemindersModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
