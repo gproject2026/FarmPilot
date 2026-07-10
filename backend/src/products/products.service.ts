@@ -25,6 +25,24 @@ export class ProductsService {
     });
   }
 
+  async findMyProducts(farmerId: string) {
+
+  return this.prisma.product.findMany({
+
+    where: {
+      farmerId,
+    },
+
+    include: {
+
+      category: true,
+
+    },
+
+  }); 
+
+}
+
   findAll() {
     return this.prisma.product.findMany({
       include: {

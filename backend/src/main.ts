@@ -8,9 +8,17 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+
+  // Enable CORS for Flutter Web
+  app.enableCors({
+    origin: '*',
+  });
+
+
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   });
+
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -20,7 +28,9 @@ async function bootstrap() {
     }),
   );
 
+
   await app.listen(process.env.PORT ?? 3000);
+
 
   console.log(
     `🚀 FarmPilot Backend is running on http://localhost:${process.env.PORT ?? 3000}`,

@@ -35,6 +35,13 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
+  @Get('my')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.FARMER)
+findMyProducts(@CurrentUser() user: any) {
+  return this.productsService.findMyProducts(user.id);
+}
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
@@ -57,4 +64,4 @@ export class ProductsController {
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.productsService.remove(id, user.id);
   }
-}
+} 
