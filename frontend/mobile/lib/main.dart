@@ -6,6 +6,7 @@ import 'providers/dashboard_provider.dart';
 import 'providers/product_provider.dart';
 
 import 'screens/auth/login_screen.dart';
+import 'providers/category_provider.dart';
 
 
 
@@ -45,6 +46,9 @@ class FarmPilotApp extends StatelessWidget {
           create: (_) => AuthProvider(),
 
         ),
+        ChangeNotifierProvider(
+  create: (_) => CategoryProvider(),
+),
 
 
         ChangeNotifierProvider(
