@@ -26,13 +26,23 @@ export class CropsController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FARMER)
-  create(@Body() createCropDto: CreateCropDto, @CurrentUser() user: any) {
+  create(
+    @Body() createCropDto: CreateCropDto,
+    @CurrentUser() user: any,
+  ) {
     return this.cropsService.create(createCropDto, user.id);
   }
 
   @Get()
   findAll() {
     return this.cropsService.findAll();
+  }
+
+  @Get('my')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.FARMER)
+  findMyCrops(@CurrentUser() user: any) {
+    return this.cropsService.findMyCrops(user.id);
   }
 
   @Get(':id')
@@ -48,13 +58,20 @@ export class CropsController {
     @Body() updateCropDto: UpdateCropDto,
     @CurrentUser() user: any,
   ) {
-    return this.cropsService.update(id, updateCropDto, user.id);
+    return this.cropsService.update(
+      id,
+      updateCropDto,
+      user.id,
+    );
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FARMER)
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
+  remove(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+  ) {
     return this.cropsService.remove(id, user.id);
   }
 }

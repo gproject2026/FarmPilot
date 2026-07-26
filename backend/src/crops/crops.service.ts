@@ -12,7 +12,10 @@ import { UpdateCropDto } from './dto/update-crop.dto';
 export class CropsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createCropDto: CreateCropDto, farmerId: string) {
+  async create(
+    createCropDto: CreateCropDto,
+    farmerId: string,
+  ) {
     return this.prisma.crop.create({
       data: {
         ...createCropDto,
@@ -24,7 +27,7 @@ export class CropsService {
     });
   }
 
-  findAll() {
+  async findAll() {
     return this.prisma.crop.findMany({
       include: {
         farmer: {
@@ -39,11 +42,25 @@ export class CropsService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.crop.findUnique({
+  async findMyCrops(farmerId: string) {
+    return this.prisma.crop.findMany({
+      where: {
+        farmerId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    const crop = await this.prisma.crop.findUnique({
       where: { id },
       include: {
         farmer: {
@@ -59,19 +76,35 @@ export class CropsService {
         },
       },
     });
+
+    if (!crop) {
+      throw new NotFoundException(
+        'Crop not found',
+      );
+    }
+
+    return crop;
   }
 
-  async update(id: string, updateCropDto: UpdateCropDto, farmerId: string) {
+  async update(
+    id: string,
+    updateCropDto: UpdateCropDto,
+    farmerId: string,
+  ) {
     const crop = await this.prisma.crop.findUnique({
       where: { id },
     });
 
     if (!crop) {
-      throw new NotFoundException('Crop not found');
+      throw new NotFoundException(
+        'Crop not found',
+      );
     }
 
     if (crop.farmerId !== farmerId) {
-      throw new ForbiddenException('You are not allowed to update this crop');
+      throw new ForbiddenException(
+        'You are not allowed to update this crop',
+      );
     }
 
     return this.prisma.crop.update({
@@ -85,17 +118,24 @@ export class CropsService {
     });
   }
 
-  async remove(id: string, farmerId: string) {
+  async remove(
+    id: string,
+    farmerId: string,
+  ) {
     const crop = await this.prisma.crop.findUnique({
       where: { id },
     });
 
     if (!crop) {
-      throw new NotFoundException('Crop not found');
+      throw new NotFoundException(
+        'Crop not found',
+      );
     }
 
     if (crop.farmerId !== farmerId) {
-      throw new ForbiddenException('You are not allowed to delete this crop');
+      throw new ForbiddenException(
+        'You are not allowed to delete this crop',
+      );
     }
 
     return this.prisma.crop.delete({
