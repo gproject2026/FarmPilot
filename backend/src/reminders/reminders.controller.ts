@@ -21,7 +21,9 @@ import { RemindersService } from './reminders.service';
 
 @Controller('reminders')
 export class RemindersController {
-  constructor(private readonly remindersService: RemindersService) {}
+  constructor(
+    private readonly remindersService: RemindersService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -36,20 +38,29 @@ export class RemindersController {
     );
   }
 
-
   @Get()
-  @UseGuards(JwtAuthGuard)
-  findAll(@CurrentUser() user: any) {
-    return this.remindersService.findAll(user.id);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.FARMER)
+  findAll(
+    @CurrentUser() user: any,
+  ) {
+    return this.remindersService.findAll(
+      user.id,
+    );
   }
-
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.remindersService.findOne(id);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.FARMER)
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.remindersService.findOne(
+      id,
+      user.id,
+    );
   }
-
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -65,7 +76,6 @@ export class RemindersController {
       user.id,
     );
   }
-
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -6,6 +6,7 @@ import 'providers/category_provider.dart';
 import 'providers/crop_provider.dart';
 import 'providers/dashboard_provider.dart';
 import 'providers/product_provider.dart';
+import 'providers/reminder_provider.dart';
 
 import 'screens/auth/login_screen.dart';
 
@@ -33,6 +34,9 @@ class FarmPilotApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => CropProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ReminderProvider(),
         ),
         ChangeNotifierProvider(
           create: (_) => DashboardProvider(),
