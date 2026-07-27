@@ -7,13 +7,43 @@ import '../core/api/api_client.dart';
 class ProductService {
   final ApiClient apiClient = ApiClient();
 
+  Future<List<dynamic>> getAllProducts() async {
+    try {
+      final response = await apiClient.dio.get(
+        '/products',
+      );
+
+      if (response.data is! List) {
+        throw Exception(
+          'Invalid products response',
+        );
+      }
+
+      return List<dynamic>.from(
+        response.data,
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to load all products: $e',
+      );
+    }
+  }
+
   Future<List<dynamic>> getMyProducts() async {
     try {
       final response = await apiClient.dio.get(
         '/products/my',
       );
 
-      return response.data;
+      if (response.data is! List) {
+        throw Exception(
+          'Invalid products response',
+        );
+      }
+
+      return List<dynamic>.from(
+        response.data,
+      );
     } catch (e) {
       throw Exception(
         'Failed to load products: $e',

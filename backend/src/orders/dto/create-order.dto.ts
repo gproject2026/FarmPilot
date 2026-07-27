@@ -8,10 +8,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-class CreateOrderItemDto {
+export class CreateOrderItemDto {
   @IsUUID()
   productId!: string;
 
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   quantity!: number;

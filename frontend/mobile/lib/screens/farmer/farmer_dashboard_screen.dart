@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import 'my_crops_screen.dart';
 import 'my_products_screen.dart';
@@ -33,13 +34,34 @@ class _FarmerDashboardScreenState
     final dashboardProvider =
         Provider.of<DashboardProvider>(context);
 
+    final authProvider =
+        Provider.of<AuthProvider>(context);
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7F4),
       appBar: AppBar(
         title: const Text(
           'Farmer Dashboard',
         ),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: () {
+              authProvider.logout();
+
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil(
+                '/',
+                (route) => false,
+              );
+            },
+            icon: const Icon(
+              Icons.logout,
+            ),
+            tooltip: 'Logout',
+          ),
+        ],
       ),
       body: dashboardProvider.isLoading
           ? const Center(
@@ -94,8 +116,7 @@ class _FarmerDashboardScreenState
                                   .loadFarmerDashboard();
                             },
                             icon: const Icon(
-                              Icons
-                                  .inventory_2_outlined,
+                              Icons.inventory_2_outlined,
                             ),
                             label: const Text(
                               'My Products',
@@ -208,8 +229,7 @@ class _FarmerDashboardScreenState
                               .dashboardData![
                                   'totalSales']
                               .toString(),
-                          icon:
-                              Icons.payments_outlined,
+                          icon: Icons.payments_outlined,
                         ),
                       ],
                     ),
@@ -226,6 +246,9 @@ class _FarmerDashboardScreenState
     return Card(
       margin: const EdgeInsets.only(
         bottom: 12,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
       ),
       child: ListTile(
         leading: CircleAvatar(

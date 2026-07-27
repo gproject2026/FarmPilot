@@ -11,6 +11,18 @@ class ProductProvider extends ChangeNotifier {
 
   List<dynamic> products = [];
 
+  Future<void> loadAllProducts() async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      products = await productService.getAllProducts();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> loadMyProducts() async {
     isLoading = true;
     notifyListeners();
@@ -113,7 +125,9 @@ class ProductProvider extends ChangeNotifier {
       await productService.deleteProduct(productId);
 
       products.removeWhere(
-        (product) => product['id'].toString() == productId,
+        (product) =>
+            product['id'].toString() ==
+            productId,
       );
     } finally {
       isLoading = false;

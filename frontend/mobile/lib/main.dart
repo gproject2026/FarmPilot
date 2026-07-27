@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/auth_provider.dart';
+import 'providers/cart_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/crop_provider.dart';
 import 'providers/dashboard_provider.dart';
+import 'providers/order_provider.dart';
 import 'providers/product_provider.dart';
 import 'providers/reminder_provider.dart';
 
@@ -37,6 +39,12 @@ class FarmPilotApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => ReminderProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => OrderProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CartProvider(),
         ),
         ChangeNotifierProvider(
           create: (_) => DashboardProvider(),
