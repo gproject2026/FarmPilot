@@ -12,33 +12,32 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
+interface AuthenticatedUser {
+  id: string;
+}
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
-
   constructor(
     private readonly usersService: UsersService,
   ) {}
 
-
   @Get('profile')
-  @UseGuards(JwtAuthGuard)
-  async getProfile(
-    @CurrentUser() user: any,
+  getProfile(
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.usersService.findById(user.id);
   }
 
   @Patch('profile')
-@UseGuards(JwtAuthGuard)
-async updateProfile(
-  @CurrentUser() user: any,
-  @Body() updateUserDto: UpdateUserDto,
-) {
-  return this.usersService.updateProfile(
-    user.id,
-    updateUserDto,
-  );
-}
-
+  updateProfile(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.updateProfile(
+      user.id,
+      updateUserDto,
+    );
+  }
 }

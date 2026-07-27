@@ -19,6 +19,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,6 +40,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     NotificationsModule,
     CategoriesModule,
     DashboardModule,
+   
   ],
   controllers: [AppController],
   providers: [AppService],

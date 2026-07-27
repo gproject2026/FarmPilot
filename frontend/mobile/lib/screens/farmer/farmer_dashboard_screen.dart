@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
+
 import 'my_crops_screen.dart';
 import 'my_products_screen.dart';
+import 'profile_screen.dart';
 import 'reminders_screen.dart';
 
 class FarmerDashboardScreen extends StatefulWidget {
@@ -95,6 +97,8 @@ class _FarmerDashboardScreenState
                         const SizedBox(
                           height: 30,
                         ),
+
+                        // My Products
                         SizedBox(
                           width: double.infinity,
                           height: 50,
@@ -108,9 +112,7 @@ class _FarmerDashboardScreenState
                                 ),
                               );
 
-                              if (!mounted) {
-                                return;
-                              }
+                              if (!mounted) return;
 
                               await dashboardProvider
                                   .loadFarmerDashboard();
@@ -123,9 +125,10 @@ class _FarmerDashboardScreenState
                             ),
                           ),
                         ),
-                        const SizedBox(
-                          height: 14,
-                        ),
+
+                        const SizedBox(height: 14),
+
+                        // My Crops
                         SizedBox(
                           width: double.infinity,
                           height: 50,
@@ -139,9 +142,7 @@ class _FarmerDashboardScreenState
                                 ),
                               );
 
-                              if (!mounted) {
-                                return;
-                              }
+                              if (!mounted) return;
 
                               await dashboardProvider
                                   .loadFarmerDashboard();
@@ -154,9 +155,10 @@ class _FarmerDashboardScreenState
                             ),
                           ),
                         ),
-                        const SizedBox(
-                          height: 14,
-                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Reminders
                         SizedBox(
                           width: double.infinity,
                           height: 50,
@@ -170,25 +172,49 @@ class _FarmerDashboardScreenState
                                 ),
                               );
 
-                              if (!mounted) {
-                                return;
-                              }
+                              if (!mounted) return;
 
                               await dashboardProvider
                                   .loadFarmerDashboard();
                             },
                             icon: const Icon(
-                              Icons
-                                  .notifications_active_outlined,
+                              Icons.notifications_active_outlined,
                             ),
                             label: const Text(
                               'Reminders',
                             ),
                           ),
                         ),
+
+                        const SizedBox(height: 14),
+
+                        // My Profile
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const ProfileScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.person_outline,
+                            ),
+                            label: const Text(
+                              'My Profile',
+                            ),
+                          ),
+                        ),
+
                         const SizedBox(
                           height: 28,
                         ),
+
                         dashboardCard(
                           title: 'Products',
                           value: dashboardProvider
@@ -197,6 +223,7 @@ class _FarmerDashboardScreenState
                               .toString(),
                           icon: Icons.inventory_2,
                         ),
+
                         dashboardCard(
                           title: 'Crops',
                           value: dashboardProvider
@@ -205,24 +232,25 @@ class _FarmerDashboardScreenState
                               .toString(),
                           icon: Icons.eco,
                         ),
+
                         dashboardCard(
                           title: 'AI Diagnoses',
                           value: dashboardProvider
                               .dashboardData![
                                   'diagnosesCount']
                               .toString(),
-                          icon: Icons
-                              .health_and_safety_outlined,
+                          icon: Icons.health_and_safety_outlined,
                         ),
+
                         dashboardCard(
                           title: 'Orders',
                           value: dashboardProvider
                               .dashboardData![
                                   'ordersCount']
                               .toString(),
-                          icon: Icons
-                              .shopping_cart_outlined,
+                          icon: Icons.shopping_cart_outlined,
                         ),
+
                         dashboardCard(
                           title: 'Total Sales',
                           value: dashboardProvider

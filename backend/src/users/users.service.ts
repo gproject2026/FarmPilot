@@ -1,21 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@prisma/client';
+
+import { PrismaService } from '../prisma/prisma.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+  ) {}
 
   findByEmail(email: string) {
     return this.prisma.user.findUnique({
-      where: { email },
+      where: {
+        email,
+      },
     });
   }
 
-
   findById(id: string) {
     return this.prisma.user.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
       select: {
         id: true,
         fullName: true,
@@ -30,7 +37,6 @@ export class UsersService {
     });
   }
 
-
   createUser(data: {
     fullName: string;
     email: string;
@@ -44,31 +50,26 @@ export class UsersService {
     });
   }
 
-  async updateProfile(
-  id: string,
-  data: {
-    fullName?: string;
-    phone?: string;
-    address?: string;
-    profileImage?: string;
-  },
-) {
-  return this.prisma.user.update({
-    where: {
-      id,
-    },
-    data,
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      phone: true,
-      role: true,
-      address: true,
-      profileImage: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-}
+  updateProfile(
+    id: string,
+    data: UpdateUserDto,
+  ) {
+    return this.prisma.user.update({
+      where: {
+        id,
+      },
+      data,
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        role: true,
+        address: true,
+        profileImage: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
 }
