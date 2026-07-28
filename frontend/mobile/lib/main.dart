@@ -6,10 +6,11 @@ import 'providers/cart_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/crop_provider.dart';
 import 'providers/dashboard_provider.dart';
+import 'providers/favorite_provider.dart';
 import 'providers/order_provider.dart';
 import 'providers/product_provider.dart';
-import 'providers/reminder_provider.dart';
 import 'providers/profile_provider.dart';
+import 'providers/reminder_provider.dart';
 
 import 'screens/auth/login_screen.dart';
 
@@ -52,6 +53,9 @@ class FarmPilotApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => ProfileProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => FavoriteProvider(),
         ),
       ],
       child: MaterialApp(

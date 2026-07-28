@@ -4,47 +4,39 @@ import 'package:provider/provider.dart';
 import '../../models/cart_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/favorite_provider.dart';
-import '../../providers/product_provider.dart';
 import 'customer_cart_screen.dart';
-import 'customer_favorites_screen.dart';
 
-class CustomerProductsScreen
+class CustomerFavoritesScreen
     extends StatefulWidget {
-  const CustomerProductsScreen({
+  const CustomerFavoritesScreen({
     super.key,
   });
 
   @override
-  State<CustomerProductsScreen>
+  State<CustomerFavoritesScreen>
       createState() =>
-          _CustomerProductsScreenState();
+          _CustomerFavoritesScreenState();
 }
 
-class _CustomerProductsScreenState
-    extends State<CustomerProductsScreen> {
+class _CustomerFavoritesScreenState
+    extends State<CustomerFavoritesScreen> {
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        _loadData();
+        _loadFavorites();
       },
     );
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadFavorites() async {
     try {
-      await Future.wait([
-        Provider.of<ProductProvider>(
-          context,
-          listen: false,
-        ).loadAllProducts(),
-        Provider.of<FavoriteProvider>(
-          context,
-          listen: false,
-        ).loadFavorites(),
-      ]);
+      await Provider.of<FavoriteProvider>(
+        context,
+        listen: false,
+      ).loadFavorites();
     } catch (e) {
       if (!mounted) {
         return;
@@ -70,8 +62,8 @@ class _CustomerProductsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final productProvider =
-        Provider.of<ProductProvider>(context);
+    final favoriteProvider =
+        Provider.of<FavoriteProvider>(context);
 
     final cartProvider =
         Provider.of<CartProvider>(context);
@@ -81,26 +73,11 @@ class _CustomerProductsScreenState
           const Color(0xFFF5F7F4),
       appBar: AppBar(
         title: const Text(
-          'Marketplace',
+          'My Favorites',
         ),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            tooltip: 'My Favorites',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      const CustomerFavoritesScreen(),
-                ),
-              );
-            },
-            icon: const Icon(
-              Icons.favorite_outline,
-            ),
-          ),
           Stack(
             alignment: Alignment.center,
             children: [
@@ -146,24 +123,25 @@ class _CustomerProductsScreenState
           ),
           IconButton(
             onPressed:
-                productProvider.isLoading
+                favoriteProvider.isLoading
                     ? null
-                    : _loadData,
+                    : _loadFavorites,
             icon: const Icon(
               Icons.refresh,
             ),
           ),
         ],
       ),
-      body: productProvider.isLoading &&
-              productProvider.products.isEmpty
+      body: favoriteProvider.isLoading &&
+              favoriteProvider
+                  .favorites.isEmpty
           ? const Center(
               child:
                   CircularProgressIndicator(),
             )
-          : productProvider.products.isEmpty
+          : favoriteProvider.favorites.isEmpty
               ? RefreshIndicator(
-                  onRefresh: _loadData,
+                  onRefresh: _loadFavorites,
                   child: ListView(
                     physics:
                         const AlwaysScrollableScrollPhysics(),
@@ -172,7 +150,7 @@ class _CustomerProductsScreenState
                         height: 180,
                       ),
                       Icon(
-                        Icons.storefront_outlined,
+                        Icons.favorite_border,
                         size: 80,
                         color: Colors.grey,
                       ),
@@ -181,7 +159,7 @@ class _CustomerProductsScreenState
                       ),
                       Center(
                         child: Text(
-                          'No products available',
+                          'No favorite products yet',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight:
@@ -189,11 +167,22 @@ class _CustomerProductsScreenState
                           ),
                         ),
                       ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      Center(
+                        child: Text(
+                          'Add products from the marketplace',
+                          style: TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 )
               : RefreshIndicator(
-                  onRefresh: _loadData,
+                  onRefresh: _loadFavorites,
                   child: GridView.builder(
                     padding:
                         const EdgeInsets.all(16),
@@ -205,19 +194,32 @@ class _CustomerProductsScreenState
                       childAspectRatio: 0.70,
                     ),
                     itemCount:
-                        productProvider
-                            .products.length,
+                        favoriteProvider
+                            .favorites.length,
                     itemBuilder: (
                       context,
                       index,
                     ) {
-                      final product =
+                      final favorite =
                           Map<String, dynamic>.from(
-                        productProvider
-                            .products[index],
+                        favoriteProvider
+                            .favorites[index],
                       );
 
-                      return _ProductCard(
+                      final productData =
+                          favorite['product'];
+
+                      if (productData is! Map) {
+                        return const SizedBox
+                            .shrink();
+                      }
+
+                      final product =
+                          Map<String, dynamic>.from(
+                        productData,
+                      );
+
+                      return _FavoriteProductCard(
                         product: product,
                       );
                     },
@@ -227,11 +229,11 @@ class _CustomerProductsScreenState
   }
 }
 
-class _ProductCard
+class _FavoriteProductCard
     extends StatelessWidget {
   final Map<String, dynamic> product;
 
-  const _ProductCard({
+  const _FavoriteProductCard({
     required this.product,
   });
 
@@ -254,6 +256,9 @@ class _ProductCard
     final status =
         product['status']?.toString() ?? '';
 
+    final productId =
+        product['id']?.toString() ?? '';
+
     final quantity =
         int.tryParse(
           product['quantity']?.toString() ??
@@ -267,9 +272,6 @@ class _ProductCard
               '0',
         ) ??
         0.0;
-
-    final productId =
-        product['id']?.toString() ?? '';
 
     final categoryName =
         product['category'] is Map
@@ -289,14 +291,6 @@ class _ProductCard
         productId.isNotEmpty &&
             quantity > 0 &&
             status == 'AVAILABLE';
-
-    final favoriteProvider =
-        Provider.of<FavoriteProvider>(context);
-
-    final isFavorite =
-        favoriteProvider.isFavorite(
-      productId,
-    );
 
     return Card(
       elevation: 2,
@@ -351,71 +345,51 @@ class _ProductCard
                   shape: const CircleBorder(),
                   elevation: 2,
                   child: IconButton(
-                    tooltip: isFavorite
-                        ? 'Remove from favorites'
-                        : 'Add to favorites',
-                    onPressed:
-                        productId.isEmpty
-                            ? null
-                            : () async {
-                                final success =
-                                    await Provider.of<
-                                        FavoriteProvider>(
-                                  context,
-                                  listen: false,
-                                ).toggleFavorite(
-                                  productId,
-                                );
+                    tooltip:
+                        'Remove from favorites',
+                    onPressed: () async {
+                      final success =
+                          await Provider.of<
+                              FavoriteProvider>(
+                        context,
+                        listen: false,
+                      ).removeFavorite(
+                        productId,
+                      );
 
-                                if (!context
-                                    .mounted) {
-                                  return;
-                                }
+                      if (!context.mounted) {
+                        return;
+                      }
 
-                                final provider =
-                                    Provider.of<
-                                        FavoriteProvider>(
-                                  context,
-                                  listen: false,
-                                );
+                      final provider =
+                          Provider.of<
+                              FavoriteProvider>(
+                        context,
+                        listen: false,
+                      );
 
-                                final nowFavorite =
-                                    provider.isFavorite(
-                                  productId,
-                                );
-
-                                ScaffoldMessenger
-                                    .of(
-                                  context,
-                                )
-                                  ..hideCurrentSnackBar()
-                                  ..showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        success
-                                            ? nowFavorite
-                                                ? '$name added to favorites'
-                                                : '$name removed from favorites'
-                                            : provider.errorMessage ??
-                                                'Favorite operation failed',
-                                      ),
-                                      backgroundColor:
-                                          success
-                                              ? Colors
-                                                  .green
-                                              : Colors
-                                                  .red,
-                                    ),
-                                  );
-                              },
-                    icon: Icon(
-                      isFavorite
-                          ? Icons.favorite
-                          : Icons
-                              .favorite_border,
-                      color: isFavorite
-                          ? Colors.red
-                          : Colors.grey.shade700,
+                      ScaffoldMessenger.of(
+                        context,
+                      )
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              success
+                                  ? '$name removed from favorites'
+                                  : provider.errorMessage ??
+                                      'Failed to remove favorite',
+                            ),
+                            backgroundColor:
+                                success
+                                    ? Colors.green
+                                    : Colors.red,
+                          ),
+                        );
+                    },
+                    icon: const Icon(
+                      Icons.favorite,
+                      color: Colors.red,
                     ),
                   ),
                 ),
@@ -546,10 +520,6 @@ class _ProductCard
                                   SnackBar(
                                     content: Text(
                                       '$name added to cart',
-                                    ),
-                                    duration:
-                                        const Duration(
-                                      seconds: 2,
                                     ),
                                   ),
                                 );
