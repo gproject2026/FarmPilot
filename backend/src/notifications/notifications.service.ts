@@ -8,57 +8,24 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 
-
 @Injectable()
 export class NotificationsService {
-
   constructor(
     private readonly prisma: PrismaService,
   ) {}
 
-
   create(
     createNotificationDto: CreateNotificationDto,
   ) {
-
     return this.prisma.notification.create({
       data: {
         ...createNotificationDto,
       },
     });
-
   }
-
-
 
   findAll() {
-
     return this.prisma.notification.findMany({
-      include:{
-        user:{
-          select:{
-            id:true,
-            fullName:true,
-            email:true,
-            role:true,
-          }
-        }
-      }
-    });
-
-  }
-
-
-
-  async findOne(id: string) {
-
-  console.log('SEARCHING NOTIFICATION ID:', id);
-
-  const notification =
-    await this.prisma.notification.findUnique({
-      where: {
-        id,
-      },
       include: {
         user: {
           select: {
@@ -69,81 +36,107 @@ export class NotificationsService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
-
-
-  if (!notification) {
-    throw new NotFoundException('Notification not found');
   }
 
+  async findOne(
+    id: string,
+    userId: string,
+  ) {
+    const notification =
+      await this.prisma.notification.findFirst({
+        where: {
+          id,
+          userId,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      });
 
-  return notification;
-}
+    if (!notification) {
+      throw new NotFoundException(
+        'Notification not found',
+      );
+    }
+
+    return notification;
+  }
 
   update(
-    id:string,
-    updateNotificationDto:UpdateNotificationDto,
-  ){
-
+    id: string,
+    updateNotificationDto: UpdateNotificationDto,
+  ) {
     return this.prisma.notification.update({
-      where:{id},
-      data:updateNotificationDto,
+      where: {
+        id,
+      },
+      data: updateNotificationDto,
     });
-
   }
 
-
-
-
-  remove(id:string){
-
+  remove(
+    id: string,
+  ) {
     return this.prisma.notification.delete({
-      where:{id},
-    });
-
-  }
-
-  async findMyNotifications(userId:string){
-
-  return this.prisma.notification.findMany({
-
-    where:{
-      userId,
-    },
-
-    orderBy:{
-      createdAt:'desc',
-    },
-
-  });
-
-}
-
-async markAsRead(id: string) {
-
-  const notification =
-    await this.prisma.notification.findUnique({
       where: {
         id,
       },
     });
-
-
-  if (!notification) {
-    throw new NotFoundException(
-      'Notification not found'
-    );
   }
 
+  findMyNotifications(
+    userId: string,
+  ) {
+    return this.prisma.notification.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 
-  return this.prisma.notification.update({
-    where: {
-      id,
-    },
-    data: {
-      isRead: true,
-    },
-  });
+  async markAsRead(
+    id: string,
+    userId: string,
+  ) {
+    const notification =
+      await this.prisma.notification.findFirst({
+        where: {
+          id,
+          userId,
+        },
+      });
 
-}
+    if (!notification) {
+      throw new NotFoundException(
+        'Notification not found',
+      );
+    }
+
+    if (notification.isRead) {
+      return notification;
+    }
+
+    return this.prisma.notification.update({
+      where: {
+        id,
+      },
+      data: {
+        isRead: true,
+      },
+    });
+  }
 }

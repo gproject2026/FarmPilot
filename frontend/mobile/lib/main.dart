@@ -7,6 +7,7 @@ import 'providers/category_provider.dart';
 import 'providers/crop_provider.dart';
 import 'providers/dashboard_provider.dart';
 import 'providers/favorite_provider.dart';
+import 'providers/notification_provider.dart';
 import 'providers/order_provider.dart';
 import 'providers/product_provider.dart';
 import 'providers/profile_provider.dart';
@@ -21,7 +22,9 @@ void main() {
 }
 
 class FarmPilotApp extends StatelessWidget {
-  const FarmPilotApp({super.key});
+  const FarmPilotApp({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +59,10 @@ class FarmPilotApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => FavoriteProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              NotificationProvider(),
         ),
       ],
       child: MaterialApp(

@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../customer/customer_dashboard_screen.dart';
 import '../farmer/farmer_dashboard_screen.dart';
 
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -70,8 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                const FarmerDashboardScreen(),
+            builder: (_) => const FarmerDashboardScreen(),
           ),
         );
 

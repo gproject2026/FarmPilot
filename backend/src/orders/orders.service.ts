@@ -63,7 +63,8 @@ export class OrdersService {
         new Set(productIds);
 
     if (
-      uniqueProductIds.size !== productIds.length
+      uniqueProductIds.size !==
+      productIds.length
     ) {
       throw new BadRequestException(
         'The same product cannot be added more than once',
@@ -82,7 +83,8 @@ export class OrdersService {
         });
 
         if (
-          products.length !== productIds.length
+          products.length !==
+          productIds.length
         ) {
           throw new NotFoundException(
             'One or more products were not found',
@@ -100,6 +102,9 @@ export class OrdersService {
             'All products in one order must belong to the same farmer',
           );
         }
+
+        const farmerId =
+            products[0].farmerId;
 
         let totalPrice =
             new Prisma.Decimal(0);
@@ -132,7 +137,8 @@ export class OrdersService {
           }
 
           if (
-            product.quantity < item.quantity
+            product.quantity <
+            item.quantity
           ) {
             throw new BadRequestException(
               `Not enough quantity for product: ${product.name}`,
@@ -171,12 +177,15 @@ export class OrdersService {
             },
             data: {
               quantity: {
-                decrement: item.quantity,
+                decrement:
+                    item.quantity,
               },
             },
           });
 
-          if (updatedResult.count === 0) {
+          if (
+            updatedResult.count === 0
+          ) {
             throw new BadRequestException(
               'The requested product quantity is no longer available',
             );
@@ -193,7 +202,8 @@ export class OrdersService {
           });
 
           if (
-            updatedProduct?.quantity === 0
+            updatedProduct?.quantity ===
+            0
           ) {
             await tx.product.update({
               where: {
@@ -201,13 +211,15 @@ export class OrdersService {
               },
               data: {
                 status:
-                    ProductStatus.OUT_OF_STOCK,
+                    ProductStatus
+                        .OUT_OF_STOCK,
               },
             });
           }
         }
 
-        return tx.order.create({
+        const createdOrder =
+            await tx.order.create({
           data: {
             customerId,
             totalPrice,
@@ -217,6 +229,19 @@ export class OrdersService {
           },
           include: this.orderInclude,
         });
+
+        await tx.notification.create({
+          data: {
+            userId: farmerId,
+            title: 'New Order',
+            message:
+                'You have received a new order.',
+            type: 'ORDER',
+            isRead: false,
+          },
+        });
+
+        return createdOrder;
       },
     );
   }
@@ -296,11 +321,14 @@ export class OrdersService {
       );
     }
 
-    if (userRole === UserRole.FARMER) {
+    if (
+      userRole === UserRole.FARMER
+    ) {
       const belongsToFarmer =
           order.orderItems.some(
         (item) =>
-            item.product.farmerId === userId,
+            item.product.farmerId ===
+            userId,
       );
 
       if (!belongsToFarmer) {
@@ -345,7 +373,8 @@ export class OrdersService {
           userRole === UserRole.CUSTOMER
         ) {
           if (
-            order.customerId !== userId
+            order.customerId !==
+            userId
           ) {
             throw new ForbiddenException(
               'You are not allowed to cancel this order',
@@ -443,8 +472,10 @@ export class OrdersService {
                 },
                 status:
                     item.product.status ===
-                    ProductStatus.OUT_OF_STOCK
-                      ? ProductStatus.AVAILABLE
+                    ProductStatus
+                        .OUT_OF_STOCK
+                      ? ProductStatus
+                          .AVAILABLE
                       : item.product.status,
               },
             });

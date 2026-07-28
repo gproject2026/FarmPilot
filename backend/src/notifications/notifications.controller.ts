@@ -8,23 +8,21 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { NotificationsService } from './notifications.service';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+import { CreateNotificationDto } from './dto/create-notification.dto';
+import { NotificationsService } from './notifications.service';
 
 @Controller('notifications')
 export class NotificationsController {
-
   constructor(
     private readonly notificationsService: NotificationsService,
   ) {}
 
-
-  // إنشاء إشعار (نخليه داخلي حالياً)
+  
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(
     @Body() createNotificationDto: CreateNotificationDto,
   ) {
@@ -33,38 +31,39 @@ export class NotificationsController {
     );
   }
 
-
-
-  // إشعارات المستخدم الحالي فقط
   @Get('my')
   @UseGuards(JwtAuthGuard)
   findMyNotifications(
-    @CurrentUser() user:any,
-  ){
+    @CurrentUser() user: any,
+  ) {
     return this.notificationsService.findMyNotifications(
       user.id,
     );
   }
 
-
-
-  // جلب إشعار واحد
+  
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(
-    @Param('id') id:string,
-  ){
-    return this.notificationsService.findOne(id);
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.notificationsService.findOne(
+      id,
+      user.id,
+    );
   }
 
-
-
-  // تحديث حالة القراءة
+  
   @Patch(':id/read')
   @UseGuards(JwtAuthGuard)
   markAsRead(
-    @Param('id') id:string,
-  ){
-    return this.notificationsService.markAsRead(id);
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.notificationsService.markAsRead(
+      id,
+      user.id,
+    );
   }
-
 }
