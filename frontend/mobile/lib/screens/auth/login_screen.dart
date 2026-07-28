@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../customer/customer_dashboard_screen.dart';
 import '../farmer/farmer_dashboard_screen.dart';
+import '../admin/admin_dashboard_screen.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -66,8 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      if (authProvider.userRole ==
-          'FARMER') {
+      if (authProvider.userRole =='FARMER') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -78,8 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      if (authProvider.userRole ==
-          'CUSTOMER') {
+      if (authProvider.userRole == 'CUSTOMER') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -90,6 +89,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
         return;
       }
+      if (authProvider.userRole == 'ADMIN') {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AdminDashboardScreen(),
+    ),
+  );
+
+  return;
+}
 
       ScaffoldMessenger.of(context)
           .showSnackBar(

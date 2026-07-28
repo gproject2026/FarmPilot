@@ -3,42 +3,44 @@ import {
   Get,
   UseGuards,
 } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
+
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 import { DashboardService } from './dashboard.service';
 
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-
-
 @Controller('dashboard')
 export class DashboardController {
-
   constructor(
     private readonly dashboardService: DashboardService,
   ) {}
 
-
-
   @Get('farmer')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(
+    JwtAuthGuard,
+    RolesGuard,
+  )
+  @Roles(UserRole.FARMER)
   farmerDashboard(
-    @CurrentUser() user:any,
-  ){
-
+    @CurrentUser() user: {
+      id: string;
+    },
+  ) {
     return this.dashboardService.getFarmerDashboard(
-      user.id
+      user.id,
     );
-
   }
-
-
 
   @Get('admin')
-  @UseGuards(JwtAuthGuard)
-  adminDashboard(){
-
+  @UseGuards(
+    JwtAuthGuard,
+    RolesGuard,
+  )
+  @Roles(UserRole.ADMIN)
+  adminDashboard() {
     return this.dashboardService.getAdminDashboard();
-
   }
-
 }
