@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../farmer/profile_screen.dart';
 import 'customer_cart_screen.dart';
 import 'customer_orders_screen.dart';
 import 'customer_products_screen.dart';
@@ -11,13 +12,10 @@ class CustomerDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider =
-        Provider.of<AuthProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
 
     final userName =
-        authProvider.userData?['fullName']
-                ?.toString() ??
-            'Customer';
+        authProvider.userData?['fullName']?.toString() ?? 'Customer';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F4),
@@ -32,8 +30,7 @@ class CustomerDashboardScreen extends StatelessWidget {
             onPressed: () {
               authProvider.logout();
 
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil(
+              Navigator.of(context).pushNamedAndRemoveUntil(
                 '/',
                 (route) => false,
               );
@@ -48,8 +45,7 @@ class CustomerDashboardScreen extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               'Welcome $userName 👋',
@@ -81,8 +77,7 @@ class CustomerDashboardScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          const CustomerProductsScreen(),
+                      builder: (_) => const CustomerProductsScreen(),
                     ),
                   );
                 },
@@ -99,15 +94,13 @@ class CustomerDashboardScreen extends StatelessWidget {
             ),
             _DashboardCard(
               title: 'My Orders',
-              subtitle:
-                  'View your current and previous orders',
+              subtitle: 'View your current and previous orders',
               icon: Icons.shopping_bag_outlined,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        const CustomerOrdersScreen(),
+                    builder: (_) => const CustomerOrdersScreen(),
                   ),
                 );
               },
@@ -124,8 +117,7 @@ class CustomerDashboardScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        const CustomerProductsScreen(),
+                    builder: (_) => const CustomerProductsScreen(),
                   ),
                 );
               },
@@ -135,15 +127,29 @@ class CustomerDashboardScreen extends StatelessWidget {
             ),
             _DashboardCard(
               title: 'Shopping Cart',
-              subtitle:
-                  'Review your products and complete checkout',
+              subtitle: 'Review your products and complete checkout',
               icon: Icons.shopping_cart_outlined,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        const CustomerCartScreen(),
+                    builder: (_) => const CustomerCartScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(
+              height: 12,
+            ),
+            _DashboardCard(
+              title: 'My Profile',
+              subtitle: 'View and edit your personal information',
+              icon: Icons.person_outline,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ProfileScreen(),
                   ),
                 );
               },
@@ -177,14 +183,12 @@ class _DashboardCard extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding:
-            const EdgeInsets.symmetric(
+        contentPadding: const EdgeInsets.symmetric(
           horizontal: 18,
           vertical: 10,
         ),
         leading: CircleAvatar(
-          backgroundColor:
-              Colors.green.shade100,
+          backgroundColor: Colors.green.shade100,
           child: Icon(
             icon,
             color: Colors.green.shade700,
@@ -198,8 +202,7 @@ class _DashboardCard extends StatelessWidget {
           ),
         ),
         subtitle: Padding(
-          padding:
-              const EdgeInsets.only(
+          padding: const EdgeInsets.only(
             top: 4,
           ),
           child: Text(
