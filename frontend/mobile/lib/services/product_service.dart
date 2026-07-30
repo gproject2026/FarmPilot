@@ -64,23 +64,42 @@ class ProductService {
       });
 
       final response = await apiClient.dio.post(
-        '/products/upload-image',
+        '/uploads/image',
         data: formData,
         options: Options(
           contentType: 'multipart/form-data',
         ),
       );
 
-      final imageUrl =
-          response.data['imageUrl']?.toString();
+      final responseData = response.data;
 
-      if (imageUrl == null || imageUrl.isEmpty) {
+      if (responseData is! Map) {
+        throw Exception(
+          'Invalid image upload response',
+        );
+      }
+
+      final imageUrl =
+          responseData['imageUrl']?.toString();
+
+      if (imageUrl == null ||
+          imageUrl.trim().isEmpty) {
         throw Exception(
           'Image URL was not returned from the server',
         );
       }
 
-      return imageUrl;
+      return imageUrl.trim();
+    } on DioException catch (e) {
+      final serverMessage =
+          e.response?.data is Map
+              ? e.response?.data['message']?.toString()
+              : null;
+
+      throw Exception(
+        serverMessage ??
+            'Could not upload the product image',
+      );
     } catch (e) {
       throw Exception(
         'Failed to upload product image: $e',

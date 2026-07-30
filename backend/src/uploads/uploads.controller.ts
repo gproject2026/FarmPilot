@@ -1,10 +1,13 @@
 import {
+  BadRequestException,
   Controller,
   Post,
+  Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { Request } from 'express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 
@@ -15,23 +18,90 @@ export class UploadsController {
     FileInterceptor('image', {
       storage: diskStorage({
         destination: './uploads',
-        filename: (req, file, callback) => {
+
+        filename: (
+          req,
+          file,
+          callback,
+        ) => {
           const uniqueName =
             Date.now() +
             '-' +
-            Math.round(Math.random() * 1e9) +
-            extname(file.originalname);
+            Math.round(
+              Math.random() * 1e9,
+            ) +
+            extname(
+              file.originalname,
+            );
 
-          callback(null, uniqueName);
+          callback(
+            null,
+            uniqueName,
+          );
         },
       }),
+
+      fileFilter: (
+        req,
+        file,
+        callback,
+      ) => {
+        const allowedTypes = [
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'image/webp',
+        ];
+
+        if (
+          !allowedTypes.includes(
+            file.mimetype,
+          )
+        ) {
+          return callback(
+            new BadRequestException(
+              'Only JPG, JPEG, PNG, and WEBP images are allowed',
+            ),
+            false,
+          );
+        }
+
+        callback(
+          null,
+          true,
+        );
+      },
+
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+      },
     }),
   )
-  uploadImage(@UploadedFile() file: Express.Multer.File) {
+  uploadImage(
+    @UploadedFile()
+    file: Express.Multer.File,
+    @Req()
+    request: Request,
+  ) {
+    if (!file) {
+      throw new BadRequestException(
+        'Image file is required',
+      );
+    }
+
+    const host =
+      request.get('host') ??
+      'localhost:3000';
+
+    const imageUrl =
+      `${request.protocol}://${host}` +
+      `/uploads/${file.filename}`;
+
     return {
-      message: 'Image uploaded successfully',
+      message:
+        'Image uploaded successfully',
       filename: file.filename,
-      imageUrl: `http://localhost:3000/uploads/${file.filename}`,
+      imageUrl,
     };
   }
 }
