@@ -2,16 +2,17 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../core/constants/app_constants.dart';
 import '../models/reminder_model.dart';
 
 class ReminderService {
-  static const String baseUrl = 'http://localhost:3000';
-
   Future<List<ReminderModel>> getReminders({
     required String token,
   }) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/reminders'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/reminders',
+      ),
       headers: _headers(token),
     );
 
@@ -19,7 +20,9 @@ class ReminderService {
       final decodedBody = jsonDecode(response.body);
 
       if (decodedBody is! List) {
-        throw Exception('Invalid reminders response');
+        throw Exception(
+          'Invalid reminders response',
+        );
       }
 
       return decodedBody
@@ -46,13 +49,16 @@ class ReminderService {
     required DateTime reminderDate,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/reminders'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/reminders',
+      ),
       headers: _headers(token),
       body: jsonEncode({
         if (cropId != null && cropId.isNotEmpty)
           'cropId': cropId,
         'type': type,
-        'reminderDate': reminderDate.toUtc().toIso8601String(),
+        'reminderDate':
+            reminderDate.toUtc().toIso8601String(),
       }),
     );
 
@@ -91,7 +97,9 @@ class ReminderService {
     };
 
     final response = await http.patch(
-      Uri.parse('$baseUrl/reminders/$reminderId'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/reminders/$reminderId',
+      ),
       headers: _headers(token),
       body: jsonEncode(body),
     );
@@ -117,7 +125,9 @@ class ReminderService {
     required String reminderId,
   }) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/reminders/$reminderId'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/reminders/$reminderId',
+      ),
       headers: _headers(token),
     );
 

@@ -2,12 +2,16 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-class CropService {
-  static const String baseUrl = 'http://localhost:3000';
+import '../core/constants/app_constants.dart';
 
-  Future<List<dynamic>> getMyCrops(String token) async {
+class CropService {
+  Future<List<dynamic>> getMyCrops(
+    String token,
+  ) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/crops/my'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/crops/my',
+      ),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -15,10 +19,27 @@ class CropService {
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body) as List<dynamic>;
+      final decodedBody = jsonDecode(
+        response.body,
+      );
+
+      if (decodedBody is! List) {
+        throw Exception(
+          'Invalid crops response',
+        );
+      }
+
+      return List<dynamic>.from(
+        decodedBody,
+      );
     }
 
-    throw Exception('Failed to load crops');
+    throw Exception(
+      _readErrorMessage(
+        response.body,
+        'Failed to load crops',
+      ),
+    );
   }
 
   Future<Map<String, dynamic>> createCrop({
@@ -31,33 +52,57 @@ class CropService {
     String? notes,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/crops'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/crops',
+      ),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
       body: jsonEncode({
         'cropName': cropName,
-        if (cropType != null && cropType.isNotEmpty)
+        if (cropType != null &&
+            cropType.isNotEmpty)
           'cropType': cropType,
-        if (plantingDate != null && plantingDate.isNotEmpty)
+        if (plantingDate != null &&
+            plantingDate.isNotEmpty)
           'plantingDate': plantingDate,
         if (irrigationSchedule != null &&
             irrigationSchedule.isNotEmpty)
-          'irrigationSchedule': irrigationSchedule,
+          'irrigationSchedule':
+              irrigationSchedule,
         if (fertilizationSchedule != null &&
             fertilizationSchedule.isNotEmpty)
-          'fertilizationSchedule': fertilizationSchedule,
-        if (notes != null && notes.isNotEmpty)
+          'fertilizationSchedule':
+              fertilizationSchedule,
+        if (notes != null &&
+            notes.isNotEmpty)
           'notes': notes,
       }),
     );
 
-    if (response.statusCode == 201) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+    if (response.statusCode == 200 ||
+        response.statusCode == 201) {
+      final decodedBody = jsonDecode(
+        response.body,
+      );
+
+      if (decodedBody
+          is! Map<String, dynamic>) {
+        throw Exception(
+          'Invalid crop response',
+        );
+      }
+
+      return decodedBody;
     }
 
-    throw Exception('Failed to create crop');
+    throw Exception(
+      _readErrorMessage(
+        response.body,
+        'Failed to create crop',
+      ),
+    );
   }
 
   Future<Map<String, dynamic>> updateCrop({
@@ -71,28 +116,51 @@ class CropService {
     String? notes,
   }) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl/crops/$cropId'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/crops/$cropId',
+      ),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
       body: jsonEncode({
         'cropName': cropName,
-        if (cropType != null) 'cropType': cropType,
-        if (plantingDate != null) 'plantingDate': plantingDate,
+        if (cropType != null)
+          'cropType': cropType,
+        if (plantingDate != null)
+          'plantingDate': plantingDate,
         if (irrigationSchedule != null)
-          'irrigationSchedule': irrigationSchedule,
+          'irrigationSchedule':
+              irrigationSchedule,
         if (fertilizationSchedule != null)
-          'fertilizationSchedule': fertilizationSchedule,
-        if (notes != null) 'notes': notes,
+          'fertilizationSchedule':
+              fertilizationSchedule,
+        if (notes != null)
+          'notes': notes,
       }),
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      final decodedBody = jsonDecode(
+        response.body,
+      );
+
+      if (decodedBody
+          is! Map<String, dynamic>) {
+        throw Exception(
+          'Invalid crop response',
+        );
+      }
+
+      return decodedBody;
     }
 
-    throw Exception('Failed to update crop');
+    throw Exception(
+      _readErrorMessage(
+        response.body,
+        'Failed to update crop',
+      ),
+    );
   }
 
   Future<void> deleteCrop({
@@ -100,15 +168,52 @@ class CropService {
     required String cropId,
   }) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/crops/$cropId'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/crops/$cropId',
+      ),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to delete crop');
+    if (response.statusCode != 200 &&
+        response.statusCode != 204) {
+      throw Exception(
+        _readErrorMessage(
+          response.body,
+          'Failed to delete crop',
+        ),
+      );
     }
+  }
+
+  String _readErrorMessage(
+    String responseBody,
+    String fallbackMessage,
+  ) {
+    try {
+      final decodedBody = jsonDecode(
+        responseBody,
+      );
+
+      if (decodedBody
+          is Map<String, dynamic>) {
+        final message =
+            decodedBody['message'];
+
+        if (message is String) {
+          return message;
+        }
+
+        if (message is List) {
+          return message.join(', ');
+        }
+      }
+    } catch (_) {
+      // Use the fallback message.
+    }
+
+    return fallbackMessage;
   }
 }

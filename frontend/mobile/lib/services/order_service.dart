@@ -2,16 +2,15 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../core/constants/app_constants.dart';
 import '../models/order_model.dart';
 
 class OrderService {
-  static const String baseUrl = 'http://localhost:3000';
-
   Future<List<OrderModel>> getCustomerOrders({
     required String token,
   }) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/orders/my'),
+      Uri.parse('${AppConstants.baseUrl}/orders/my'),
       headers: _headers(token),
     );
 
@@ -43,7 +42,7 @@ class OrderService {
     required String token,
   }) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/orders/farmer'),
+      Uri.parse('${AppConstants.baseUrl}/orders/farmer'),
       headers: _headers(token),
     );
 
@@ -76,7 +75,7 @@ class OrderService {
     required String orderId,
   }) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/orders/$orderId'),
+      Uri.parse('${AppConstants.baseUrl}/orders/$orderId'),
       headers: _headers(token),
     );
 
@@ -101,7 +100,7 @@ class OrderService {
     required List<Map<String, dynamic>> items,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/orders'),
+      Uri.parse('${AppConstants.baseUrl}/orders'),
       headers: _headers(token),
       body: jsonEncode({
         'items': items,
@@ -131,7 +130,9 @@ class OrderService {
     required String status,
   }) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl/orders/$orderId/status'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/$orderId/status',
+      ),
       headers: _headers(token),
       body: jsonEncode({
         'status': status,

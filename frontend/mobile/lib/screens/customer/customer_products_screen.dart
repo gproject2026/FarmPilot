@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../models/cart_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/favorite_provider.dart';
@@ -8,16 +9,14 @@ import '../../providers/product_provider.dart';
 import 'customer_cart_screen.dart';
 import 'customer_favorites_screen.dart';
 
-class CustomerProductsScreen
-    extends StatefulWidget {
+class CustomerProductsScreen extends StatefulWidget {
   const CustomerProductsScreen({
     super.key,
   });
 
   @override
-  State<CustomerProductsScreen>
-      createState() =>
-          _CustomerProductsScreenState();
+  State<CustomerProductsScreen> createState() =>
+      _CustomerProductsScreenState();
 }
 
 class _CustomerProductsScreenState
@@ -55,9 +54,7 @@ class _CustomerProductsScreenState
         ..showSnackBar(
           SnackBar(
             content: Text(
-              e
-                  .toString()
-                  .replaceFirst(
+              e.toString().replaceFirst(
                     'Exception: ',
                     '',
                   ),
@@ -77,8 +74,7 @@ class _CustomerProductsScreenState
         Provider.of<CartProvider>(context);
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F7F4),
+      backgroundColor: const Color(0xFFF5F7F4),
       appBar: AppBar(
         title: const Text(
           'Marketplace',
@@ -123,21 +119,17 @@ class _CustomerProductsScreenState
                   top: 6,
                   right: 5,
                   child: Container(
-                    padding:
-                        const EdgeInsets.all(5),
-                    decoration:
-                        const BoxDecoration(
+                    padding: const EdgeInsets.all(5),
+                    decoration: const BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
                     ),
                     child: Text(
-                      cartProvider.totalQuantity
-                          .toString(),
+                      cartProvider.totalQuantity.toString(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -145,10 +137,9 @@ class _CustomerProductsScreenState
             ],
           ),
           IconButton(
-            onPressed:
-                productProvider.isLoading
-                    ? null
-                    : _loadData,
+            onPressed: productProvider.isLoading
+                ? null
+                : _loadData,
             icon: const Icon(
               Icons.refresh,
             ),
@@ -158,8 +149,7 @@ class _CustomerProductsScreenState
       body: productProvider.isLoading &&
               productProvider.products.isEmpty
           ? const Center(
-              child:
-                  CircularProgressIndicator(),
+              child: CircularProgressIndicator(),
             )
           : productProvider.products.isEmpty
               ? RefreshIndicator(
@@ -184,8 +174,7 @@ class _CustomerProductsScreenState
                           'No products available',
                           style: TextStyle(
                             fontSize: 20,
-                            fontWeight:
-                                FontWeight.bold,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -195,26 +184,23 @@ class _CustomerProductsScreenState
               : RefreshIndicator(
                   onRefresh: _loadData,
                   child: GridView.builder(
-                    padding:
-                        const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 320,
                       crossAxisSpacing: 14,
                       mainAxisSpacing: 14,
-                      childAspectRatio: 0.70,
+                      mainAxisExtent: 430,
                     ),
                     itemCount:
-                        productProvider
-                            .products.length,
+                        productProvider.products.length,
                     itemBuilder: (
                       context,
                       index,
                     ) {
                       final product =
                           Map<String, dynamic>.from(
-                        productProvider
-                            .products[index],
+                        productProvider.products[index],
                       );
 
                       return _ProductCard(
@@ -227,8 +213,7 @@ class _CustomerProductsScreenState
   }
 }
 
-class _ProductCard
-    extends StatelessWidget {
+class _ProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
 
   const _ProductCard({
@@ -238,12 +223,10 @@ class _ProductCard
   @override
   Widget build(BuildContext context) {
     final name =
-        product['name']?.toString() ??
-            'Product';
+        product['name']?.toString() ?? 'Product';
 
     final description =
-        product['description']?.toString() ??
-            '';
+        product['description']?.toString() ?? '';
 
     final unit =
         product['unit']?.toString() ?? '';
@@ -256,15 +239,13 @@ class _ProductCard
 
     final quantity =
         int.tryParse(
-          product['quantity']?.toString() ??
-              '0',
+          product['quantity']?.toString() ?? '0',
         ) ??
         0;
 
     final price =
         double.tryParse(
-          product['price']?.toString() ??
-              '0',
+          product['price']?.toString() ?? '0',
         ) ??
         0.0;
 
@@ -302,8 +283,7 @@ class _ProductCard
       elevation: 2,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment:
@@ -354,65 +334,59 @@ class _ProductCard
                     tooltip: isFavorite
                         ? 'Remove from favorites'
                         : 'Add to favorites',
-                    onPressed:
-                        productId.isEmpty
-                            ? null
-                            : () async {
-                                final success =
-                                    await Provider.of<
-                                        FavoriteProvider>(
-                                  context,
-                                  listen: false,
-                                ).toggleFavorite(
-                                  productId,
-                                );
+                    onPressed: productId.isEmpty
+                        ? null
+                        : () async {
+                            final success =
+                                await Provider.of<
+                                    FavoriteProvider>(
+                              context,
+                              listen: false,
+                            ).toggleFavorite(
+                              productId,
+                            );
 
-                                if (!context
-                                    .mounted) {
-                                  return;
-                                }
+                            if (!context.mounted) {
+                              return;
+                            }
 
-                                final provider =
-                                    Provider.of<
-                                        FavoriteProvider>(
-                                  context,
-                                  listen: false,
-                                );
+                            final provider =
+                                Provider.of<
+                                    FavoriteProvider>(
+                              context,
+                              listen: false,
+                            );
 
-                                final nowFavorite =
-                                    provider.isFavorite(
-                                  productId,
-                                );
+                            final nowFavorite =
+                                provider.isFavorite(
+                              productId,
+                            );
 
-                                ScaffoldMessenger
-                                    .of(
-                                  context,
-                                )
-                                  ..hideCurrentSnackBar()
-                                  ..showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        success
-                                            ? nowFavorite
-                                                ? '$name added to favorites'
-                                                : '$name removed from favorites'
-                                            : provider.errorMessage ??
-                                                'Favorite operation failed',
-                                      ),
-                                      backgroundColor:
-                                          success
-                                              ? Colors
-                                                  .green
-                                              : Colors
-                                                  .red,
-                                    ),
-                                  );
-                              },
+                            ScaffoldMessenger.of(
+                              context,
+                            )
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    success
+                                        ? nowFavorite
+                                            ? '$name added to favorites'
+                                            : '$name removed from favorites'
+                                        : provider.errorMessage ??
+                                            'Favorite operation failed',
+                                  ),
+                                  backgroundColor:
+                                      success
+                                          ? Colors.green
+                                          : Colors.red,
+                                ),
+                              );
+                          },
                     icon: Icon(
                       isFavorite
                           ? Icons.favorite
-                          : Icons
-                              .favorite_border,
+                          : Icons.favorite_border,
                       color: isFavorite
                           ? Colors.red
                           : Colors.grey.shade700,
@@ -424,8 +398,7 @@ class _ProductCard
           ),
           Expanded(
             child: Padding(
-              padding:
-                  const EdgeInsets.fromLTRB(
+              padding: const EdgeInsets.fromLTRB(
                 12,
                 10,
                 12,
@@ -493,6 +466,9 @@ class _ProductCard
                   Text(
                     '${price.toStringAsFixed(2)} ₪'
                     '${unit.isEmpty ? '' : ' / $unit'}',
+                    maxLines: 1,
+                    overflow:
+                        TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.green,
                       fontSize: 16,
@@ -505,6 +481,9 @@ class _ProductCard
                     isAvailable
                         ? 'Available: $quantity'
                         : 'Out of stock',
+                    maxLines: 1,
+                    overflow:
+                        TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
                       color: isAvailable
@@ -577,11 +556,36 @@ class _ProductCard
   String _buildImageUrl(
     String imageUrl,
   ) {
-    if (imageUrl.startsWith('http://') ||
-        imageUrl.startsWith('https://')) {
-      return imageUrl;
+    final trimmedUrl = imageUrl.trim();
+
+    if (trimmedUrl.isEmpty) {
+      return '';
     }
 
-    return 'http://localhost:3000$imageUrl';
+    if (trimmedUrl.startsWith(
+          'http://localhost:3000',
+        ) ||
+        trimmedUrl.startsWith(
+          'http://127.0.0.1:3000',
+        )) {
+      return trimmedUrl.replaceFirst(
+        RegExp(
+          r'http://(localhost|127\.0\.0\.1):3000',
+        ),
+        AppConstants.baseUrl,
+      );
+    }
+
+    if (trimmedUrl.startsWith('http://') ||
+        trimmedUrl.startsWith('https://')) {
+      return trimmedUrl;
+    }
+
+    final normalizedPath =
+        trimmedUrl.startsWith('/')
+            ? trimmedUrl
+            : '/$trimmedUrl';
+
+    return '${AppConstants.baseUrl}$normalizedPath';
   }
 }
