@@ -2,12 +2,10 @@ import {
   BadRequestException,
   Controller,
   Post,
-  Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { Request } from 'express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 
@@ -80,8 +78,6 @@ export class UploadsController {
   uploadImage(
     @UploadedFile()
     file: Express.Multer.File,
-    @Req()
-    request: Request,
   ) {
     if (!file) {
       throw new BadRequestException(
@@ -89,12 +85,7 @@ export class UploadsController {
       );
     }
 
-    const host =
-      request.get('host') ??
-      'localhost:3000';
-
     const imageUrl =
-      `${request.protocol}://${host}` +
       `/uploads/${file.filename}`;
 
     return {
@@ -104,4 +95,4 @@ export class UploadsController {
       imageUrl,
     };
   }
-}
+} 

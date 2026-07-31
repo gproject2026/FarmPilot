@@ -26,27 +26,20 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
     });
   }
 
-  String? _buildImageUrl(dynamic imageUrl) {
+  String? _getImageUrl(dynamic imageUrl) {
     if (imageUrl == null) {
       return null;
     }
 
-    final value = imageUrl.toString().trim();
+    final url = AppConstants.getImageUrl(
+      imageUrl.toString(),
+    );
 
-    if (value.isEmpty) {
+    if (url.isEmpty) {
       return null;
     }
 
-    if (value.startsWith('http://') ||
-        value.startsWith('https://')) {
-      return value;
-    }
-
-    if (value.startsWith('/')) {
-      return '${AppConstants.baseUrl}$value';
-    }
-
-    return '${AppConstants.baseUrl}/$value';
+    return url;
   }
 
   Future<void> _deleteProduct({
@@ -224,7 +217,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
                           product['name']?.toString() ??
                               'Unnamed Product';
 
-                      final imageUrl = _buildImageUrl(
+                      final imageUrl = _getImageUrl(
                         product['imageUrl'],
                       );
 

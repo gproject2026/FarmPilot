@@ -1,0 +1,33 @@
+import {
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+
+export class MarketingDescriptionDto {
+  @IsOptional()
+  @IsUUID()
+  productId?: string;
+
+  @IsString()
+  @MinLength(2)
+  @MaxLength(150)
+  productName!: string;
+
+  @IsString()
+  @MinLength(5)
+  @MaxLength(1000)
+  productDetails!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  targetAudience?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  language?: string;
+}
