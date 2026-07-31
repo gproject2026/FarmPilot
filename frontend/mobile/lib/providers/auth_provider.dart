@@ -10,6 +10,7 @@ class AuthProvider extends ChangeNotifier {
 
   String? userRole;
   String? token;
+  String? errorMessage;
 
   Map<String, dynamic>? userData;
 
@@ -18,6 +19,7 @@ class AuthProvider extends ChangeNotifier {
     String password,
   ) async {
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
 
     try {
@@ -26,31 +28,32 @@ class AuthProvider extends ChangeNotifier {
         password,
       );
 
-      print('LOGIN RESPONSE:');
-      print(response);
-
-      token = response['accessToken'];
+      token =
+          response['accessToken']?.toString();
 
       if (response['user'] != null) {
         userData = Map<String, dynamic>.from(
           response['user'],
         );
 
-        userRole = response['user']['role'];
-
-        print('USER ROLE:');
-        print(userRole);
+        userRole =
+            userData?['role']?.toString();
       }
 
-      isLoggedIn = token != null && token!.isNotEmpty;
+      isLoggedIn =
+          token != null && token!.isNotEmpty;
     } catch (e) {
-      print('LOGIN ERROR:');
-      print(e);
-
       isLoggedIn = false;
       token = null;
       userRole = null;
       userData = null;
+
+      errorMessage = e
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
 
       rethrow;
     } finally {
@@ -68,6 +71,7 @@ class AuthProvider extends ChangeNotifier {
     required String address,
   }) async {
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
 
     try {
@@ -80,6 +84,68 @@ class AuthProvider extends ChangeNotifier {
         address: address,
       );
     } catch (e) {
+      errorMessage = e
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      rethrow;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>>
+      forgotPassword({
+    required String email,
+  }) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      return await authService.forgotPassword(
+        email: email,
+      );
+    } catch (e) {
+      errorMessage = e
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      rethrow;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> resetPassword({
+    required String resetToken,
+    required String newPassword,
+  }) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await authService.resetPassword(
+        token: resetToken,
+        password: newPassword,
+      );
+    } catch (e) {
+      errorMessage = e
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
       rethrow;
     } finally {
       isLoading = false;
@@ -92,7 +158,13 @@ class AuthProvider extends ChangeNotifier {
     userRole = null;
     userData = null;
     token = null;
+    errorMessage = null;
 
+    notifyListeners();
+  }
+
+  void clearError() {
+    errorMessage = null;
     notifyListeners();
   }
 }

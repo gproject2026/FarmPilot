@@ -53,24 +53,24 @@ export class UsersService {
     return user;
   }
 
- findAll() {
-  return this.prisma.user.findMany({
-    orderBy: {
-      createdAt: 'desc',
-    },
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      phone: true,
-      role: true,
-      address: true,
-      profileImage: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-}
+  findAll() {
+    return this.prisma.user.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        role: true,
+        address: true,
+        profileImage: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
 
   createUser(data: {
     fullName: string;
@@ -141,4 +141,51 @@ export class UsersService {
       },
     });
   }
+
+  saveResetPasswordToken(
+    userId: string,
+    resetPasswordToken: string,
+    resetPasswordExpiresAt: Date,
+  ) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        resetPasswordToken,
+        resetPasswordExpiresAt,
+      },
+    });
+  }
+
+  findByValidResetPasswordToken(
+    resetPasswordToken: string,
+    currentDate: Date,
+  ) {
+    return this.prisma.user.findFirst({
+      where: {
+        resetPasswordToken,
+        resetPasswordExpiresAt: {
+          gt: currentDate,
+        },
+      },
+    });
+  }
+
+  updatePasswordAndClearResetToken(
+    userId: string,
+    hashedPassword: string,
+  ) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordExpiresAt: null,
+      },
+    });
+  }
 }
+

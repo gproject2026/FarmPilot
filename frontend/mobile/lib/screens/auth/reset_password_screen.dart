@@ -2,58 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
-import '../admin/admin_dashboard_screen.dart';
-import '../customer/customer_dashboard_screen.dart';
-import '../farmer/farmer_dashboard_screen.dart';
-import 'forgot_password_screen.dart';
+import 'login_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({
+class ResetPasswordScreen extends StatefulWidget {
+  final String email;
+  final String resetToken;
+
+  const ResetPasswordScreen({
     super.key,
+    required this.email,
+    required this.resetToken,
   });
 
   @override
-  State<LoginScreen> createState() =>
-      _LoginScreenState();
+  State<ResetPasswordScreen> createState() =>
+      _ResetPasswordScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final emailController =
-      TextEditingController();
-
+class _ResetPasswordScreenState
+    extends State<ResetPasswordScreen> {
   final passwordController =
       TextEditingController();
 
+  final confirmPasswordController =
+      TextEditingController();
+
   bool obscurePassword = true;
+  bool obscureConfirmPassword = true;
 
   @override
   void dispose() {
-    emailController.dispose();
     passwordController.dispose();
+    confirmPasswordController.dispose();
 
     super.dispose();
   }
 
-  Future<void> _login() async {
-    final authProvider =
-        Provider.of<AuthProvider>(
-      context,
-      listen: false,
-    );
-
-    final email =
-        emailController.text.trim();
-
+  Future<void> _resetPassword() async {
     final password =
         passwordController.text.trim();
 
-    if (email.isEmpty ||
-        password.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+    final confirmPassword =
+        confirmPasswordController.text.trim();
+
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Please enter email and password',
+            'Password must be at least 6 characters',
           ),
         ),
       );
@@ -61,71 +57,56 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Passwords do not match',
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    final authProvider =
+        Provider.of<AuthProvider>(
+      context,
+      listen: false,
+    );
+
     try {
-      await authProvider.login(
-        email,
-        password,
+      await authProvider.resetPassword(
+        resetToken: widget.resetToken,
+        newPassword: password,
       );
 
       if (!mounted) {
         return;
       }
 
-      if (authProvider.userRole ==
-          'FARMER') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                const FarmerDashboardScreen(),
-          ),
-        );
-
-        return;
-      }
-
-      if (authProvider.userRole ==
-          'CUSTOMER') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                const CustomerDashboardScreen(),
-          ),
-        );
-
-        return;
-      }
-
-      if (authProvider.userRole ==
-          'ADMIN') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                const AdminDashboardScreen(),
-          ),
-        );
-
-        return;
-      }
-
       ScaffoldMessenger.of(context)
           .showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
-            'Unsupported role: '
-            '${authProvider.userRole ?? 'Unknown'}',
+            'Password reset successfully',
           ),
+          backgroundColor: Colors.green,
         ),
+      );
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const LoginScreen(),
+        ),
+        (route) => false,
       );
     } catch (error) {
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             error
@@ -151,12 +132,10 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'FarmPilot Login',
+          'Reset Password',
         ),
-        backgroundColor:
-            Colors.green,
-        foregroundColor:
-            Colors.white,
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
       ),
       body: SafeArea(
         child: Center(
@@ -173,15 +152,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     MainAxisAlignment.center,
                 children: [
                   const Icon(
-                    Icons.eco,
-                    size: 80,
+                    Icons.password,
+                    size: 82,
                     color: Colors.green,
                   ),
                   const SizedBox(
-                    height: 16,
+                    height: 18,
                   ),
                   const Text(
-                    'Welcome to FarmPilot',
+                    'Create a new password',
+                    textAlign:
+                        TextAlign.center,
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight:
@@ -189,31 +170,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(
-                    height: 30,
+                    height: 10,
                   ),
-                  TextField(
-                    controller:
-                        emailController,
-                    keyboardType:
-                        TextInputType
-                            .emailAddress,
-                    textInputAction:
-                        TextInputAction.next,
-                    autofillHints: const [
-                      AutofillHints.email,
-                    ],
-                    decoration:
-                        const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(
-                        Icons.email_outlined,
-                      ),
-                      border:
-                          OutlineInputBorder(),
+                  Text(
+                    'Account: ${widget.email}',
+                    textAlign:
+                        TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color:
+                          Colors.grey.shade700,
                     ),
                   ),
                   const SizedBox(
-                    height: 20,
+                    height: 30,
                   ),
                   TextField(
                     controller:
@@ -221,29 +191,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText:
                         obscurePassword,
                     textInputAction:
-                        TextInputAction.done,
-                    autofillHints: const [
-                      AutofillHints.password,
-                    ],
-                    onSubmitted: (_) {
-                      if (!authProvider
-                          .isLoading) {
-                        _login();
-                      }
-                    },
-                    decoration:
-                        InputDecoration(
-                      labelText: 'Password',
+                        TextInputAction.next,
+                    decoration: InputDecoration(
+                      labelText:
+                          'New Password',
                       prefixIcon:
                           const Icon(
                         Icons.lock_outline,
                       ),
                       suffixIcon:
                           IconButton(
-                        tooltip:
-                            obscurePassword
-                                ? 'Show password'
-                                : 'Hide password',
                         onPressed: () {
                           setState(() {
                             obscurePassword =
@@ -262,41 +219,70 @@ class _LoginScreenState extends State<LoginScreen> {
                           const OutlineInputBorder(),
                     ),
                   ),
-                  Align(
-                    alignment:
-                        Alignment.centerRight,
-                    child: TextButton(
-                      onPressed:
-                          authProvider.isLoading
-                              ? null
-                              : () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const ForgotPasswordScreen(),
-                                    ),
-                                  );
-                                },
-                      child: const Text(
-                        'Forgot Password?',
+                  const SizedBox(
+                    height: 18,
+                  ),
+                  TextField(
+                    controller:
+                        confirmPasswordController,
+                    obscureText:
+                        obscureConfirmPassword,
+                    textInputAction:
+                        TextInputAction.done,
+                    onSubmitted: (_) {
+                      if (!authProvider
+                          .isLoading) {
+                        _resetPassword();
+                      }
+                    },
+                    decoration: InputDecoration(
+                      labelText:
+                          'Confirm Password',
+                      prefixIcon:
+                          const Icon(
+                        Icons.lock_reset,
                       ),
+                      suffixIcon:
+                          IconButton(
+                        onPressed: () {
+                          setState(() {
+                            obscureConfirmPassword =
+                                !obscureConfirmPassword;
+                          });
+                        },
+                        icon: Icon(
+                          obscureConfirmPassword
+                              ? Icons
+                                  .visibility_outlined
+                              : Icons
+                                  .visibility_off_outlined,
+                        ),
+                      ),
+                      border:
+                          const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 24,
                   ),
                   SizedBox(
                     width:
                         double.infinity,
                     height: 50,
                     child:
-                        ElevatedButton(
+                        ElevatedButton.icon(
                       onPressed:
                           authProvider.isLoading
                               ? null
-                              : _login,
-                      child:
+                              : _resetPassword,
+                      icon:
+                          authProvider.isLoading
+                              ? const SizedBox
+                                  .shrink()
+                              : const Icon(
+                                  Icons.save,
+                                ),
+                      label:
                           authProvider.isLoading
                               ? const SizedBox(
                                   width: 24,
@@ -308,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 )
                               : const Text(
-                                  'Login',
+                                  'Reset Password',
                                 ),
                     ),
                   ),
