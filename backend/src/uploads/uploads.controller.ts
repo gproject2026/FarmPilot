@@ -6,41 +6,24 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
+
+import { CloudinaryService } from './cloudinary.service';
 
 @Controller('uploads')
 export class UploadsController {
+  constructor(
+    private readonly cloudinaryService:
+      CloudinaryService,
+  ) {}
+
   @Post('image')
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads',
-
-        filename: (
-          req,
-          file,
-          callback,
-        ) => {
-          const uniqueName =
-            Date.now() +
-            '-' +
-            Math.round(
-              Math.random() * 1e9,
-            ) +
-            extname(
-              file.originalname,
-            );
-
-          callback(
-            null,
-            uniqueName,
-          );
-        },
-      }),
+      storage: memoryStorage(),
 
       fileFilter: (
-        req,
+        request,
         file,
         callback,
       ) => {
@@ -56,18 +39,17 @@ export class UploadsController {
             file.mimetype,
           )
         ) {
-          return callback(
+          callback(
             new BadRequestException(
               'Only JPG, JPEG, PNG, and WEBP images are allowed',
             ),
             false,
           );
+
+          return;
         }
 
-        callback(
-          null,
-          true,
-        );
+        callback(null, true);
       },
 
       limits: {
@@ -75,7 +57,7 @@ export class UploadsController {
       },
     }),
   )
-  uploadImage(
+  async uploadImage(
     @UploadedFile()
     file: Express.Multer.File,
   ) {
@@ -85,14 +67,18 @@ export class UploadsController {
       );
     }
 
-    const imageUrl =
-      `/uploads/${file.filename}`;
+    const result =
+      await this.cloudinaryService.uploadImage(
+        file,
+        'farmpilot/uploads',
+      );
 
     return {
       message:
         'Image uploaded successfully',
-      filename: file.filename,
-      imageUrl,
+      filename: result.public_id,
+      imageUrl: result.secure_url,
+      publicId: result.public_id,
     };
   }
-} 
+}

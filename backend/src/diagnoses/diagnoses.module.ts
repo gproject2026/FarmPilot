@@ -1,9 +1,19 @@
 import { Module } from '@nestjs/common';
-import { DiagnosesService } from './diagnoses.service';
+
+import { AiModule } from '../ai/ai.module';
+
 import { DiagnosesController } from './diagnoses.controller';
+import { DiagnosesService } from './diagnoses.service';
 
 @Module({
-  controllers: [DiagnosesController],
-  providers: [DiagnosesService],
+  imports: [
+    AiModule,
+  ],
+  controllers: [
+    DiagnosesController,
+  ],
+  providers: [
+    DiagnosesService,
+  ],
 })
 export class DiagnosesModule {}
