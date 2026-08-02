@@ -18,6 +18,7 @@ import { RemindersModule } from './reminders/reminders.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AiModule } from './ai/ai.module';
 
 
 @Module({
@@ -40,6 +41,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     NotificationsModule,
     CategoriesModule,
     DashboardModule,
+     AiModule,
    
   ],
   controllers: [AppController],

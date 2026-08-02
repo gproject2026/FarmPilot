@@ -2,10 +2,15 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../services/ai_service.dart';
 import '../services/product_service.dart';
 
 class ProductProvider extends ChangeNotifier {
-  final ProductService productService = ProductService();
+  final ProductService productService =
+      ProductService();
+
+  final AiService aiService =
+      AiService();
 
   bool isLoading = false;
 
@@ -16,7 +21,8 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      products = await productService.getAllProducts();
+      products =
+          await productService.getAllProducts();
     } finally {
       isLoading = false;
       notifyListeners();
@@ -28,7 +34,32 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      products = await productService.getMyProducts();
+      products =
+          await productService.getMyProducts();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>>
+      generateMarketingContent({
+    required String productName,
+    required String productDetails,
+    String? productId,
+    String? targetAudience,
+  }) async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      return await aiService
+          .generateMarketingContent(
+        productName: productName,
+        productDetails: productDetails,
+        productId: productId,
+        targetAudience: targetAudience,
+      );
     } finally {
       isLoading = false;
       notifyListeners();
@@ -43,7 +74,9 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final imageUrl = await productService.uploadProductImage(
+      final imageUrl =
+          await productService
+              .uploadProductImage(
         imageBytes: imageBytes,
         fileName: fileName,
       );
@@ -78,7 +111,8 @@ class ProductProvider extends ChangeNotifier {
         imageUrl: imageUrl,
       );
 
-      products = await productService.getMyProducts();
+      products =
+          await productService.getMyProducts();
     } finally {
       isLoading = false;
       notifyListeners();
@@ -110,19 +144,24 @@ class ProductProvider extends ChangeNotifier {
         imageUrl: imageUrl,
       );
 
-      products = await productService.getMyProducts();
+      products =
+          await productService.getMyProducts();
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> deleteProduct(String productId) async {
+  Future<void> deleteProduct(
+    String productId,
+  ) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      await productService.deleteProduct(productId);
+      await productService.deleteProduct(
+        productId,
+      );
 
       products.removeWhere(
         (product) =>

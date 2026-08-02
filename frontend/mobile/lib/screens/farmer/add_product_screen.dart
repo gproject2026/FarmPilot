@@ -169,6 +169,285 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     super.dispose();
   }
+  Future<void> _generateMarketingContent() async {
+  final productName =
+      nameController.text.trim();
+
+  final productDetails =
+      descriptionController.text.trim();
+
+  if (productName.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Please enter the product name first',
+        ),
+      ),
+    );
+
+    return;
+  }
+
+  
+
+  final productProvider =
+      Provider.of<ProductProvider>(
+    context,
+    listen: false,
+  );
+
+  try {
+    final result =
+    await productProvider.generateMarketingContent(
+  productName: productName,
+  productDetails: productDetails.isEmpty
+      ? 'Fresh farm product'
+      : productDetails,
+  productId: widget.isEditing
+      ? widget.product!['id']?.toString()
+      : null,
+);
+
+    if (!mounted) {
+      return;
+    }
+
+    await _showMarketingResult(
+      result,
+    );
+  } catch (error) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          error
+              .toString()
+              .replaceFirst(
+                'Exception: ',
+                '',
+              ),
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
+Future<void> _showMarketingResult(
+  Map<String, dynamic> result,
+) async {
+  final title =
+      result['title']?.toString() ?? '';
+
+  final description =
+      result['description']?.toString() ?? '';
+
+  final keywords =
+      result['keywords'] is List
+          ? List<dynamic>.from(
+              result['keywords'],
+            ).map((item) {
+              return item.toString();
+            }).toList()
+          : <String>[];
+
+  final suggestions =
+      result['suggestions'] is List
+          ? List<dynamic>.from(
+              result['suggestions'],
+            ).map((item) {
+              return item.toString();
+            }).toList()
+          : <String>[];
+
+  final shouldUse =
+      await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: const Row(
+          children: [
+            Icon(
+              Icons.auto_awesome,
+              color: Colors.green,
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: Text(
+                'Marketing Content',
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 550,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Suggested Title',
+                  style: TextStyle(
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                SelectableText(
+                  title,
+                ),
+                const SizedBox(
+                  height: 18,
+                ),
+                const Text(
+                  'Suggested Description',
+                  style: TextStyle(
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                SelectableText(
+                  description,
+                ),
+                if (keywords.isNotEmpty) ...[
+                  const SizedBox(
+                    height: 18,
+                  ),
+                  const Text(
+                    'Keywords',
+                    style: TextStyle(
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: keywords.map(
+                      (keyword) {
+                        return Chip(
+                          label: Text(
+                            keyword,
+                          ),
+                        );
+                      },
+                    ).toList(),
+                  ),
+                ],
+                if (suggestions.isNotEmpty) ...[
+                  const SizedBox(
+                    height: 18,
+                  ),
+                  const Text(
+                    'Marketing Suggestions',
+                    style: TextStyle(
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  ...suggestions.map(
+                    (suggestion) {
+                      return Padding(
+                        padding:
+                            const EdgeInsets.only(
+                          bottom: 8,
+                        ),
+                        child: Row(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.check_circle_outline,
+                              size: 18,
+                              color: Colors.green,
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            Expanded(
+                              child: Text(
+                                suggestion,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(
+                dialogContext,
+                false,
+              );
+            },
+            child: const Text(
+              'Close',
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: description.isEmpty
+                ? null
+                : () {
+                    Navigator.pop(
+                      dialogContext,
+                      true,
+                    );
+                  },
+            icon: const Icon(
+              Icons.check,
+            ),
+            label: const Text(
+              'Use Content',
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (shouldUse != true || !mounted) {
+    return;
+  }
+
+ setState(() {
+  if (description.isNotEmpty) {
+    descriptionController.text =
+        description;
+  }
+});
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        'Marketing content added to the form',
+      ),
+      backgroundColor: Colors.green,
+    ),
+  );
+}
 
   Future<void> _saveProduct() async {
     final productProvider = Provider.of<ProductProvider>(
@@ -353,6 +632,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
+            const SizedBox(height: 12),
+
+SizedBox(
+  width: double.infinity,
+  child: OutlinedButton.icon(
+    onPressed: productProvider.isLoading
+        ? null
+        : _generateMarketingContent,
+    icon: const Icon(
+      Icons.auto_awesome,
+    ),
+    label: const Text(
+      'Generate Marketing Content',
+    ),
+  ),
+),
             const SizedBox(height: 16),
             TextField(
               controller: descriptionController,
