@@ -1,15 +1,44 @@
-import { Injectable } from '@nestjs/common';
-import { GoogleGenAI } from '@google/genai';
+import {
+  BadGatewayException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import {
+  GoogleGenAI,
+  Type,
+} from '@google/genai';
+
+export interface PlantDiagnosisResult {
+  isPlant: boolean;
+  isImageClear: boolean;
+  isHealthy: boolean;
+  plantName: string;
+  diseaseName: string;
+  confidence: number;
+  severity: string;
+  visibleSymptoms: string[];
+  description: string;
+  causes: string;
+  treatment: string;
+  prevention: string;
+  needsExpertReview: boolean;
+}
 
 @Injectable()
 export class GeminiService {
   private readonly ai: GoogleGenAI;
 
+  private readonly modelName =
+    'gemini-3.6-flash';
+
   constructor() {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey =
+      process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not defined');
+      throw new Error(
+        'GEMINI_API_KEY is not defined',
+      );
     }
 
     this.ai = new GoogleGenAI({
@@ -17,12 +46,230 @@ export class GeminiService {
     });
   }
 
-  async generateText(prompt: string): Promise<string> {
-    const response = await this.ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
+  async generateText(
+    prompt: string,
+  ): Promise<string> {
+    const response =
+      await this.ai.models.generateContent({
+        model: this.modelName,
+        contents: prompt,
+      });
 
     return response.text ?? '';
+  }
+
+  async analyzePlantImage(params: {
+    imageUrl: string;
+    plantName?: string;
+    symptoms?: string;
+  }): Promise<PlantDiagnosisResult> {
+    const {
+      imageUrl,
+      plantName,
+      symptoms,
+    } = params;
+
+    let imageResponse: Response;
+
+    try {
+      imageResponse = await fetch(
+        imageUrl,
+      );
+    } catch {
+      throw new BadGatewayException(
+        'Failed to download the plant image',
+      );
+    }
+
+    if (!imageResponse.ok) {
+      throw new BadGatewayException(
+        'Failed to download the plant image',
+      );
+    }
+
+    const contentType =
+      imageResponse.headers.get(
+        'content-type',
+      ) ?? 'image/jpeg';
+
+    if (
+      !contentType.startsWith('image/')
+    ) {
+      throw new BadGatewayException(
+        'The provided URL does not contain a valid image',
+      );
+    }
+
+    const imageBuffer = Buffer.from(
+      await imageResponse.arrayBuffer(),
+    );
+
+    const imageBase64 =
+      imageBuffer.toString('base64');
+
+    const prompt = [
+      'Analyze the uploaded image as a plant health specialist.',
+      'Determine whether the image contains a plant.',
+      'Determine whether the image is clear enough for a preliminary visual assessment.',
+      'If the plant appears healthy, do not invent a disease.',
+      'If the image does not contain a plant, return isPlant as false.',
+      'If the image is unclear, return isImageClear as false.',
+      'If a disease is possible, provide only a preliminary visual assessment.',
+      'Do not claim laboratory certainty.',
+      `Provided plant name: ${
+        plantName?.trim() ||
+        'Not provided'
+      }`,
+      `Farmer reported symptoms: ${
+        symptoms?.trim() ||
+        'Not provided'
+      }`,
+      'The confidence value must be between 0 and 100.',
+      'Severity must be one of: none, low, moderate, high, unknown.',
+      'Set needsExpertReview to true when confidence is low, the image is unclear, the symptoms appear severe, or chemical treatment may be required.',
+      'Treatment must prioritize safe agricultural practices.',
+      'Recommend consultation with an agricultural specialist before using hazardous chemicals.',
+      'Return concise but useful information.',
+    ].join('\n');
+
+    let responseText: string | undefined;
+
+    try {
+      const response =
+        await this.ai.models.generateContent({
+          model: this.modelName,
+          contents: [
+            {
+              text: prompt,
+            },
+            {
+              inlineData: {
+                mimeType: contentType,
+                data: imageBase64,
+              },
+            },
+          ],
+          config: {
+            responseMimeType:
+              'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                isPlant: {
+                  type: Type.BOOLEAN,
+                },
+                isImageClear: {
+                  type: Type.BOOLEAN,
+                },
+                isHealthy: {
+                  type: Type.BOOLEAN,
+                },
+                plantName: {
+                  type: Type.STRING,
+                },
+                diseaseName: {
+                  type: Type.STRING,
+                },
+                confidence: {
+                  type: Type.NUMBER,
+                },
+                severity: {
+                  type: Type.STRING,
+                  enum: [
+                    'none',
+                    'low',
+                    'moderate',
+                    'high',
+                    'unknown',
+                  ],
+                },
+                visibleSymptoms: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.STRING,
+                  },
+                },
+                description: {
+                  type: Type.STRING,
+                },
+                causes: {
+                  type: Type.STRING,
+                },
+                treatment: {
+                  type: Type.STRING,
+                },
+                prevention: {
+                  type: Type.STRING,
+                },
+                needsExpertReview: {
+                  type: Type.BOOLEAN,
+                },
+              },
+              required: [
+                'isPlant',
+                'isImageClear',
+                'isHealthy',
+                'plantName',
+                'diseaseName',
+                'confidence',
+                'severity',
+                'visibleSymptoms',
+                'description',
+                'causes',
+                'treatment',
+                'prevention',
+                'needsExpertReview',
+              ],
+            },
+          },
+        });
+
+      responseText =
+        response.text;
+    } catch (error) {
+      console.error(
+        'Gemini plant analysis error:',
+        error,
+      );
+
+      throw new BadGatewayException(
+        'Gemini could not analyze the plant image',
+      );
+    }
+
+    if (!responseText) {
+      throw new InternalServerErrorException(
+        'Gemini did not return a diagnosis result',
+      );
+    }
+
+    try {
+      const result = JSON.parse(
+        responseText,
+      ) as PlantDiagnosisResult;
+
+      result.confidence = Math.max(
+        0,
+        Math.min(
+          100,
+          Number(
+            result.confidence,
+          ) || 0,
+        ),
+      );
+
+      result.visibleSymptoms =
+        Array.isArray(
+          result.visibleSymptoms,
+        )
+          ? result.visibleSymptoms
+          : [];
+
+      return result;
+    } catch {
+      throw new InternalServerErrorException(
+        'Gemini returned an invalid diagnosis response',
+      );
+    }
   }
 }

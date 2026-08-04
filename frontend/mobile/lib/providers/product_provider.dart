@@ -3,11 +3,15 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../services/ai_service.dart';
+import '../services/image_upload_service.dart';
 import '../services/product_service.dart';
 
 class ProductProvider extends ChangeNotifier {
   final ProductService productService =
       ProductService();
+
+  final ImageUploadService imageUploadService =
+      ImageUploadService();
 
   final AiService aiService =
       AiService();
@@ -53,8 +57,7 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      return await aiService
-          .generateMarketingContent(
+      return await aiService.generateMarketingContent(
         productName: productName,
         productDetails: productDetails,
         productId: productId,
@@ -74,14 +77,10 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final imageUrl =
-          await productService
-              .uploadProductImage(
+      return await imageUploadService.uploadImage(
         imageBytes: imageBytes,
         fileName: fileName,
       );
-
-      return imageUrl;
     } finally {
       isLoading = false;
       notifyListeners();
