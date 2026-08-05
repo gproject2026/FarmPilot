@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/diagnosis_provider.dart';
 import '../../services/image_upload_service.dart';
+import 'diagnosis_result_screen.dart';
 
 class DiagnosePlantScreen extends StatefulWidget {
   const DiagnosePlantScreen({
@@ -172,13 +173,22 @@ class _DiagnosePlantScreenState
       listen: false,
     );
 
-    final selectedCrop =
-        cropProvider.crops.firstWhere(
-      (crop) =>
+    Map<String, dynamic>?
+        selectedCrop;
+
+    for (final crop
+        in cropProvider.crops) {
+      if (crop is Map &&
           crop['id']?.toString() ==
-          _selectedCropId,
-      orElse: () => null,
-    );
+              _selectedCropId) {
+        selectedCrop =
+            Map<String, dynamic>.from(
+          crop,
+        );
+
+        break;
+      }
+    }
 
     if (selectedCrop == null) {
       _showMessage(
@@ -202,7 +212,8 @@ class _DiagnosePlantScreenState
 
     try {
       final imageUrl =
-          await _imageUploadService.uploadImage(
+          await _imageUploadService
+              .uploadImage(
         imageBytes:
             _selectedImageBytes!,
         fileName:
@@ -210,7 +221,8 @@ class _DiagnosePlantScreenState
       );
 
       final result =
-          await diagnosisProvider.analyzePlant(
+          await diagnosisProvider
+              .analyzePlant(
         imageUrl: imageUrl,
         cropId: _selectedCropId,
         plantName: plantName,
@@ -227,8 +239,16 @@ class _DiagnosePlantScreenState
         return;
       }
 
-      await _showDiagnosisResult(
-        result,
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              DiagnosisResultScreen(
+            result: result,
+            imageBytes:
+                _selectedImageBytes!,
+          ),
+        ),
       );
     } catch (error) {
       if (!mounted) {
@@ -251,190 +271,6 @@ class _DiagnosePlantScreenState
         });
       }
     }
-  }
-
-  Future<void> _showDiagnosisResult(
-    Map<String, dynamic> result,
-  ) async {
-    final analysis =
-        result['analysis'] is Map
-            ? Map<String, dynamic>.from(
-                result['analysis'],
-              )
-            : <String, dynamic>{};
-
-    final diseaseName =
-        analysis['diseaseName']
-                ?.toString() ??
-            'Unknown diagnosis';
-
-    final plantName =
-        analysis['plantName']
-                ?.toString() ??
-            'Unknown plant';
-
-    final confidence =
-        analysis['confidence']
-                ?.toString() ??
-            '0';
-
-    final isHealthy =
-        analysis['isHealthy'] == true;
-
-    final treatment =
-        analysis['treatment']
-                ?.toString() ??
-            '';
-
-    final prevention =
-        analysis['prevention']
-                ?.toString() ??
-            '';
-
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                isHealthy
-                    ? Icons
-                        .check_circle_outline
-                    : Icons
-                        .health_and_safety_outlined,
-                color: isHealthy
-                    ? Colors.green
-                    : Colors.orange,
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              const Expanded(
-                child: Text(
-                  'Diagnosis Result',
-                ),
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: 550,
-            child:
-                SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
-                children: [
-                  _resultItem(
-                    'Plant',
-                    plantName,
-                  ),
-                  _resultItem(
-                    'Diagnosis',
-                    diseaseName,
-                  ),
-                  _resultItem(
-                    'Confidence',
-                    '$confidence%',
-                  ),
-                  if (treatment.isNotEmpty)
-                    _resultItem(
-                      'Treatment',
-                      treatment,
-                    ),
-                  if (prevention.isNotEmpty)
-                    _resultItem(
-                      'Prevention',
-                      prevention,
-                    ),
-                  const SizedBox(
-                    height: 12,
-                  ),
-                  Container(
-                    padding:
-                        const EdgeInsets
-                            .all(
-                      12,
-                    ),
-                    decoration:
-                        BoxDecoration(
-                      color: Colors
-                          .amber
-                          .shade50,
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        10,
-                      ),
-                      border:
-                          Border.all(
-                        color: Colors
-                            .amber
-                            .shade300,
-                      ),
-                    ),
-                    child: const Text(
-                      'This is a preliminary AI-assisted assessment and not a laboratory diagnosis.',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                );
-              },
-              child: const Text(
-                'Close',
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _resultItem(
-    String title,
-    String value,
-  ) {
-    return Padding(
-      padding:
-          const EdgeInsets.only(
-        bottom: 14,
-      ),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style:
-                const TextStyle(
-              fontWeight:
-                  FontWeight.bold,
-              fontSize: 15,
-            ),
-          ),
-          const SizedBox(
-            height: 4,
-          ),
-          Text(
-            value,
-            style:
-                const TextStyle(
-              fontSize: 15,
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showMessage(
@@ -461,6 +297,7 @@ class _DiagnosePlantScreenState
   @override
   void dispose() {
     _symptomsController.dispose();
+
     super.dispose();
   }
 
