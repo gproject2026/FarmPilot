@@ -31,4 +31,22 @@ class DiagnosisService {
       jsonEncode(response.data),
     );
   }
+
+  Future<List<dynamic>> getMyDiagnoses() async {
+    final response = await _dio.get(
+      '/diagnoses/my',
+    );
+
+    if (response.data is List) {
+      return List<dynamic>.from(
+        response.data,
+      );
+    }
+
+    return List<dynamic>.from(
+      jsonDecode(
+        jsonEncode(response.data),
+      ),
+    );
+  }
 }

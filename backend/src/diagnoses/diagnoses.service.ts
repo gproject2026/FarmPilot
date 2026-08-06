@@ -135,6 +135,22 @@ export class DiagnosesService {
     });
   }
 
+  findMyDiagnoses(
+    farmerId: string,
+  ) {
+    return this.prisma.diagnosis.findMany({
+      where: {
+        farmerId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        crop: true,
+      },
+    });
+  }
+
   async findOne(id: string) {
     const diagnosis =
       await this.prisma.diagnosis.findUnique({

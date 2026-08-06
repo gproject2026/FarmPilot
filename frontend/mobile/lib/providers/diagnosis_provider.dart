@@ -10,6 +10,8 @@ class DiagnosisProvider extends ChangeNotifier {
 
   Map<String, dynamic>? diagnosisResult;
 
+  List<dynamic> diagnoses = [];
+
   String? errorMessage;
 
   Future<Map<String, dynamic>> analyzePlant({
@@ -44,6 +46,27 @@ class DiagnosisProvider extends ChangeNotifier {
           );
 
       rethrow;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadMyDiagnoses() async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      diagnoses =
+          await diagnosisService.getMyDiagnoses();
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
     } finally {
       isLoading = false;
       notifyListeners();

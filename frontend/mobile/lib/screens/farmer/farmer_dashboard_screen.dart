@@ -6,6 +6,7 @@ import '../../providers/dashboard_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../notifications_screen.dart';
 import 'diagnose_plant_screen.dart';
+import 'diagnosis_history_screen.dart';
 import 'my_crops_screen.dart';
 import 'my_products_screen.dart';
 import 'profile_screen.dart';
@@ -123,8 +124,7 @@ class _FarmerDashboardScreenState
                   Clip.none,
               children: [
                 const Icon(
-                  Icons
-                      .notifications_outlined,
+                  Icons.notifications_outlined,
                 ),
                 if (notificationProvider
                         .unreadCount >
@@ -139,8 +139,7 @@ class _FarmerDashboardScreenState
                         minHeight: 18,
                       ),
                       padding:
-                          const EdgeInsets
-                              .symmetric(
+                          const EdgeInsets.symmetric(
                         horizontal: 5,
                       ),
                       alignment:
@@ -149,14 +148,11 @@ class _FarmerDashboardScreenState
                           BoxDecoration(
                         color: Colors.red,
                         borderRadius:
-                            BorderRadius
-                                .circular(
+                            BorderRadius.circular(
                           10,
                         ),
-                        border:
-                            Border.all(
-                          color:
-                              Colors.white,
+                        border: Border.all(
+                          color: Colors.white,
                           width: 1.5,
                         ),
                       ),
@@ -170,12 +166,10 @@ class _FarmerDashboardScreenState
                                 .toString(),
                         style:
                             const TextStyle(
-                          color:
-                              Colors.white,
+                          color: Colors.white,
                           fontSize: 10,
                           fontWeight:
-                              FontWeight
-                                  .bold,
+                              FontWeight.bold,
                         ),
                       ),
                     ),
@@ -227,20 +221,17 @@ class _FarmerDashboardScreenState
                     physics:
                         const AlwaysScrollableScrollPhysics(),
                     padding:
-                        const EdgeInsets
-                            .all(
+                        const EdgeInsets.all(
                       20,
                     ),
                     child: Column(
                       children: [
                         const Text(
                           'Welcome Farmer 🌱',
-                          style:
-                              TextStyle(
+                          style: TextStyle(
                             fontSize: 28,
                             fontWeight:
-                                FontWeight
-                                    .bold,
+                                FontWeight.bold,
                           ),
                         ),
                         const SizedBox(
@@ -253,8 +244,7 @@ class _FarmerDashboardScreenState
                               'My Products',
                           onPressed:
                               () async {
-                            await Navigator
-                                .push(
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) =>
@@ -274,14 +264,13 @@ class _FarmerDashboardScreenState
                           height: 14,
                         ),
                         _navigationButton(
-                          icon: Icons
-                              .eco_outlined,
+                          icon:
+                              Icons.eco_outlined,
                           label:
                               'My Crops',
                           onPressed:
                               () async {
-                            await Navigator
-                                .push(
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) =>
@@ -305,14 +294,46 @@ class _FarmerDashboardScreenState
                               .local_florist_outlined,
                           label:
                               'Plant Diagnosis',
-                          onPressed: () {
-                            Navigator.push(
+                          onPressed: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) =>
                                     const DiagnosePlantScreen(),
                               ),
                             );
+
+                            if (!mounted) {
+                              return;
+                            }
+
+                            await dashboardProvider
+                                .loadFarmerDashboard();
+                          },
+                        ),
+                        const SizedBox(
+                          height: 14,
+                        ),
+                        _navigationButton(
+                          icon:
+                              Icons.history,
+                          label:
+                              'Diagnosis History',
+                          onPressed: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const DiagnosisHistoryScreen(),
+                              ),
+                            );
+
+                            if (!mounted) {
+                              return;
+                            }
+
+                            await dashboardProvider
+                                .loadFarmerDashboard();
                           },
                         ),
                         const SizedBox(
@@ -325,8 +346,7 @@ class _FarmerDashboardScreenState
                               'Reminders',
                           onPressed:
                               () async {
-                            await Navigator
-                                .push(
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) =>
@@ -385,8 +405,8 @@ class _FarmerDashboardScreenState
                                   .dashboardData![
                                       'productsCount']
                                   .toString(),
-                          icon: Icons
-                              .inventory_2,
+                          icon:
+                              Icons.inventory_2,
                         ),
                         dashboardCard(
                           title:
@@ -429,8 +449,8 @@ class _FarmerDashboardScreenState
                                   .dashboardData![
                                       'totalSales']
                                   .toString(),
-                          icon: Icons
-                              .payments_outlined,
+                          icon:
+                              Icons.payments_outlined,
                         ),
                       ],
                     ),

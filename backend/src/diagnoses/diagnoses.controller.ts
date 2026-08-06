@@ -67,6 +67,18 @@ export class DiagnosesController {
     return this.diagnosesService.findAll();
   }
 
+  @Get('my')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.FARMER)
+  findMyDiagnoses(
+    @CurrentUser()
+    user: AuthenticatedUser,
+  ) {
+    return this.diagnosesService.findMyDiagnoses(
+      user.id,
+    );
+  }
+
   @Get(':id')
   findOne(
     @Param('id')
