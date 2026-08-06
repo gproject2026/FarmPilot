@@ -8,6 +8,10 @@ class DiagnosisProvider extends ChangeNotifier {
 
   bool isLoading = false;
 
+  bool isDeleting = false;
+
+  String? deletingDiagnosisId;
+
   Map<String, dynamic>? diagnosisResult;
 
   List<dynamic> diagnoses = [];
@@ -34,7 +38,9 @@ class DiagnosisProvider extends ChangeNotifier {
       );
 
       diagnosisResult =
-          Map<String, dynamic>.from(result);
+          Map<String, dynamic>.from(
+        result,
+      );
 
       return diagnosisResult!;
     } catch (error) {
@@ -59,7 +65,8 @@ class DiagnosisProvider extends ChangeNotifier {
 
     try {
       diagnoses =
-          await diagnosisService.getMyDiagnoses();
+          await diagnosisService
+              .getMyDiagnoses();
     } catch (error) {
       errorMessage = error
           .toString()
@@ -69,6 +76,49 @@ class DiagnosisProvider extends ChangeNotifier {
           );
     } finally {
       isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> deleteDiagnosis(
+    String diagnosisId,
+  ) async {
+    isDeleting = true;
+    deletingDiagnosisId = diagnosisId;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await diagnosisService
+          .deleteDiagnosis(
+        diagnosisId,
+      );
+
+      diagnoses.removeWhere(
+        (diagnosis) {
+          if (diagnosis is! Map) {
+            return false;
+          }
+
+          return diagnosis['id']
+                  ?.toString() ==
+              diagnosisId;
+        },
+      );
+
+      return true;
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      return false;
+    } finally {
+      isDeleting = false;
+      deletingDiagnosisId = null;
       notifyListeners();
     }
   }
