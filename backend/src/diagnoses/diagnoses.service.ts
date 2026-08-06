@@ -8,6 +8,7 @@ import {
   GeminiService,
   PlantDiagnosisResult,
 } from '../ai/gemini.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 import { AnalyzeDiagnosisDto } from './dto/analyze-diagnosis.dto';
@@ -19,6 +20,7 @@ export class DiagnosesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly geminiService: GeminiService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async analyze(
@@ -51,6 +53,11 @@ export class DiagnosesService {
       plantName?.trim() ||
       'Unknown plant';
 
+    const diseaseName =
+      this.resolveDiseaseName(
+        analysis,
+      );
+
     const diagnosis =
       await this.prisma.diagnosis.create({
         data: {
@@ -58,8 +65,7 @@ export class DiagnosesService {
           cropId,
           plantName: detectedPlantName,
           imageUrl,
-          diseaseName:
-            this.resolveDiseaseName(analysis),
+          diseaseName,
           confidence: analysis.confidence,
           description: analysis.description,
           causes: analysis.causes,
@@ -71,24 +77,37 @@ export class DiagnosesService {
         },
       });
 
+    await this.createDiagnosisNotification({
+      farmerId,
+      plantName: detectedPlantName,
+      diseaseName,
+      analysis,
+    });
+
     return {
       message:
         'Plant image analyzed successfully',
       diagnosis,
       analysis: {
         isPlant: analysis.isPlant,
-        isImageClear: analysis.isImageClear,
+        isImageClear:
+          analysis.isImageClear,
         isHealthy: analysis.isHealthy,
         plantName: detectedPlantName,
-        diseaseName: diagnosis.diseaseName,
-        confidence: analysis.confidence,
+        diseaseName:
+          diagnosis.diseaseName,
+        confidence:
+          analysis.confidence,
         severity: analysis.severity,
         visibleSymptoms:
           analysis.visibleSymptoms,
-        description: analysis.description,
+        description:
+          analysis.description,
         causes: analysis.causes,
-        treatment: analysis.treatment,
-        prevention: analysis.prevention,
+        treatment:
+          analysis.treatment,
+        prevention:
+          analysis.prevention,
         needsExpertReview:
           analysis.needsExpertReview,
       },
@@ -205,7 +224,10 @@ export class DiagnosesService {
       );
     }
 
-    if (diagnosis.farmerId !== farmerId) {
+    if (
+      diagnosis.farmerId !==
+      farmerId
+    ) {
       throw new ForbiddenException(
         'You are not allowed to update this diagnosis',
       );
@@ -243,7 +265,10 @@ export class DiagnosesService {
       );
     }
 
-    if (diagnosis.farmerId !== farmerId) {
+    if (
+      diagnosis.farmerId !==
+      farmerId
+    ) {
       throw new ForbiddenException(
         'You are not allowed to delete this diagnosis',
       );
@@ -254,6 +279,140 @@ export class DiagnosesService {
         id,
       },
     });
+  }
+
+  private async createDiagnosisNotification(
+    params: {
+      farmerId: string;
+      plantName: string;
+      diseaseName: string;
+      analysis: PlantDiagnosisResult;
+    },
+  ) {
+    const {
+      farmerId,
+      plantName,
+      diseaseName,
+      analysis,
+    } = params;
+
+    const notification =
+      this.buildNotificationData({
+        plantName,
+        diseaseName,
+        analysis,
+      });
+
+    try {
+      await this.notificationsService.create({
+        userId: farmerId,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+      });
+    } catch (error) {
+      console.error(
+        'Failed to create diagnosis notification:',
+        error,
+      );
+    }
+  }
+
+  private buildNotificationData(
+    params: {
+      plantName: string;
+      diseaseName: string;
+      analysis: PlantDiagnosisResult;
+    },
+  ) {
+    const {
+      plantName,
+      diseaseName,
+      analysis,
+    } = params;
+
+    if (!analysis.isPlant) {
+      return {
+        title:
+          'No Plant Detected',
+        message:
+          'The uploaded image does not appear to contain a plant. Please upload a clear plant image and try again.',
+        type:
+          'DIAGNOSIS_WARNING',
+      };
+    }
+
+    if (!analysis.isImageClear) {
+      return {
+        title:
+          'Image Needs Retake',
+        message:
+          `The image of ${plantName} was not clear enough for a reliable assessment. Please take a clearer, well-lit photo.`,
+        type:
+          'DIAGNOSIS_WARNING',
+      };
+    }
+
+    if (analysis.isHealthy) {
+      return {
+        title:
+          'Plant Appears Healthy',
+        message:
+          `${plantName} appears healthy. No clear disease was detected. Continue regular monitoring and preventive care.`,
+        type:
+          'DIAGNOSIS_HEALTHY',
+      };
+    }
+
+    if (
+      analysis.severity ===
+      'high'
+    ) {
+      return {
+        title:
+          'High-Risk Plant Diagnosis',
+        message:
+          `${diseaseName} was detected in ${plantName} with ${analysis.confidence}% confidence. Immediate action and consultation with an agricultural specialist are recommended.`,
+        type:
+          'DIAGNOSIS_HIGH_RISK',
+      };
+    }
+
+    if (
+      analysis.severity ===
+      'moderate'
+    ) {
+      return {
+        title:
+          'Plant Disease Detected',
+        message:
+          `${diseaseName} was detected in ${plantName} with ${analysis.confidence}% confidence. Follow the recommended treatment and monitor the plant closely.`,
+        type:
+          'DIAGNOSIS_MODERATE_RISK',
+      };
+    }
+
+    if (
+      analysis.needsExpertReview
+    ) {
+      return {
+        title:
+          'Expert Review Recommended',
+        message:
+          `${diseaseName} may be affecting ${plantName}. An agricultural specialist should review this case before chemical treatment is applied.`,
+        type:
+          'DIAGNOSIS_EXPERT_REVIEW',
+      };
+    }
+
+    return {
+      title:
+        'Plant Diagnosis Completed',
+      message:
+        `${diseaseName} was detected in ${plantName} with ${analysis.confidence}% confidence. Review the diagnosis details for treatment and prevention guidance.`,
+      type:
+        'DIAGNOSIS_RESULT',
+    };
   }
 
   private async validateCropOwnership(
@@ -277,7 +436,10 @@ export class DiagnosesService {
       );
     }
 
-    if (crop.farmerId !== farmerId) {
+    if (
+      crop.farmerId !==
+      farmerId
+    ) {
       throw new ForbiddenException(
         'You are not allowed to diagnose this crop',
       );
