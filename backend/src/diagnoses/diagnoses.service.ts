@@ -46,11 +46,17 @@ export class DiagnosesService {
         symptoms,
       });
 
+    const detectedPlantName =
+      analysis.plantName.trim() ||
+      plantName?.trim() ||
+      'Unknown plant';
+
     const diagnosis =
       await this.prisma.diagnosis.create({
         data: {
           farmerId,
           cropId,
+          plantName: detectedPlantName,
           imageUrl,
           diseaseName:
             this.resolveDiseaseName(analysis),
@@ -71,18 +77,15 @@ export class DiagnosesService {
       diagnosis,
       analysis: {
         isPlant: analysis.isPlant,
-        isImageClear:
-          analysis.isImageClear,
+        isImageClear: analysis.isImageClear,
         isHealthy: analysis.isHealthy,
-        plantName: analysis.plantName,
-        diseaseName:
-          diagnosis.diseaseName,
+        plantName: detectedPlantName,
+        diseaseName: diagnosis.diseaseName,
         confidence: analysis.confidence,
         severity: analysis.severity,
         visibleSymptoms:
           analysis.visibleSymptoms,
-        description:
-          analysis.description,
+        description: analysis.description,
         causes: analysis.causes,
         treatment: analysis.treatment,
         prevention: analysis.prevention,
@@ -151,7 +154,9 @@ export class DiagnosesService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(
+    id: string,
+  ) {
     const diagnosis =
       await this.prisma.diagnosis.findUnique({
         where: {

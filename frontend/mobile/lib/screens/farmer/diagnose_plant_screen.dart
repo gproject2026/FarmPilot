@@ -22,6 +22,9 @@ class DiagnosePlantScreen extends StatefulWidget {
 
 class _DiagnosePlantScreenState
     extends State<DiagnosePlantScreen> {
+  static const String _aiDetectValue =
+      '__AI_DETECT__';
+
   final ImagePicker _imagePicker =
       ImagePicker();
 
@@ -35,7 +38,9 @@ class _DiagnosePlantScreenState
 
   Uint8List? _selectedImageBytes;
   String? _selectedImageName;
-  String? _selectedCropId;
+
+  String _selectedCropValue =
+      _aiDetectValue;
 
   bool _isUploading = false;
 
@@ -59,7 +64,8 @@ class _DiagnosePlantScreenState
 
     final token = authProvider.token;
 
-    if (token == null || token.isEmpty) {
+    if (token == null ||
+        token.isEmpty) {
       _showMessage(
         'Authentication token was not found',
         isError: true,
@@ -72,25 +78,6 @@ class _DiagnosePlantScreenState
       context,
       listen: false,
     ).getMyCrops(token);
-
-    if (!mounted) {
-      return;
-    }
-
-    final cropProvider =
-        Provider.of<CropProvider>(
-      context,
-      listen: false,
-    );
-
-    if (cropProvider.crops.isNotEmpty &&
-        _selectedCropId == null) {
-      setState(() {
-        _selectedCropId =
-            cropProvider.crops.first['id']
-                ?.toString();
-      });
-    }
   }
 
   Future<void> _pickImage(
@@ -152,59 +139,17 @@ class _DiagnosePlantScreenState
       return;
     }
 
-    if (_selectedCropId == null) {
-      _showMessage(
-        'Please select a crop',
-        isError: true,
-      );
-
-      return;
-    }
-
-    final cropProvider =
-        Provider.of<CropProvider>(
-      context,
-      listen: false,
-    );
-
     final diagnosisProvider =
         Provider.of<DiagnosisProvider>(
       context,
       listen: false,
     );
 
-    Map<String, dynamic>?
-        selectedCrop;
-
-    for (final crop
-        in cropProvider.crops) {
-      if (crop is Map &&
-          crop['id']?.toString() ==
-              _selectedCropId) {
-        selectedCrop =
-            Map<String, dynamic>.from(
-          crop,
-        );
-
-        break;
-      }
-    }
-
-    if (selectedCrop == null) {
-      _showMessage(
-        'Selected crop was not found',
-        isError: true,
-      );
-
-      return;
-    }
-
-    final plantName =
-        selectedCrop['cropName']
-                ?.toString() ??
-            selectedCrop['name']
-                ?.toString() ??
-            'Unknown plant';
+    final selectedCropId =
+        _selectedCropValue ==
+                _aiDetectValue
+            ? null
+            : _selectedCropValue;
 
     setState(() {
       _isUploading = true;
@@ -220,19 +165,22 @@ class _DiagnosePlantScreenState
             _selectedImageName!,
       );
 
+      final symptoms =
+          _symptomsController.text
+              .trim();
+
       final result =
           await diagnosisProvider
               .analyzePlant(
         imageUrl: imageUrl,
-        cropId: _selectedCropId,
-        plantName: plantName,
-        symptoms:
-            _symptomsController.text
-                    .trim()
-                    .isEmpty
-                ? null
-                : _symptomsController.text
-                    .trim(),
+        cropId: selectedCropId,
+
+        
+        plantName: null,
+
+        symptoms: symptoms.isEmpty
+            ? null
+            : symptoms,
       );
 
       if (!mounted) {
@@ -367,7 +315,7 @@ class _DiagnosePlantScreenState
               height: 8,
             ),
             const Text(
-              'Capture or select a clear image of the affected plant area.',
+              'Capture or select a clear image. AI will identify the plant automatically.',
               textAlign:
                   TextAlign.center,
               style: TextStyle(
@@ -519,87 +467,79 @@ class _DiagnosePlantScreenState
             const SizedBox(
               height: 24,
             ),
+
             if (cropProvider.isLoading)
               const Center(
                 child:
                     CircularProgressIndicator(),
               )
-            else if (cropProvider
-                .crops.isEmpty)
-              Container(
-                padding:
-                    const EdgeInsets
-                        .all(
-                  16,
-                ),
-                decoration:
-                    BoxDecoration(
-                  color:
-                      Colors.orange
-                          .shade50,
-                  borderRadius:
-                      BorderRadius
-                          .circular(
-                    12,
-                  ),
-                ),
-                child: const Text(
-                  'No crops were found. Add a crop before starting a diagnosis.',
-                  textAlign:
-                      TextAlign.center,
-                ),
-              )
             else
               DropdownButtonFormField<
                   String>(
                 initialValue:
-                    _selectedCropId,
+                    _selectedCropValue,
                 decoration:
                     const InputDecoration(
                   labelText:
-                      'Select Crop',
+                      'Link to Crop (Optional)',
+                  helperText:
+                      'Leave AI detection selected to identify the plant automatically.',
                   prefixIcon: Icon(
                     Icons.eco_outlined,
                   ),
                   border:
                       OutlineInputBorder(),
                 ),
-                items:
-                    cropProvider.crops
-                        .map(
-                  (crop) {
-                    final cropId =
-                        crop['id']
-                            ?.toString();
+                items: [
+                  const DropdownMenuItem<
+                      String>(
+                    value:
+                        _aiDetectValue,
+                    child: Text(
+                      'Let AI detect the plant',
+                    ),
+                  ),
+                  ...cropProvider.crops.map(
+                    (crop) {
+                      final cropId =
+                          crop['id']
+                              ?.toString();
 
-                    final cropName =
-                        crop['cropName']
-                                ?.toString() ??
-                            crop['name']
-                                ?.toString() ??
-                            'Unnamed Crop';
+                      final cropName =
+                          crop['cropName']
+                                  ?.toString() ??
+                              crop['name']
+                                  ?.toString() ??
+                              'Unnamed Crop';
 
-                    return DropdownMenuItem<
-                        String>(
-                      value: cropId,
-                      child: Text(
-                        cropName,
-                      ),
-                    );
-                  },
-                ).toList(),
+                      return DropdownMenuItem<
+                          String>(
+                        value: cropId,
+                        child: Text(
+                          cropName,
+                        ),
+                      );
+                    },
+                  ),
+                ],
                 onChanged:
                     isLoading
                         ? null
                         : (value) {
+                            if (value ==
+                                null) {
+                              return;
+                            }
+
                             setState(
                               () {
-                                _selectedCropId =
+                                _selectedCropValue =
                                     value;
                               },
                             );
                           },
               ),
+
             const SizedBox(
               height: 18,
             ),
@@ -632,10 +572,7 @@ class _DiagnosePlantScreenState
               child:
                   ElevatedButton.icon(
                 onPressed:
-                    isLoading ||
-                            cropProvider
-                                .crops
-                                .isEmpty
+                    isLoading
                         ? null
                         : _analyzePlant,
                 icon: isLoading

@@ -67,6 +67,14 @@ class _DiagnosisHistoryScreenState
   String _getCropName(
     Map<String, dynamic> diagnosis,
   ) {
+    final detectedPlantName =
+        diagnosis['plantName']?.toString();
+
+    if (detectedPlantName != null &&
+        detectedPlantName.trim().isNotEmpty) {
+      return detectedPlantName.trim();
+    }
+
     final crop = diagnosis['crop'];
 
     if (crop is Map) {
