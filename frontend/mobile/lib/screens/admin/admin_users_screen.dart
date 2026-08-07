@@ -16,6 +16,8 @@ class AdminUsersScreen extends StatefulWidget {
 
 class _AdminUsersScreenState
     extends State<AdminUsersScreen> {
+  String? _updatingUserId;
+
   @override
   void initState() {
     super.initState();
@@ -34,23 +36,24 @@ class _AdminUsersScreenState
     ).loadAllUsers();
   }
 
-  Future<void> _changeUserRole({
+  Future<void> _changeUserStatus({
     required UserModel user,
-    required String newRole,
   }) async {
-    if (user.role == newRole) {
-      return;
-    }
+    final newStatus = !user.isActive;
 
     final confirmed =
         await _showConfirmationDialog(
       user: user,
-      newRole: newRole,
+      newStatus: newStatus,
     );
 
     if (!confirmed || !mounted) {
       return;
     }
+
+    setState(() {
+      _updatingUserId = user.id;
+    });
 
     final userProvider =
         Provider.of<UserProvider>(
@@ -59,61 +62,75 @@ class _AdminUsersScreenState
     );
 
     final success =
-        await userProvider.updateUserRole(
+        await userProvider.updateUserStatus(
       userId: user.id,
-      role: newRole,
+      isActive: newStatus,
     );
 
     if (!mounted) {
       return;
     }
 
+    setState(() {
+      _updatingUserId = null;
+    });
+
     if (success) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            '${user.fullName} role changed to $newRole',
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              newStatus
+                  ? '${user.fullName} account has been unblocked'
+                  : '${user.fullName} account has been blocked',
+            ),
+            backgroundColor:
+                newStatus
+                    ? Colors.green
+                    : Colors.orange,
           ),
-          backgroundColor: Colors.green,
-        ),
-      );
+        );
     } else {
       ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            userProvider.errorMessage ??
-                'Failed to update user role',
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              userProvider.errorMessage ??
+                  'Failed to update user status',
+            ),
+            backgroundColor:
+                Colors.red,
           ),
-          backgroundColor: Colors.red,
-        ),
-      );
+        );
     }
   }
 
   Future<bool> _showConfirmationDialog({
     required UserModel user,
-    required String newRole,
+    required bool newStatus,
   }) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Change User Role',
+          title: Text(
+            newStatus
+                ? 'Unblock User'
+                : 'Block User',
           ),
           content: Text(
-            'Are you sure you want to change '
-            '${user.fullName} role from '
-            '${user.role} to $newRole?',
+            newStatus
+                ? 'Are you sure you want to unblock ${user.fullName}? They will be able to log in again.'
+                : 'Are you sure you want to block ${user.fullName}? They will not be able to log in while the account is blocked.',
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(dialogContext).pop(
-                  false,
-                );
+                Navigator.of(
+                  dialogContext,
+                ).pop(false);
               },
               child: const Text(
                 'Cancel',
@@ -121,16 +138,23 @@ class _AdminUsersScreenState
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(dialogContext).pop(
-                  true,
-                );
+                Navigator.of(
+                  dialogContext,
+                ).pop(true);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+              style:
+                  ElevatedButton.styleFrom(
+                backgroundColor:
+                    newStatus
+                        ? Colors.green
+                        : Colors.red,
+                foregroundColor:
+                    Colors.white,
               ),
-              child: const Text(
-                'Confirm',
+              child: Text(
+                newStatus
+                    ? 'Unblock'
+                    : 'Block',
               ),
             ),
           ],
@@ -149,21 +173,25 @@ class _AdminUsersScreenState
     );
 
     return Scaffold(
-      backgroundColor: const Color(
+      backgroundColor:
+          const Color(
         0xFFF5F7F4,
       ),
       appBar: AppBar(
         title: const Text(
           'Manage Users',
         ),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+        backgroundColor:
+            Colors.green,
+        foregroundColor:
+            Colors.white,
         actions: [
           IconButton(
             tooltip: 'Refresh',
-            onPressed: userProvider.isLoading
-                ? null
-                : _loadUsers,
+            onPressed:
+                userProvider.isLoading
+                    ? null
+                    : _loadUsers,
             icon: const Icon(
               Icons.refresh,
             ),
@@ -182,7 +210,8 @@ class _AdminUsersScreenState
     if (userProvider.isLoading &&
         userProvider.users.isEmpty) {
       return const Center(
-        child: CircularProgressIndicator(),
+        child:
+            CircularProgressIndicator(),
       );
     }
 
@@ -193,7 +222,8 @@ class _AdminUsersScreenState
         child: ListView(
           physics:
               const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(
+          padding:
+              const EdgeInsets.all(
             24,
           ),
           children: [
@@ -210,17 +240,21 @@ class _AdminUsersScreenState
             ),
             Text(
               userProvider.errorMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
+              textAlign:
+                  TextAlign.center,
+              style:
+                  const TextStyle(
                 fontSize: 17,
-                fontWeight: FontWeight.w600,
+                fontWeight:
+                    FontWeight.w600,
               ),
             ),
             const SizedBox(
               height: 20,
             ),
             Center(
-              child: ElevatedButton.icon(
+              child:
+                  ElevatedButton.icon(
                 onPressed: _loadUsers,
                 icon: const Icon(
                   Icons.refresh,
@@ -241,7 +275,8 @@ class _AdminUsersScreenState
         child: ListView(
           physics:
               const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(
+          padding:
+              const EdgeInsets.all(
             24,
           ),
           children: const [
@@ -261,7 +296,8 @@ class _AdminUsersScreenState
                 'No users found',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  fontWeight:
+                      FontWeight.w600,
                 ),
               ),
             ),
@@ -277,7 +313,8 @@ class _AdminUsersScreenState
           child: ListView.builder(
             physics:
                 const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(
+            padding:
+                const EdgeInsets.all(
               16,
             ),
             itemCount:
@@ -300,7 +337,8 @@ class _AdminUsersScreenState
             top: 0,
             left: 0,
             right: 0,
-            child: LinearProgressIndicator(),
+            child:
+                LinearProgressIndicator(),
           ),
       ],
     );
@@ -310,20 +348,34 @@ class _AdminUsersScreenState
     UserModel user,
   ) {
     final roleColor =
-        _roleColor(user.role);
+        _roleColor(
+      user.role,
+    );
+
+    final statusColor =
+        user.isActive
+            ? Colors.green
+            : Colors.red;
+
+    final isUpdating =
+        _updatingUserId == user.id;
 
     return Card(
       elevation: 2,
-      margin: const EdgeInsets.only(
+      margin:
+          const EdgeInsets.only(
         bottom: 14,
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
+      shape:
+          RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(
           16,
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(
+        padding:
+            const EdgeInsets.all(
           16,
         ),
         child: Column(
@@ -337,29 +389,32 @@ class _AdminUsersScreenState
                 CircleAvatar(
                   radius: 28,
                   backgroundColor:
-                      roleColor.withOpacity(
-                    0.15,
+                      roleColor.withValues(
+                    alpha: 0.15,
                   ),
                   backgroundImage:
-                      user.profileImage != null &&
+                      user.profileImage !=
+                                  null &&
                               user.profileImage!
                                   .isNotEmpty
                           ? NetworkImage(
                               user.profileImage!,
                             )
                           : null,
-                  child: user.profileImage ==
-                              null ||
-                          user.profileImage!
-                              .isEmpty
-                      ? Icon(
-                          _roleIcon(
-                            user.role,
-                          ),
-                          color: roleColor,
-                          size: 28,
-                        )
-                      : null,
+                  child:
+                      user.profileImage ==
+                                  null ||
+                              user.profileImage!
+                                  .isEmpty
+                          ? Icon(
+                              _roleIcon(
+                                user.role,
+                              ),
+                              color:
+                                  roleColor,
+                              size: 28,
+                            )
+                          : null,
                 ),
                 const SizedBox(
                   width: 14,
@@ -373,7 +428,8 @@ class _AdminUsersScreenState
                         user.fullName.isEmpty
                             ? 'Unnamed User'
                             : user.fullName,
-                        style: const TextStyle(
+                        style:
+                            const TextStyle(
                           fontSize: 18,
                           fontWeight:
                               FontWeight.bold,
@@ -384,38 +440,47 @@ class _AdminUsersScreenState
                       ),
                       Text(
                         user.email,
-                        style: TextStyle(
+                        style:
+                            TextStyle(
                           fontSize: 14,
-                          color:
-                              Colors.grey.shade700,
+                          color: Colors
+                              .grey.shade700,
                         ),
                       ),
+                      const SizedBox(
+                        height: 9,
+                      ),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildBadge(
+                            text:
+                                user.role,
+                            color:
+                                roleColor,
+                            icon:
+                                _roleIcon(
+                              user.role,
+                            ),
+                          ),
+                          _buildBadge(
+                            text:
+                                user.isActive
+                                    ? 'ACTIVE'
+                                    : 'BLOCKED',
+                            color:
+                                statusColor,
+                            icon:
+                                user.isActive
+                                    ? Icons
+                                        .check_circle_outline
+                                    : Icons
+                                        .block,
+                          ),
+                        ],
+                      ),
                     ],
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: roleColor.withOpacity(
-                      0.12,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(
-                      20,
-                    ),
-                  ),
-                  child: Text(
-                    user.role,
-                    style: TextStyle(
-                      color: roleColor,
-                      fontWeight:
-                          FontWeight.bold,
-                      fontSize: 12,
-                    ),
                   ),
                 ),
               ],
@@ -426,20 +491,21 @@ class _AdminUsersScreenState
             if (user.phone != null &&
                 user.phone!.isNotEmpty)
               _infoRow(
-                icon: Icons.phone_outlined,
+                icon:
+                    Icons.phone_outlined,
                 text: user.phone!,
               ),
             if (user.address != null &&
                 user.address!.isNotEmpty)
               _infoRow(
-                icon:
-                    Icons.location_on_outlined,
+                icon: Icons
+                    .location_on_outlined,
                 text: user.address!,
               ),
             if (user.createdAt != null)
               _infoRow(
-                icon:
-                    Icons.calendar_today_outlined,
+                icon: Icons
+                    .calendar_today_outlined,
                 text:
                     'Joined: ${_formatDate(user.createdAt!)}',
               ),
@@ -452,55 +518,128 @@ class _AdminUsersScreenState
             ),
             Row(
               children: [
-                const Expanded(
-                  child: Text(
-                    'Change Role',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight:
-                          FontWeight.w600,
-                    ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Account Status',
+                        style:
+                            TextStyle(
+                          fontSize: 15,
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 3,
+                      ),
+                      Text(
+                        user.isActive
+                            ? 'This account can access FarmPilot'
+                            : 'This account cannot log in',
+                        style:
+                            TextStyle(
+                          fontSize: 12,
+                          color: Colors
+                              .grey.shade600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                DropdownButton<String>(
-                  value: user.role,
-                  underline:
-                      const SizedBox.shrink(),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'CUSTOMER',
-                      child: Text(
-                        'CUSTOMER',
-                      ),
-                    ),
-                    DropdownMenuItem(
-                      value: 'FARMER',
-                      child: Text(
-                        'FARMER',
-                      ),
-                    ),
-                    DropdownMenuItem(
-                      value: 'ADMIN',
-                      child: Text(
-                        'ADMIN',
-                      ),
-                    ),
-                  ],
-                  onChanged: (newRole) {
-                    if (newRole == null) {
-                      return;
-                    }
-
-                    _changeUserRole(
-                      user: user,
-                      newRole: newRole,
-                    );
-                  },
+                const SizedBox(
+                  width: 12,
                 ),
+                if (isUpdating)
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child:
+                        CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  )
+                else
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      _changeUserStatus(
+                        user: user,
+                      );
+                    },
+                    style:
+                        ElevatedButton.styleFrom(
+                      backgroundColor:
+                          user.isActive
+                              ? Colors.red
+                              : Colors.green,
+                      foregroundColor:
+                          Colors.white,
+                    ),
+                    icon: Icon(
+                      user.isActive
+                          ? Icons.block
+                          : Icons
+                              .lock_open_outlined,
+                    ),
+                    label: Text(
+                      user.isActive
+                          ? 'Block User'
+                          : 'Unblock User',
+                    ),
+                  ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBadge({
+    required String text,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 6,
+      ),
+      decoration:
+          BoxDecoration(
+        color: color.withValues(
+          alpha: 0.12,
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          20,
+        ),
+      ),
+      child: Row(
+        mainAxisSize:
+            MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: color,
+          ),
+          const SizedBox(
+            width: 5,
+          ),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontWeight:
+                  FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -510,7 +649,8 @@ class _AdminUsersScreenState
     required String text,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(
+      padding:
+          const EdgeInsets.only(
         bottom: 8,
       ),
       child: Row(
@@ -518,7 +658,8 @@ class _AdminUsersScreenState
           Icon(
             icon,
             size: 19,
-            color: Colors.grey.shade700,
+            color:
+                Colors.grey.shade700,
           ),
           const SizedBox(
             width: 9,
@@ -528,7 +669,8 @@ class _AdminUsersScreenState
               text,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade800,
+                color:
+                    Colors.grey.shade800,
               ),
             ),
           ),
@@ -557,7 +699,8 @@ class _AdminUsersScreenState
   ) {
     switch (role) {
       case 'ADMIN':
-        return Icons.admin_panel_settings;
+        return Icons
+            .admin_panel_settings;
       case 'FARMER':
         return Icons.agriculture;
       case 'CUSTOMER':
@@ -571,13 +714,17 @@ class _AdminUsersScreenState
     DateTime date,
   ) {
     final day =
-        date.day.toString().padLeft(
+        date.day
+            .toString()
+            .padLeft(
               2,
               '0',
             );
 
     final month =
-        date.month.toString().padLeft(
+        date.month
+            .toString()
+            .padLeft(
               2,
               '0',
             );

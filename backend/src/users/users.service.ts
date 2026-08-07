@@ -6,6 +6,7 @@ import {
 import { UserRole } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -14,7 +15,9 @@ export class UsersService {
     private readonly prisma: PrismaService,
   ) {}
 
-  findByEmail(email: string) {
+  findByEmail(
+    email: string,
+  ) {
     return this.prisma.user.findUnique({
       where: {
         email,
@@ -22,7 +25,9 @@ export class UsersService {
     });
   }
 
-  findById(id: string) {
+  findById(
+    id: string,
+  ) {
     return this.prisma.user.findUnique({
       where: {
         id,
@@ -35,14 +40,20 @@ export class UsersService {
         role: true,
         address: true,
         profileImage: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
     });
   }
 
-  async findByIdOrThrow(id: string) {
-    const user = await this.findById(id);
+  async findByIdOrThrow(
+    id: string,
+  ) {
+    const user =
+      await this.findById(
+        id,
+      );
 
     if (!user) {
       throw new NotFoundException(
@@ -66,20 +77,23 @@ export class UsersService {
         role: true,
         address: true,
         profileImage: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
     });
   }
 
-  createUser(data: {
-    fullName: string;
-    email: string;
-    password: string;
-    phone?: string;
-    role: UserRole;
-    address?: string;
-  }) {
+  createUser(
+    data: {
+      fullName: string;
+      email: string;
+      password: string;
+      phone?: string;
+      role: UserRole;
+      address?: string;
+    },
+  ) {
     return this.prisma.user.create({
       data,
     });
@@ -102,6 +116,49 @@ export class UsersService {
         role: true,
         address: true,
         profileImage: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async updateUserStatus(
+    adminId: string,
+    userId: string,
+    isActive: boolean,
+  ) {
+    if (adminId === userId) {
+      throw new BadRequestException(
+        'You cannot block your own account',
+      );
+    }
+
+    const user =
+      await this.findByIdOrThrow(
+        userId,
+      );
+
+    if (user.isActive === isActive) {
+      return user;
+    }
+
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        isActive,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        role: true,
+        address: true,
+        profileImage: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -119,7 +176,9 @@ export class UsersService {
       );
     }
 
-    await this.findByIdOrThrow(userId);
+    await this.findByIdOrThrow(
+      userId,
+    );
 
     return this.prisma.user.update({
       where: {
@@ -136,6 +195,7 @@ export class UsersService {
         role: true,
         address: true,
         profileImage: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -188,4 +248,3 @@ export class UsersService {
     });
   }
 }
-

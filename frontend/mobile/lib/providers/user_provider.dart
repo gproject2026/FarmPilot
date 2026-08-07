@@ -7,6 +7,7 @@ class UserProvider extends ChangeNotifier {
   final UserService userService = UserService();
 
   bool isLoading = false;
+
   String? errorMessage;
 
   List<UserModel> users = [];
@@ -19,7 +20,12 @@ class UserProvider extends ChangeNotifier {
     try {
       users = await userService.getAllUsers();
     } catch (e) {
-      errorMessage = e.toString();
+      errorMessage = e
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
     } finally {
       isLoading = false;
       notifyListeners();
@@ -38,7 +44,13 @@ class UserProvider extends ChangeNotifier {
         userId,
       );
     } catch (e) {
-      errorMessage = e.toString();
+      errorMessage = e
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
       return null;
     } finally {
       isLoading = false;
@@ -46,9 +58,9 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateUserRole({
+  Future<bool> updateUserStatus({
     required String userId,
-    required String role,
+    required bool isActive,
   }) async {
     isLoading = true;
     errorMessage = null;
@@ -56,12 +68,13 @@ class UserProvider extends ChangeNotifier {
 
     try {
       final updatedUser =
-          await userService.updateUserRole(
+          await userService.updateUserStatus(
         userId: userId,
-        role: role,
+        isActive: isActive,
       );
 
-      final userIndex = users.indexWhere(
+      final userIndex =
+          users.indexWhere(
         (user) => user.id == userId,
       );
 
@@ -71,7 +84,13 @@ class UserProvider extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      errorMessage = e.toString();
+      errorMessage = e
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
       return false;
     } finally {
       isLoading = false;

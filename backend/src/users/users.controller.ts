@@ -8,14 +8,15 @@ import {
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 
-import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdateUserRoleDto } from './dto/update-user-role.dto';
-
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { UsersService } from './users.service';
 
 interface AuthenticatedUser {
   id: string;
@@ -31,15 +32,20 @@ export class UsersController {
 
   @Get('profile')
   getProfile(
-    @CurrentUser() user: AuthenticatedUser,
+    @CurrentUser()
+    user: AuthenticatedUser,
   ) {
-    return this.usersService.findById(user.id);
+    return this.usersService.findById(
+      user.id,
+    );
   }
 
   @Patch('profile')
   updateProfile(
-    @CurrentUser() user: AuthenticatedUser,
-    @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser()
+    user: AuthenticatedUser,
+    @Body()
+    updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.updateProfile(
       user.id,
@@ -58,10 +64,29 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   getUserById(
-    @Param('id') userId: string,
+    @Param('id')
+    userId: string,
   ) {
     return this.usersService.findByIdOrThrow(
       userId,
+    );
+  }
+
+  @Patch('admin/:id/status')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  updateUserStatus(
+    @CurrentUser()
+    admin: AuthenticatedUser,
+    @Param('id')
+    userId: string,
+    @Body()
+    updateUserStatusDto: UpdateUserStatusDto,
+  ) {
+    return this.usersService.updateUserStatus(
+      admin.id,
+      userId,
+      updateUserStatusDto.isActive,
     );
   }
 
@@ -69,8 +94,10 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   updateUserRole(
-    @CurrentUser() admin: AuthenticatedUser,
-    @Param('id') userId: string,
+    @CurrentUser()
+    admin: AuthenticatedUser,
+    @Param('id')
+    userId: string,
     @Body()
     updateUserRoleDto: UpdateUserRoleDto,
   ) {
@@ -80,4 +107,4 @@ export class UsersController {
       updateUserRoleDto.role,
     );
   }
-}
+} 

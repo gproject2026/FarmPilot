@@ -6,9 +6,9 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import {
-  createHash, 
-  randomBytes, 
-} from 'crypto'; 
+  createHash,
+  randomBytes,
+} from 'crypto';
 
 import { UsersService } from '../users/users.service';
 
@@ -28,31 +28,31 @@ export class AuthService {
     registerDto: RegisterDto,
   ) {
     const existingUser =
-        await this.usersService.findByEmail(
-      registerDto.email,
-    );
+      await this.usersService.findByEmail(
+        registerDto.email,
+      );
 
     if (existingUser) {
-      throw new BadRequestException(
+      throw new BadRequestException(  
         'Email is already registered',
       );
     }
 
     const hashedPassword =
-        await bcrypt.hash(
-      registerDto.password,
-      10,
-    );
+      await bcrypt.hash(
+        registerDto.password,
+        10,
+      );
 
     const user =
-        await this.usersService.createUser({
-      fullName: registerDto.fullName,
-      email: registerDto.email,
-      password: hashedPassword,
-      phone: registerDto.phone,
-      role: registerDto.role,
-      address: registerDto.address,
-    });
+      await this.usersService.createUser({
+        fullName: registerDto.fullName,
+        email: registerDto.email,
+        password: hashedPassword,
+        phone: registerDto.phone,
+        role: registerDto.role,
+        address: registerDto.address,
+      });
 
     const {
       password,
@@ -63,7 +63,7 @@ export class AuthService {
 
     return {
       message:
-          'User registered successfully',
+        'User registered successfully',
       user: userWithoutSensitiveData,
     };
   }
@@ -72,9 +72,9 @@ export class AuthService {
     loginDto: LoginDto,
   ) {
     const user =
-        await this.usersService.findByEmail(
-      loginDto.email,
-    );
+      await this.usersService.findByEmail(
+        loginDto.email,
+      );
 
     if (!user) {
       throw new UnauthorizedException(
@@ -82,11 +82,17 @@ export class AuthService {
       );
     }
 
+    if (!user.isActive) {
+      throw new UnauthorizedException(
+        'Your account has been blocked by the administrator',
+      );
+    }
+
     const isPasswordValid =
-        await bcrypt.compare(
-      loginDto.password,
-      user.password,
-    );
+      await bcrypt.compare(
+        loginDto.password,
+        user.password,
+      );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException(
@@ -101,9 +107,9 @@ export class AuthService {
     };
 
     const accessToken =
-        await this.jwtService.signAsync(
-      payload,
-    );
+      await this.jwtService.signAsync(
+        payload,
+      );
 
     const {
       password,
@@ -123,54 +129,45 @@ export class AuthService {
     forgotPasswordDto: ForgotPasswordDto,
   ) {
     const email =
-        forgotPasswordDto.email
-            .trim()
-            .toLowerCase();
+      forgotPasswordDto.email
+        .trim()
+        .toLowerCase();
 
     const user =
-        await this.usersService.findByEmail(
-      email,
-    );
+      await this.usersService.findByEmail(
+        email,
+      );
 
-    /*
-     * نرجع رسالة عامة إذا لم يوجد الحساب،
-     * حتى لا يستطيع أحد معرفة الإيميلات
-     * المسجلة داخل النظام.
-     */
     if (!user) {
       return {
         message:
-            'If this email is registered, a password reset token has been generated',
+          'If this email is registered, a password reset token has been generated',
       };
     }
 
     const resetToken =
-        randomBytes(32).toString('hex');
+      randomBytes(32).toString('hex');
 
     const hashedResetToken =
-        this.hashResetToken(
-      resetToken,
-    );
+      this.hashResetToken(
+        resetToken,
+      );
 
     const expiresAt = new Date(
       Date.now() + 15 * 60 * 1000,
     );
 
     await this.usersService
-        .saveResetPasswordToken(
-      user.id,
-      hashedResetToken,
-      expiresAt,
-    );
+      .saveResetPasswordToken(
+        user.id,
+        hashedResetToken,
+        expiresAt,
+      );
 
-    /*
-     * نرجع الرمز حاليًا فقط لتجربة المشروع.
-     * لاحقًا سيتم إرساله إلى البريد الإلكتروني
-     * بدل إظهاره في الاستجابة.
-     */
+    
     return {
       message:
-          'Password reset token generated successfully',
+        'Password reset token generated successfully',
       resetToken,
       expiresAt,
     };
@@ -180,16 +177,16 @@ export class AuthService {
     resetPasswordDto: ResetPasswordDto,
   ) {
     const hashedResetToken =
-        this.hashResetToken(
-      resetPasswordDto.token.trim(),
-    );
+      this.hashResetToken(
+        resetPasswordDto.token.trim(),
+      );
 
     const user =
-        await this.usersService
-            .findByValidResetPasswordToken(
-      hashedResetToken,
-      new Date(),
-    );
+      await this.usersService
+        .findByValidResetPasswordToken(
+          hashedResetToken,
+          new Date(),
+        );
 
     if (!user) {
       throw new BadRequestException(
@@ -198,10 +195,10 @@ export class AuthService {
     }
 
     const isSamePassword =
-        await bcrypt.compare(
-      resetPasswordDto.password,
-      user.password,
-    );
+      await bcrypt.compare(
+        resetPasswordDto.password,
+        user.password,
+      );
 
     if (isSamePassword) {
       throw new BadRequestException(
@@ -210,20 +207,20 @@ export class AuthService {
     }
 
     const hashedPassword =
-        await bcrypt.hash(
-      resetPasswordDto.password,
-      10,
-    );
+      await bcrypt.hash(
+        resetPasswordDto.password,
+        10,
+      );
 
     await this.usersService
-        .updatePasswordAndClearResetToken(
-      user.id,
-      hashedPassword,
-    );
+      .updatePasswordAndClearResetToken(
+        user.id,
+        hashedPassword,
+      );
 
     return {
       message:
-          'Password reset successfully',
+        'Password reset successfully',
     };
   }
 
@@ -231,7 +228,7 @@ export class AuthService {
     token: string,
   ) {
     return createHash('sha256')
-        .update(token)
-        .digest('hex');
+      .update(token)
+      .digest('hex');
   }
-}
+}  

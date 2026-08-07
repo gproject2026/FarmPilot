@@ -20,7 +20,9 @@ class UserService {
         response.data,
       ).map((user) {
         return UserModel.fromJson(
-          Map<String, dynamic>.from(user),
+          Map<String, dynamic>.from(
+            user,
+          ),
         );
       }).toList();
     } catch (e) {
@@ -56,15 +58,16 @@ class UserService {
     }
   }
 
-  Future<UserModel> updateUserRole({
+  Future<UserModel> updateUserStatus({
     required String userId,
-    required String role,
+    required bool isActive,
   }) async {
     try {
-      final response = await apiClient.dio.patch(
-        '/users/admin/$userId/role',
+      final response =
+          await apiClient.dio.patch(
+        '/users/admin/$userId/status',
         data: {
-          'role': role,
+          'isActive': isActive,
         },
       );
 
@@ -81,7 +84,7 @@ class UserService {
       );
     } catch (e) {
       throw Exception(
-        'Failed to update user role: $e',
+        'Failed to update user status: $e',
       );
     }
   }

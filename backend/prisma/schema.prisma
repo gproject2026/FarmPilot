@@ -46,6 +46,7 @@ model User {
   role                   UserRole
   address                String?
   profileImage           String?   @map("profile_image")
+  isActive               Boolean   @default(true) @map("is_active")
   resetPasswordToken     String?   @map("reset_password_token")
   resetPasswordExpiresAt DateTime? @map("reset_password_expires_at")
   createdAt              DateTime  @default(now()) @map("created_at")
