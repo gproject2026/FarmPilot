@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import 'admin_orders_screen.dart';
+import 'admin_products_screen.dart';
 import 'admin_users_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -41,7 +42,8 @@ class _AdminDashboardScreenState
   void _openManageUsers() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const AdminUsersScreen(),
+        builder: (_) =>
+            const AdminUsersScreen(),
       ),
     );
   }
@@ -49,7 +51,17 @@ class _AdminDashboardScreenState
   void _openManageOrders() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const AdminOrdersScreen(),
+        builder: (_) =>
+            const AdminOrdersScreen(),
+      ),
+    );
+  }
+
+  void _openManageProducts() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            const AdminProductsScreen(),
       ),
     );
   }
@@ -70,7 +82,8 @@ class _AdminDashboardScreenState
     dashboardProvider.clearDashboard();
     authProvider.logout();
 
-    Navigator.of(context).pushNamedAndRemoveUntil(
+    Navigator.of(context)
+        .pushNamedAndRemoveUntil(
       '/',
       (route) => false,
     );
@@ -83,12 +96,12 @@ class _AdminDashboardScreenState
       context,
     );
 
-    final data = dashboardProvider.dashboardData;
+    final data =
+        dashboardProvider.dashboardData;
 
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFF5F7F4,
-      ),
+      backgroundColor:
+          const Color(0xFFF5F7F4),
       appBar: AppBar(
         title: const Text(
           'Admin Dashboard',
@@ -115,18 +128,20 @@ class _AdminDashboardScreenState
           ),
         ],
       ),
-      body: dashboardProvider.isLoading &&
-              data == null
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : data == null
-              ? _buildErrorState(
-                  dashboardProvider,
+      body:
+          dashboardProvider.isLoading &&
+                  data == null
+              ? const Center(
+                  child:
+                      CircularProgressIndicator(),
                 )
-              : _buildDashboard(
-                  data,
-                ),
+              : data == null
+                  ? _buildErrorState(
+                      dashboardProvider,
+                    )
+                  : _buildDashboard(
+                      data,
+                    ),
     );
   }
 
@@ -138,15 +153,15 @@ class _AdminDashboardScreenState
       child: ListView(
         physics:
             const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(
-          24,
-        ),
+        padding:
+            const EdgeInsets.all(24),
         children: [
           const SizedBox(
             height: 120,
           ),
           const Icon(
-            Icons.admin_panel_settings_outlined,
+            Icons
+                .admin_panel_settings_outlined,
             size: 80,
             color: Colors.grey,
           ),
@@ -155,12 +170,16 @@ class _AdminDashboardScreenState
           ),
           Center(
             child: Text(
-              dashboardProvider.errorMessage ??
+              dashboardProvider
+                      .errorMessage ??
                   'Unable to load admin dashboard',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
+              textAlign:
+                  TextAlign.center,
+              style:
+                  const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontWeight:
+                    FontWeight.w600,
               ),
             ),
           ),
@@ -168,8 +187,10 @@ class _AdminDashboardScreenState
             height: 16,
           ),
           Center(
-            child: ElevatedButton.icon(
-              onPressed: _loadDashboard,
+            child:
+                ElevatedButton.icon(
+              onPressed:
+                  _loadDashboard,
               icon: const Icon(
                 Icons.refresh,
               ),
@@ -193,7 +214,8 @@ class _AdminDashboardScreenState
           context,
           constraints,
         ) {
-          final width = constraints.maxWidth;
+          final width =
+              constraints.maxWidth;
 
           int crossAxisCount;
           double childAspectRatio;
@@ -212,24 +234,32 @@ class _AdminDashboardScreenState
           return SingleChildScrollView(
             physics:
                 const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(
-              horizontal: width < 650 ? 16 : 24,
+            padding:
+                EdgeInsets.symmetric(
+              horizontal:
+                  width < 650
+                      ? 16
+                      : 24,
               vertical: 18,
             ),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
+                constraints:
+                    const BoxConstraints(
                   maxWidth: 1200,
                 ),
                 child: Column(
                   crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                      CrossAxisAlignment
+                          .start,
                   children: [
                     const Center(
                       child: Icon(
-                        Icons.admin_panel_settings,
+                        Icons
+                            .admin_panel_settings,
                         size: 58,
-                        color: Colors.green,
+                        color:
+                            Colors.green,
                       ),
                     ),
                     const SizedBox(
@@ -238,10 +268,12 @@ class _AdminDashboardScreenState
                     const Center(
                       child: Text(
                         'Welcome Admin',
-                        style: TextStyle(
+                        style:
+                            TextStyle(
                           fontSize: 26,
                           fontWeight:
-                              FontWeight.bold,
+                              FontWeight
+                                  .bold,
                         ),
                       ),
                     ),
@@ -251,10 +283,12 @@ class _AdminDashboardScreenState
                     Center(
                       child: Text(
                         'System overview and statistics',
-                        style: TextStyle(
+                        style:
+                            TextStyle(
                           fontSize: 15,
-                          color:
-                              Colors.grey.shade700,
+                          color: Colors
+                              .grey
+                              .shade700,
                         ),
                       ),
                     ),
@@ -264,8 +298,10 @@ class _AdminDashboardScreenState
                     GridView.count(
                       crossAxisCount:
                           crossAxisCount,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
+                      crossAxisSpacing:
+                          14,
+                      mainAxisSpacing:
+                          14,
                       childAspectRatio:
                           childAspectRatio,
                       shrinkWrap: true,
@@ -273,47 +309,61 @@ class _AdminDashboardScreenState
                           const NeverScrollableScrollPhysics(),
                       children: [
                         _statCard(
-                          title: 'Total Users',
+                          title:
+                              'Total Users',
                           value: _value(
-                            data['totalUsers'],
-                          ),
-                          icon: Icons.people,
-                        ),
-                        _statCard(
-                          title: 'Farmers',
-                          value: _value(
-                            data['totalFarmers'],
-                          ),
-                          icon: Icons.agriculture,
-                        ),
-                        _statCard(
-                          title: 'Customers',
-                          value: _value(
-                            data['totalCustomers'],
+                            data[
+                                'totalUsers'],
                           ),
                           icon:
-                              Icons.person_outline,
+                              Icons.people,
                         ),
                         _statCard(
-                          title: 'Products',
+                          title:
+                              'Farmers',
                           value: _value(
-                            data['totalProducts'],
+                            data[
+                                'totalFarmers'],
+                          ),
+                          icon: Icons
+                              .agriculture,
+                        ),
+                        _statCard(
+                          title:
+                              'Customers',
+                          value: _value(
+                            data[
+                                'totalCustomers'],
+                          ),
+                          icon: Icons
+                              .person_outline,
+                        ),
+                        _statCard(
+                          title:
+                              'Products',
+                          value: _value(
+                            data[
+                                'totalProducts'],
                           ),
                           icon: Icons
                               .inventory_2_outlined,
                         ),
                         _statCard(
-                          title: 'Orders',
+                          title:
+                              'Orders',
                           value: _value(
-                            data['totalOrders'],
+                            data[
+                                'totalOrders'],
                           ),
                           icon: Icons
                               .shopping_cart_outlined,
                         ),
                         _statCard(
-                          title: 'Diagnoses',
+                          title:
+                              'Diagnoses',
                           value: _value(
-                            data['totalDiagnoses'],
+                            data[
+                                'totalDiagnoses'],
                           ),
                           icon: Icons
                               .health_and_safety_outlined,
@@ -328,91 +378,43 @@ class _AdminDashboardScreenState
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight:
-                            FontWeight.bold,
+                            FontWeight
+                                .bold,
                       ),
                     ),
                     const SizedBox(
                       height: 14,
                     ),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed:
-                            _openManageUsers,
-                        icon: const Icon(
-                          Icons.manage_accounts,
-                        ),
-                        label: const Text(
+                    _adminToolButton(
+                      icon: Icons
+                          .manage_accounts,
+                      title:
                           'Manage Users',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight:
-                                FontWeight.w600,
-                          ),
-                        ),
-                        style:
-                            ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Colors.green,
-                          foregroundColor:
-                              Colors.white,
-                          padding:
-                              const EdgeInsets.symmetric(
-                            vertical: 17,
-                          ),
-                          shape:
-                              RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(
-                              14,
-                            ),
-                          ),
-                        ),
-                      ),
+                      onPressed:
+                          _openManageUsers,
                     ),
-
                     const SizedBox(
                       height: 12,
                     ),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed:
-                            _openManageOrders,
-                        icon: const Icon(
-                          Icons.receipt_long_outlined,
-                        ),
-                        label: const Text(
+                    _adminToolButton(
+                      icon: Icons
+                          .receipt_long_outlined,
+                      title:
                           'Manage Orders',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight:
-                                FontWeight.w600,
-                          ),
-                        ),
-                        style:
-                            ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Colors.green,
-                          foregroundColor:
-                              Colors.white,
-                          padding:
-                              const EdgeInsets.symmetric(
-                            vertical: 17,
-                          ),
-                          shape:
-                              RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(
-                              14,
-                            ),
-                          ),
-                        ),
-                      ),
+                      onPressed:
+                          _openManageOrders,
                     ),
-
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    _adminToolButton(
+                      icon: Icons
+                          .inventory_2_outlined,
+                      title:
+                          'Manage Products',
+                      onPressed:
+                          _openManageProducts,
+                    ),
                     const SizedBox(
                       height: 20,
                     ),
@@ -426,6 +428,49 @@ class _AdminDashboardScreenState
     );
   }
 
+  Widget _adminToolButton({
+    required IconData icon,
+    required String title,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(
+          icon,
+        ),
+        label: Text(
+          title,
+          style:
+              const TextStyle(
+            fontSize: 16,
+            fontWeight:
+                FontWeight.w600,
+          ),
+        ),
+        style:
+            ElevatedButton.styleFrom(
+          backgroundColor:
+              Colors.green,
+          foregroundColor:
+              Colors.white,
+          padding:
+              const EdgeInsets.symmetric(
+            vertical: 17,
+          ),
+          shape:
+              RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(
+              14,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _statCard({
     required String title,
     required String value,
@@ -434,13 +479,16 @@ class _AdminDashboardScreenState
     return Card(
       elevation: 2,
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
+      shape:
+          RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(
           18,
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
+        padding:
+            const EdgeInsets.symmetric(
           horizontal: 18,
           vertical: 14,
         ),
@@ -452,8 +500,8 @@ class _AdminDashboardScreenState
                   Colors.green.shade100,
               child: Icon(
                 icon,
-                color:
-                    Colors.green.shade700,
+                color: Colors
+                    .green.shade700,
                 size: 25,
               ),
             ),
@@ -463,20 +511,24 @@ class _AdminDashboardScreenState
             Expanded(
               child: Column(
                 mainAxisAlignment:
-                    MainAxisAlignment.center,
+                    MainAxisAlignment
+                        .center,
                 crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                    CrossAxisAlignment
+                        .start,
                 children: [
                   Text(
                     value,
                     maxLines: 1,
                     overflow:
-                        TextOverflow.ellipsis,
+                        TextOverflow
+                            .ellipsis,
                     style:
                         const TextStyle(
                       fontSize: 26,
                       fontWeight:
-                          FontWeight.bold,
+                          FontWeight
+                              .bold,
                     ),
                   ),
                   const SizedBox(
@@ -486,11 +538,14 @@ class _AdminDashboardScreenState
                     title,
                     maxLines: 1,
                     overflow:
-                        TextOverflow.ellipsis,
-                    style: TextStyle(
+                        TextOverflow
+                            .ellipsis,
+                    style:
+                        TextStyle(
                       fontSize: 15,
-                      color:
-                          Colors.grey.shade700,
+                      color: Colors
+                          .grey
+                          .shade700,
                     ),
                   ),
                 ],
@@ -505,6 +560,7 @@ class _AdminDashboardScreenState
   String _value(
     dynamic value,
   ) {
-    return value?.toString() ?? '0';
+    return value?.toString() ??
+        '0';
   }
 }

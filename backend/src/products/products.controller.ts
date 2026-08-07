@@ -23,7 +23,14 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { UpdateProductStatusDto } from './dto/update-product-status.dto';
 import { ProductsService } from './products.service';
+
+interface AuthenticatedUser {
+  id: string;
+  email: string;
+  role: UserRole;
+}
 
 @Controller('products')
 export class ProductsController {
@@ -35,8 +42,10 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FARMER)
   create(
-    @Body() createProductDto: CreateProductDto,
-    @CurrentUser() user: any,
+    @Body()
+    createProductDto: CreateProductDto,
+    @CurrentUser()
+    user: AuthenticatedUser,
   ) {
     return this.productsService.create(
       createProductDto,
@@ -59,11 +68,14 @@ export class ProductsController {
           const uniqueName =
             Date.now() +
             '-' +
-            Math.round(Math.random() * 1e9);
+            Math.round(
+              Math.random() * 1e9,
+            );
 
-          const fileExtension = extname(
-            file.originalname,
-          ).toLowerCase();
+          const fileExtension =
+            extname(
+              file.originalname,
+            ).toLowerCase();
 
           callback(
             null,
@@ -84,7 +96,9 @@ export class ProductsController {
         ];
 
         if (
-          !allowedImageTypes.includes(file.mimetype)
+          !allowedImageTypes.includes(
+            file.mimetype,
+          )
         ) {
           return callback(
             new BadRequestException(
@@ -94,15 +108,20 @@ export class ProductsController {
           );
         }
 
-        callback(null, true);
+        callback(
+          null,
+          true,
+        );
       },
       limits: {
-        fileSize: 5 * 1024 * 1024,
+        fileSize:
+          5 * 1024 * 1024,
       },
     }),
   )
   uploadProductImage(
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFile()
+    file?: Express.Multer.File,
   ) {
     if (!file) {
       throw new BadRequestException(
@@ -111,9 +130,12 @@ export class ProductsController {
     }
 
     return {
-      message: 'Image uploaded successfully',
-      imageUrl: `/uploads/${file.filename}`,
-      filename: file.filename,
+      message:
+        'Image uploaded successfully',
+      imageUrl:
+        `/uploads/${file.filename}`,
+      filename:
+        file.filename,
     };
   }
 
@@ -126,27 +148,56 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FARMER)
   findMyProducts(
-    @CurrentUser() user: any,
+    @CurrentUser()
+    user: AuthenticatedUser,
   ) {
     return this.productsService.findMyProducts(
       user.id,
     );
   }
 
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  findAllForAdmin() {
+    return this.productsService.findAll();
+  }
+
+  @Patch('admin/:id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  updateProductStatus(
+    @Param('id')
+    id: string,
+    @Body()
+    updateProductStatusDto: UpdateProductStatusDto,
+  ) {
+    return this.productsService.updateProductStatus(
+      id,
+      updateProductStatusDto.status,
+    );
+  }
+
   @Get(':id')
   findOne(
-    @Param('id') id: string,
+    @Param('id')
+    id: string,
   ) {
-    return this.productsService.findOne(id);
+    return this.productsService.findOne(
+      id,
+    );
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FARMER)
   update(
-    @Param('id') id: string,
-    @Body() updateProductDto: UpdateProductDto,
-    @CurrentUser() user: any,
+    @Param('id')
+    id: string,
+    @Body()
+    updateProductDto: UpdateProductDto,
+    @CurrentUser()
+    user: AuthenticatedUser,
   ) {
     return this.productsService.update(
       id,
@@ -159,12 +210,14 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FARMER)
   remove(
-    @Param('id') id: string,
-    @CurrentUser() user: any,
+    @Param('id')
+    id: string,
+    @CurrentUser()
+    user: AuthenticatedUser,
   ) {
     return this.productsService.remove(
       id,
       user.id,
     );
   }
-}
+} 

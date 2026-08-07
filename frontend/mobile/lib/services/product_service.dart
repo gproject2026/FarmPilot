@@ -51,6 +51,84 @@ class ProductService {
     }
   }
 
+  Future<List<dynamic>> getAdminProducts() async {
+    try {
+      final response = await apiClient.dio.get(
+        '/products/admin/all',
+      );
+
+      if (response.data is! List) {
+        throw Exception(
+          'Invalid admin products response',
+        );
+      }
+
+      return List<dynamic>.from(
+        response.data,
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to load admin products: $e',
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>> updateProductStatus({
+    required String productId,
+    required String status,
+  }) async {
+    try {
+      final response = await apiClient.dio.patch(
+        '/products/admin/$productId/status',
+        data: {
+          'status': status,
+        },
+      );
+
+      if (response.data is! Map) {
+        throw Exception(
+          'Invalid updated product response',
+        );
+      }
+
+      return Map<String, dynamic>.from(
+        response.data,
+      );
+    } on DioException catch (e) {
+      final responseData =
+          e.response?.data;
+
+      if (responseData is Map) {
+        final message =
+            responseData['message'];
+
+        if (message is List) {
+          throw Exception(
+            message.join(', '),
+          );
+        }
+
+        if (message != null &&
+            message
+                .toString()
+                .trim()
+                .isNotEmpty) {
+          throw Exception(
+            message.toString(),
+          );
+        }
+      }
+
+      throw Exception(
+        'Failed to update product status',
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to update product status: $e',
+      );
+    }
+  }
+
   Future<String> uploadProductImage({
     required Uint8List imageBytes,
     required String fileName,
@@ -80,7 +158,8 @@ class ProductService {
       }
 
       final imageUrl =
-          responseData['imageUrl']?.toString();
+          responseData['imageUrl']
+              ?.toString();
 
       if (imageUrl == null ||
           imageUrl.trim().isEmpty) {
@@ -93,7 +172,8 @@ class ProductService {
     } on DioException catch (e) {
       final serverMessage =
           e.response?.data is Map
-              ? e.response?.data['message']?.toString()
+              ? e.response?.data['message']
+                  ?.toString()
               : null;
 
       throw Exception(

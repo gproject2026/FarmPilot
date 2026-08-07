@@ -18,15 +18,27 @@ class ProductProvider extends ChangeNotifier {
 
   bool isLoading = false;
 
+  String? errorMessage;
+
   List<dynamic> products = [];
+
+  List<dynamic> adminProducts = [];
 
   Future<void> loadAllProducts() async {
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
 
     try {
       products =
           await productService.getAllProducts();
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
     } finally {
       isLoading = false;
       notifyListeners();
@@ -35,11 +47,85 @@ class ProductProvider extends ChangeNotifier {
 
   Future<void> loadMyProducts() async {
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
 
     try {
       products =
           await productService.getMyProducts();
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadAdminProducts() async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      adminProducts =
+          await productService
+              .getAdminProducts();
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateAdminProductStatus({
+    required String productId,
+    required String status,
+  }) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updatedProduct =
+          await productService
+              .updateProductStatus(
+        productId: productId,
+        status: status,
+      );
+
+      final index =
+          adminProducts.indexWhere(
+        (product) =>
+            product['id']?.toString() ==
+            productId,
+      );
+
+      if (index != -1) {
+        adminProducts[index] =
+            updatedProduct;
+      }
+
+      return true;
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      return false;
     } finally {
       isLoading = false;
       notifyListeners();
@@ -57,7 +143,8 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      return await aiService.generateMarketingContent(
+      return await aiService
+          .generateMarketingContent(
         productName: productName,
         productDetails: productDetails,
         productId: productId,
@@ -77,7 +164,8 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      return await imageUploadService.uploadImage(
+      return await imageUploadService
+          .uploadImage(
         imageBytes: imageBytes,
         fileName: fileName,
       );
@@ -111,7 +199,8 @@ class ProductProvider extends ChangeNotifier {
       );
 
       products =
-          await productService.getMyProducts();
+          await productService
+              .getMyProducts();
     } finally {
       isLoading = false;
       notifyListeners();
@@ -144,7 +233,8 @@ class ProductProvider extends ChangeNotifier {
       );
 
       products =
-          await productService.getMyProducts();
+          await productService
+              .getMyProducts();
     } finally {
       isLoading = false;
       notifyListeners();
@@ -164,12 +254,18 @@ class ProductProvider extends ChangeNotifier {
 
       products.removeWhere(
         (product) =>
-            product['id'].toString() ==
+            product['id']
+                .toString() ==
             productId,
       );
     } finally {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+  void clearError() {
+    errorMessage = null;
+    notifyListeners();
   }
 }
