@@ -87,5 +87,62 @@
 "manageUsers": "Manage Users",
 "manageOrders": "Manage Orders",
 "manageProducts": "Manage Products",
-"manageCategories": "Manage Categories"
+"manageCategories": "Manage Categories",
+"addProduct": "Add Product",
+"noProductsFound": "No Products Found",
+"unnamedProduct": "Unnamed Product",
+"price": "Price",
+"quantity": "Quantity",
+"status": "Status",
+"category": "Category",
+"editProduct": "Edit Product",
+"deleteProduct": "Delete Product",
+"deleteProductConfirmation": "Are you sure you want to delete \"{productName}\"?",
+"@deleteProductConfirmation": {
+  "placeholders": {
+    "productName": {
+      "type": "String"
+    }
+  }
+},
+"cancel": "Cancel",
+"delete": "Delete",
+"productDeletedSuccessfully": "Product deleted successfully",
+"failedToDeleteProduct": "Failed to delete product: {error}",
+"@failedToDeleteProduct": {
+  "placeholders": {
+    "error": {
+      "type": "String"
+    }
+  }
+},
+"productUpdatedSuccessfully": "Product updated successfully",
+"productName": "Product Name",
+"description": "Description",
+"unit": "Unit",
+"chooseProductImage": "Choose Product Image",
+"changeProductImage": "Change Product Image",
+"saveChanges": "Save Changes",
+"pleaseSelectCategory": "Please select a category",
+"pleaseEnterValidProductData": "Please enter valid product data",
+"failedToSelectImage": "Failed to select image: {error}",
+"@failedToSelectImage": {
+  "placeholders": {
+    "error": {
+      "type": "String"
+    }
+  }
+},
+"pleaseEnterProductNameFirst": "Please enter the product name first",
+"freshFarmProduct": "Fresh farm product",
+"marketingContent": "Marketing Content",
+"suggestedTitle": "Suggested Title",
+"suggestedDescription": "Suggested Description",
+"keywords": "Keywords",
+"marketingSuggestions": "Marketing Suggestions",
+"close": "Close",
+"useContent": "Use Content",
+"marketingContentAdded": "Marketing content added to the form",
+"generateMarketingContent": "Generate Marketing Content",
+"productIdNotFound": "Product ID was not found"
 }

@@ -2,36 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers/product_provider.dart';
 import 'add_product_screen.dart';
 
 class MyProductsScreen extends StatefulWidget {
-  const MyProductsScreen({super.key});
+  const MyProductsScreen({
+    super.key,
+  });
 
   @override
   State<MyProductsScreen> createState() =>
       _MyProductsScreenState();
 }
 
-class _MyProductsScreenState extends State<MyProductsScreen> {
+class _MyProductsScreenState
+    extends State<MyProductsScreen> {
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(() {
-      Provider.of<ProductProvider>(
-        context,
-        listen: false,
-      ).loadMyProducts();
-    });
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        if (!mounted) {
+          return;
+        }
+
+        Provider.of<ProductProvider>(
+          context,
+          listen: false,
+        ).loadMyProducts();
+      },
+    );
   }
 
-  String? _getImageUrl(dynamic imageUrl) {
+  String? _getImageUrl(
+    dynamic imageUrl,
+  ) {
     if (imageUrl == null) {
       return null;
     }
 
-    final url = AppConstants.getImageUrl(
+    final url =
+        AppConstants.getImageUrl(
       imageUrl.toString(),
     );
 
@@ -46,54 +59,86 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
     required String productId,
     required String productName,
   }) async {
-    final shouldDelete = await showDialog<bool>(
+    final l10n =
+        AppLocalizations.of(context)!;
+
+    final productProvider =
+        Provider.of<ProductProvider>(
+      context,
+      listen: false,
+    );
+
+    final shouldDelete =
+        await showDialog<bool>(
       context: context,
-      builder: (dialogContext) {
+      builder: (
+        dialogContext,
+      ) {
         return AlertDialog(
-          title: const Text('Delete Product'),
+          title: Text(
+            l10n.deleteProduct,
+          ),
           content: Text(
-            'Are you sure you want to delete "$productName"?',
+            l10n.deleteProductConfirmation(
+              productName,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(dialogContext, false);
+                Navigator.pop(
+                  dialogContext,
+                  false,
+                );
               },
-              child: const Text('Cancel'),
+              child: Text(
+                l10n.cancel,
+              ),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(dialogContext, true);
+                Navigator.pop(
+                  dialogContext,
+                  true,
+                );
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+              style:
+                  ElevatedButton.styleFrom(
+                backgroundColor:
+                    Colors.red,
+                foregroundColor:
+                    Colors.white,
               ),
-              child: const Text('Delete'),
+              child: Text(
+                l10n.delete,
+              ),
             ),
           ],
         );
       },
     );
 
-    if (shouldDelete != true || !mounted) {
+    if (shouldDelete != true ||
+        !mounted) {
       return;
     }
 
     try {
-      await Provider.of<ProductProvider>(
-        context,
-        listen: false,
-      ).deleteProduct(productId);
+      await productProvider
+          .deleteProduct(
+        productId,
+      );
 
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
           content: Text(
-            'Product deleted successfully',
+            l10n
+                .productDeletedSuccessfully,
           ),
         ),
       );
@@ -102,12 +147,16 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         SnackBar(
           content: Text(
-            'Failed to delete product: $e',
+            l10n.failedToDeleteProduct(
+              e.toString(),
+            ),
           ),
-          backgroundColor: Colors.red,
+          backgroundColor:
+              Colors.red,
         ),
       );
     }
@@ -116,248 +165,355 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
   Future<void> _openEditProduct(
     Map<String, dynamic> product,
   ) async {
-    final updated = await Navigator.push<bool>(
+    final productProvider =
+        Provider.of<ProductProvider>(
+      context,
+      listen: false,
+    );
+
+    final updated =
+        await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) => AddProductScreen(
+        builder: (_) =>
+            AddProductScreen(
           product: product,
         ),
       ),
     );
 
-    if (updated != true || !mounted) {
+    if (updated != true ||
+        !mounted) {
       return;
     }
 
-    await Provider.of<ProductProvider>(
-      context,
-      listen: false,
-    ).loadMyProducts();
+    await productProvider
+        .loadMyProducts();
 
     if (!mounted) {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+    final l10n =
+        AppLocalizations.of(context)!;
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      SnackBar(
         content: Text(
-          'Product updated successfully',
+          l10n
+              .productUpdatedSuccessfully,
         ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Future<void> _openAddProduct() async {
     final productProvider =
-        Provider.of<ProductProvider>(context);
+        Provider.of<ProductProvider>(
+      context,
+      listen: false,
+    );
+
+    final added =
+        await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            const AddProductScreen(),
+      ),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (added == true) {
+      await productProvider
+          .loadMyProducts();
+    }
+  }
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    final productProvider =
+        Provider.of<ProductProvider>(
+      context,
+    );
+
+    final l10n =
+        AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Products'),
+        title: Text(
+          l10n.myProducts,
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final added = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const AddProductScreen(),
-            ),
-          );
-
-          if (!context.mounted) {
-            return;
-          }
-
-          if (added == true) {
-            await Provider.of<ProductProvider>(
-              context,
-              listen: false,
-            ).loadMyProducts();
-          }
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Add Product'),
+      floatingActionButton:
+          FloatingActionButton.extended(
+        onPressed:
+            productProvider.isLoading
+                ? null
+                : _openAddProduct,
+        icon: const Icon(
+          Icons.add,
+        ),
+        label: Text(
+          l10n.addProduct,
+        ),
       ),
-      body: productProvider.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : productProvider.products.isEmpty
+      body:
+          productProvider.isLoading
               ? const Center(
-                  child: Text(
-                    'No Products Found',
-                  ),
+                  child:
+                      CircularProgressIndicator(),
                 )
-              : RefreshIndicator(
-                  onRefresh:
-                      productProvider.loadMyProducts,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(
-                      20,
-                      20,
-                      20,
-                      100,
-                    ),
-                    itemCount:
-                        productProvider.products.length,
-                    itemBuilder: (context, index) {
-                      final rawProduct =
-                          productProvider.products[index];
-
-                      final product =
-                          Map<String, dynamic>.from(
-                        rawProduct,
-                      );
-
-                      final productId =
-                          product['id']?.toString() ?? '';
-
-                      final productName =
-                          product['name']?.toString() ??
-                              'Unnamed Product';
-
-                      final imageUrl = _getImageUrl(
-                        product['imageUrl'],
-                      );
-
-                      return Card(
-                        margin: const EdgeInsets.only(
-                          bottom: 12,
+              : productProvider
+                      .products.isEmpty
+                  ? Center(
+                      child: Text(
+                        l10n
+                            .noProductsFound,
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh:
+                          productProvider
+                              .loadMyProducts,
+                      child:
+                          ListView.builder(
+                        physics:
+                            const AlwaysScrollableScrollPhysics(),
+                        padding:
+                            const EdgeInsets.fromLTRB(
+                          20,
+                          20,
+                          20,
+                          100,
                         ),
-                        child: Padding(
-                          padding:
-                              const EdgeInsets.all(12),
-                          child: Row(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: 90,
-                                height: 90,
-                                padding:
-                                    const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color:
-                                      Colors.grey.shade100,
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                    10,
-                                  ),
-                                  border: Border.all(
-                                    color:
-                                        Colors.grey.shade300,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                    7,
-                                  ),
-                                  child: imageUrl == null
-                                      ? const Center(
-                                          child: Icon(
-                                            Icons
-                                                .inventory_2_outlined,
-                                            size: 36,
-                                          ),
-                                        )
-                                      : Image.network(
-                                          imageUrl,
-                                          fit: BoxFit.contain,
-                                          errorBuilder: (
-                                            context,
-                                            error,
-                                            stackTrace,
-                                          ) {
-                                            return const Center(
-                                              child: Icon(
-                                                Icons
-                                                    .broken_image_outlined,
-                                                size: 36,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                ),
+                        itemCount:
+                            productProvider
+                                .products.length,
+                        itemBuilder: (
+                          context,
+                          index,
+                        ) {
+                          final rawProduct =
+                              productProvider
+                                      .products[
+                                  index];
+
+                          final product =
+                              Map<String,
+                                  dynamic>.from(
+                            rawProduct,
+                          );
+
+                          final productId =
+                              product['id']
+                                      ?.toString() ??
+                                  '';
+
+                          final productName =
+                              product['name']
+                                      ?.toString() ??
+                                  l10n
+                                      .unnamedProduct;
+
+                          final imageUrl =
+                              _getImageUrl(
+                            product[
+                                'imageUrl'],
+                          );
+
+                          final category =
+                              product[
+                                  'category'];
+
+                          final categoryName =
+                              category is Map
+                                  ? category[
+                                              'name']
+                                          ?.toString() ??
+                                      ''
+                                  : '';
+
+                          return Card(
+                            margin:
+                                const EdgeInsets.only(
+                              bottom: 12,
+                            ),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.all(
+                                12,
                               ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment
-                                          .start,
-                                  children: [
-                                    Text(
-                                      productName,
-                                      style:
-                                          const TextStyle(
-                                        fontWeight:
-                                            FontWeight.bold,
-                                        fontSize: 17,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Price: ${product['price']}',
-                                    ),
-                                    Text(
-                                      'Quantity: ${product['quantity']} ${product['unit']}',
-                                    ),
-                                    Text(
-                                      'Status: ${product['status']}',
-                                    ),
-                                    if (product['category'] !=
-                                        null)
-                                      Text(
-                                        'Category: ${product['category']['name']}',
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              Column(
+                              child: Row(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment
+                                        .start,
                                 children: [
-                                  IconButton(
-                                    tooltip:
-                                        'Edit Product',
-                                    icon: const Icon(
-                                      Icons.edit_outlined,
-                                      color: Colors.blue,
+                                  Container(
+                                    width: 90,
+                                    height: 90,
+                                    padding:
+                                        const EdgeInsets.all(
+                                      4,
                                     ),
-                                    onPressed: () {
-                                      _openEditProduct(
-                                        product,
-                                      );
-                                    },
+                                    decoration:
+                                        BoxDecoration(
+                                      color: Colors
+                                          .grey
+                                          .shade100,
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                        10,
+                                      ),
+                                      border:
+                                          Border.all(
+                                        color: Colors
+                                            .grey
+                                            .shade300,
+                                      ),
+                                    ),
+                                    child:
+                                        ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(
+                                        7,
+                                      ),
+                                      child:
+                                          imageUrl ==
+                                                  null
+                                              ? const Center(
+                                                  child:
+                                                      Icon(
+                                                    Icons.inventory_2_outlined,
+                                                    size:
+                                                        36,
+                                                  ),
+                                                )
+                                              : Image.network(
+                                                  imageUrl,
+                                                  fit: BoxFit
+                                                      .contain,
+                                                  errorBuilder:
+                                                      (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) {
+                                                    return const Center(
+                                                      child:
+                                                          Icon(
+                                                        Icons.broken_image_outlined,
+                                                        size:
+                                                            36,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                    ),
                                   ),
-                                  IconButton(
-                                    tooltip:
-                                        'Delete Product',
-                                    icon: const Icon(
-                                      Icons.delete_outline,
-                                      color: Colors.red,
+                                  const SizedBox(
+                                    width: 14,
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment
+                                              .start,
+                                      children: [
+                                        Text(
+                                          productName,
+                                          style:
+                                              const TextStyle(
+                                            fontWeight:
+                                                FontWeight.bold,
+                                            fontSize:
+                                                17,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
+                                        Text(
+                                          '${l10n.price}: '
+                                          '${product['price'] ?? ''}',
+                                        ),
+                                        Text(
+                                          '${l10n.quantity}: '
+                                          '${product['quantity'] ?? ''} '
+                                          '${product['unit'] ?? ''}',
+                                        ),
+                                        Text(
+                                          '${l10n.status}: '
+                                          '${product['status'] ?? ''}',
+                                        ),
+                                        if (categoryName
+                                            .trim()
+                                            .isNotEmpty)
+                                          Text(
+                                            '${l10n.category}: '
+                                            '$categoryName',
+                                          ),
+                                      ],
                                     ),
-                                    onPressed:
-                                        productId.isEmpty
-                                            ? null
-                                            : () {
-                                                _deleteProduct(
-                                                  productId:
-                                                      productId,
-                                                  productName:
-                                                      productName,
-                                                );
-                                              },
+                                  ),
+                                  Column(
+                                    children: [
+                                      IconButton(
+                                        tooltip:
+                                            l10n.editProduct,
+                                        icon:
+                                            const Icon(
+                                          Icons
+                                              .edit_outlined,
+                                          color:
+                                              Colors.blue,
+                                        ),
+                                        onPressed:
+                                            () {
+                                          _openEditProduct(
+                                            product,
+                                          );
+                                        },
+                                      ),
+                                      IconButton(
+                                        tooltip:
+                                            l10n.deleteProduct,
+                                        icon:
+                                            const Icon(
+                                          Icons
+                                              .delete_outline,
+                                          color:
+                                              Colors.red,
+                                        ),
+                                        onPressed:
+                                            productId
+                                                    .isEmpty
+                                                ? null
+                                                : () {
+                                                    _deleteProduct(
+                                                      productId:
+                                                          productId,
+                                                      productName:
+                                                          productName,
+                                                    );
+                                                  },
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
     );
   }
 }

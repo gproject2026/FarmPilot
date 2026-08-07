@@ -529,6 +529,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manage Categories'**
   String get manageCategories;
+
+  /// No description provided for @addProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Product'**
+  String get addProduct;
+
+  /// No description provided for @noProductsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Products Found'**
+  String get noProductsFound;
+
+  /// No description provided for @unnamedProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Unnamed Product'**
+  String get unnamedProduct;
+
+  /// No description provided for @price.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get price;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// No description provided for @status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @editProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Product'**
+  String get editProduct;
+
+  /// No description provided for @deleteProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Product'**
+  String get deleteProduct;
+
+  /// No description provided for @deleteProductConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{productName}\"?'**
+  String deleteProductConfirmation(String productName);
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @productDeletedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Product deleted successfully'**
+  String get productDeletedSuccessfully;
+
+  /// No description provided for @failedToDeleteProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete product: {error}'**
+  String failedToDeleteProduct(String error);
+
+  /// No description provided for @productUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Product updated successfully'**
+  String get productUpdatedSuccessfully;
+
+  /// No description provided for @productName.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Name'**
+  String get productName;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @unit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get unit;
+
+  /// No description provided for @chooseProductImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Product Image'**
+  String get chooseProductImage;
+
+  /// No description provided for @changeProductImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Product Image'**
+  String get changeProductImage;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @pleaseSelectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category'**
+  String get pleaseSelectCategory;
+
+  /// No description provided for @pleaseEnterValidProductData.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid product data'**
+  String get pleaseEnterValidProductData;
+
+  /// No description provided for @failedToSelectImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to select image: {error}'**
+  String failedToSelectImage(String error);
+
+  /// No description provided for @pleaseEnterProductNameFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the product name first'**
+  String get pleaseEnterProductNameFirst;
+
+  /// No description provided for @freshFarmProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh farm product'**
+  String get freshFarmProduct;
+
+  /// No description provided for @marketingContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing Content'**
+  String get marketingContent;
+
+  /// No description provided for @suggestedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested Title'**
+  String get suggestedTitle;
+
+  /// No description provided for @suggestedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested Description'**
+  String get suggestedDescription;
+
+  /// No description provided for @keywords.
+  ///
+  /// In en, this message translates to:
+  /// **'Keywords'**
+  String get keywords;
+
+  /// No description provided for @marketingSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing Suggestions'**
+  String get marketingSuggestions;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @useContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Content'**
+  String get useContent;
+
+  /// No description provided for @marketingContentAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing content added to the form'**
+  String get marketingContentAdded;
+
+  /// No description provided for @generateMarketingContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Marketing Content'**
+  String get generateMarketingContent;
+
+  /// No description provided for @productIdNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Product ID was not found'**
+  String get productIdNotFound;
 }
 
 class _AppLocalizationsDelegate

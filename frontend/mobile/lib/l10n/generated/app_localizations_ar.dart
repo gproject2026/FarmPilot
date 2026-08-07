@@ -229,4 +229,118 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get manageCategories => 'إدارة التصنيفات';
+
+  @override
+  String get addProduct => 'إضافة منتج';
+
+  @override
+  String get noProductsFound => 'لا توجد منتجات';
+
+  @override
+  String get unnamedProduct => 'منتج بدون اسم';
+
+  @override
+  String get price => 'السعر';
+
+  @override
+  String get quantity => 'الكمية';
+
+  @override
+  String get status => 'الحالة';
+
+  @override
+  String get category => 'التصنيف';
+
+  @override
+  String get editProduct => 'تعديل المنتج';
+
+  @override
+  String get deleteProduct => 'حذف المنتج';
+
+  @override
+  String deleteProductConfirmation(String productName) {
+    return 'هل أنت متأكد من حذف \"$productName\"؟';
+  }
+
+  @override
+  String get cancel => 'إلغاء';
+
+  @override
+  String get delete => 'حذف';
+
+  @override
+  String get productDeletedSuccessfully => 'تم حذف المنتج بنجاح';
+
+  @override
+  String failedToDeleteProduct(String error) {
+    return 'فشل حذف المنتج: $error';
+  }
+
+  @override
+  String get productUpdatedSuccessfully => 'تم تحديث المنتج بنجاح';
+
+  @override
+  String get productName => 'اسم المنتج';
+
+  @override
+  String get description => 'الوصف';
+
+  @override
+  String get unit => 'الوحدة';
+
+  @override
+  String get chooseProductImage => 'اختيار صورة المنتج';
+
+  @override
+  String get changeProductImage => 'تغيير صورة المنتج';
+
+  @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
+  String get pleaseSelectCategory => 'يرجى اختيار التصنيف';
+
+  @override
+  String get pleaseEnterValidProductData => 'يرجى إدخال بيانات منتج صحيحة';
+
+  @override
+  String failedToSelectImage(String error) {
+    return 'فشل اختيار الصورة: $error';
+  }
+
+  @override
+  String get pleaseEnterProductNameFirst => 'يرجى إدخال اسم المنتج أولًا';
+
+  @override
+  String get freshFarmProduct => 'منتج زراعي طازج';
+
+  @override
+  String get marketingContent => 'المحتوى التسويقي';
+
+  @override
+  String get suggestedTitle => 'العنوان المقترح';
+
+  @override
+  String get suggestedDescription => 'الوصف المقترح';
+
+  @override
+  String get keywords => 'الكلمات المفتاحية';
+
+  @override
+  String get marketingSuggestions => 'اقتراحات تسويقية';
+
+  @override
+  String get close => 'إغلاق';
+
+  @override
+  String get useContent => 'استخدام المحتوى';
+
+  @override
+  String get marketingContentAdded => 'تمت إضافة المحتوى التسويقي إلى النموذج';
+
+  @override
+  String get generateMarketingContent => 'إنشاء محتوى تسويقي';
+
+  @override
+  String get productIdNotFound => 'لم يتم العثور على معرف المنتج';
 }

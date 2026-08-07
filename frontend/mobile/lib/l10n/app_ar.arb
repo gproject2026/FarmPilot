@@ -86,5 +86,62 @@
 "manageUsers": "إدارة المستخدمين",
 "manageOrders": "إدارة الطلبات",
 "manageProducts": "إدارة المنتجات",
-"manageCategories": "إدارة التصنيفات"
+"manageCategories": "إدارة التصنيفات",
+"addProduct": "إضافة منتج",
+"noProductsFound": "لا توجد منتجات",
+"unnamedProduct": "منتج بدون اسم",
+"price": "السعر",
+"quantity": "الكمية",
+"status": "الحالة",
+"category": "التصنيف",
+"editProduct": "تعديل المنتج",
+"deleteProduct": "حذف المنتج",
+"deleteProductConfirmation": "هل أنت متأكد من حذف \"{productName}\"؟",
+"@deleteProductConfirmation": {
+  "placeholders": {
+    "productName": {
+      "type": "String"
+    }
+  }
+},
+"cancel": "إلغاء",
+"delete": "حذف",
+"productDeletedSuccessfully": "تم حذف المنتج بنجاح",
+"failedToDeleteProduct": "فشل حذف المنتج: {error}",
+"@failedToDeleteProduct": {
+  "placeholders": {
+    "error": {
+      "type": "String"
+    }
+  }
+},
+"productUpdatedSuccessfully": "تم تحديث المنتج بنجاح",
+"productName": "اسم المنتج",
+"description": "الوصف",
+"unit": "الوحدة",
+"chooseProductImage": "اختيار صورة المنتج",
+"changeProductImage": "تغيير صورة المنتج",
+"saveChanges": "حفظ التغييرات",
+"pleaseSelectCategory": "يرجى اختيار التصنيف",
+"pleaseEnterValidProductData": "يرجى إدخال بيانات منتج صحيحة",
+"failedToSelectImage": "فشل اختيار الصورة: {error}",
+"@failedToSelectImage": {
+  "placeholders": {
+    "error": {
+      "type": "String"
+    }
+  }
+},
+"pleaseEnterProductNameFirst": "يرجى إدخال اسم المنتج أولًا",
+"freshFarmProduct": "منتج زراعي طازج",
+"marketingContent": "المحتوى التسويقي",
+"suggestedTitle": "العنوان المقترح",
+"suggestedDescription": "الوصف المقترح",
+"keywords": "الكلمات المفتاحية",
+"marketingSuggestions": "اقتراحات تسويقية",
+"close": "إغلاق",
+"useContent": "استخدام المحتوى",
+"marketingContentAdded": "تمت إضافة المحتوى التسويقي إلى النموذج",
+"generateMarketingContent": "إنشاء محتوى تسويقي",
+"productIdNotFound": "لم يتم العثور على معرف المنتج"
 }

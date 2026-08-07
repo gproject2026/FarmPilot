@@ -230,4 +230,119 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manageCategories => 'Manage Categories';
+
+  @override
+  String get addProduct => 'Add Product';
+
+  @override
+  String get noProductsFound => 'No Products Found';
+
+  @override
+  String get unnamedProduct => 'Unnamed Product';
+
+  @override
+  String get price => 'Price';
+
+  @override
+  String get quantity => 'Quantity';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get editProduct => 'Edit Product';
+
+  @override
+  String get deleteProduct => 'Delete Product';
+
+  @override
+  String deleteProductConfirmation(String productName) {
+    return 'Are you sure you want to delete \"$productName\"?';
+  }
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get productDeletedSuccessfully => 'Product deleted successfully';
+
+  @override
+  String failedToDeleteProduct(String error) {
+    return 'Failed to delete product: $error';
+  }
+
+  @override
+  String get productUpdatedSuccessfully => 'Product updated successfully';
+
+  @override
+  String get productName => 'Product Name';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get unit => 'Unit';
+
+  @override
+  String get chooseProductImage => 'Choose Product Image';
+
+  @override
+  String get changeProductImage => 'Change Product Image';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get pleaseSelectCategory => 'Please select a category';
+
+  @override
+  String get pleaseEnterValidProductData => 'Please enter valid product data';
+
+  @override
+  String failedToSelectImage(String error) {
+    return 'Failed to select image: $error';
+  }
+
+  @override
+  String get pleaseEnterProductNameFirst =>
+      'Please enter the product name first';
+
+  @override
+  String get freshFarmProduct => 'Fresh farm product';
+
+  @override
+  String get marketingContent => 'Marketing Content';
+
+  @override
+  String get suggestedTitle => 'Suggested Title';
+
+  @override
+  String get suggestedDescription => 'Suggested Description';
+
+  @override
+  String get keywords => 'Keywords';
+
+  @override
+  String get marketingSuggestions => 'Marketing Suggestions';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get useContent => 'Use Content';
+
+  @override
+  String get marketingContentAdded => 'Marketing content added to the form';
+
+  @override
+  String get generateMarketingContent => 'Generate Marketing Content';
+
+  @override
+  String get productIdNotFound => 'Product ID was not found';
 }
