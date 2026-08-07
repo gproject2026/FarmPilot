@@ -143,5 +143,8 @@
 "useContent": "استخدام المحتوى",
 "marketingContentAdded": "تمت إضافة المحتوى التسويقي إلى النموذج",
 "generateMarketingContent": "إنشاء محتوى تسويقي",
-"productIdNotFound": "لم يتم العثور على معرف المنتج"
+"productIdNotFound": "لم يتم العثور على معرف المنتج",
+"available": "متاح",
+"outOfStock": "غير متوفر",
+"hidden": "مخفي"
 }

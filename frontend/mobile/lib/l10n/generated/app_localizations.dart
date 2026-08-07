@@ -745,6 +745,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Product ID was not found'**
   String get productIdNotFound;
+
+  /// No description provided for @available.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get available;
+
+  /// No description provided for @outOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of Stock'**
+  String get outOfStock;
+
+  /// No description provided for @hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get hidden;
 }
 
 class _AppLocalizationsDelegate

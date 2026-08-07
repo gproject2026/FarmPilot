@@ -55,6 +55,27 @@ class _MyProductsScreenState
     return url;
   }
 
+  String _translateProductStatus(
+    String status,
+    AppLocalizations l10n,
+  ) {
+    switch (
+      status.trim().toUpperCase()
+    ) {
+      case 'AVAILABLE':
+        return l10n.available;
+
+      case 'OUT_OF_STOCK':
+        return l10n.outOfStock;
+
+      case 'HIDDEN':
+        return l10n.hidden;
+
+      default:
+        return status;
+    }
+  }
+
   Future<void> _deleteProduct({
     required String productId,
     required String productName,
@@ -341,6 +362,14 @@ class _MyProductsScreenState
                                       ''
                                   : '';
 
+                          final translatedStatus =
+                              _translateProductStatus(
+                            product['status']
+                                    ?.toString() ??
+                                '',
+                            l10n,
+                          );
+
                           return Card(
                             margin:
                                 const EdgeInsets.only(
@@ -451,7 +480,7 @@ class _MyProductsScreenState
                                         ),
                                         Text(
                                           '${l10n.status}: '
-                                          '${product['status'] ?? ''}',
+                                          '$translatedStatus',
                                         ),
                                         if (categoryName
                                             .trim()

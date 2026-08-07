@@ -10,7 +10,7 @@ class CategoryProvider extends ChangeNotifier {
 
   String? errorMessage;
 
-  List<dynamic> categories = [];
+  List categories = [];
 
   String? selectedCategoryId;
 
@@ -21,7 +21,8 @@ class CategoryProvider extends ChangeNotifier {
 
     try {
       categories =
-          await categoryService.getCategories();
+          await categoryService
+              .getCategories();
 
       if (categories.isNotEmpty) {
         final selectedStillExists =
@@ -56,7 +57,11 @@ class CategoryProvider extends ChangeNotifier {
 
   Future<bool> createCategory({
     required String name,
+    required String nameEn,
+    required String nameAr,
     String? description,
+    String? descriptionEn,
+    String? descriptionAr,
   }) async {
     isLoading = true;
     errorMessage = null;
@@ -64,37 +69,27 @@ class CategoryProvider extends ChangeNotifier {
 
     try {
       final newCategory =
-          await categoryService.createCategory(
+          await categoryService
+              .createCategory(
         name: name,
+        nameEn: nameEn,
+        nameAr: nameAr,
         description: description,
+        descriptionEn:
+            descriptionEn,
+        descriptionAr:
+            descriptionAr,
       );
 
       categories.add(
         newCategory,
       );
 
-      categories.sort(
-        (a, b) {
-          final nameA =
-              a['name']
-                  ?.toString()
-                  .toLowerCase() ??
-              '';
-
-          final nameB =
-              b['name']
-                  ?.toString()
-                  .toLowerCase() ??
-              '';
-
-          return nameA.compareTo(
-            nameB,
-          );
-        },
-      );
+      _sortCategories();
 
       selectedCategoryId ??=
-          newCategory['id']?.toString();
+          newCategory['id']
+              ?.toString();
 
       return true;
     } catch (error) {
@@ -115,7 +110,11 @@ class CategoryProvider extends ChangeNotifier {
   Future<bool> updateCategory({
     required String categoryId,
     required String name,
+    required String nameEn,
+    required String nameAr,
     String? description,
+    String? descriptionEn,
+    String? descriptionAr,
   }) async {
     isLoading = true;
     errorMessage = null;
@@ -123,16 +122,24 @@ class CategoryProvider extends ChangeNotifier {
 
     try {
       final updatedCategory =
-          await categoryService.updateCategory(
+          await categoryService
+              .updateCategory(
         categoryId: categoryId,
         name: name,
+        nameEn: nameEn,
+        nameAr: nameAr,
         description: description,
+        descriptionEn:
+            descriptionEn,
+        descriptionAr:
+            descriptionAr,
       );
 
       final index =
           categories.indexWhere(
         (category) =>
-            category['id']?.toString() ==
+            category['id']
+                ?.toString() ==
             categoryId,
       );
 
@@ -141,25 +148,7 @@ class CategoryProvider extends ChangeNotifier {
             updatedCategory;
       }
 
-      categories.sort(
-        (a, b) {
-          final nameA =
-              a['name']
-                  ?.toString()
-                  .toLowerCase() ??
-              '';
-
-          final nameB =
-              b['name']
-                  ?.toString()
-                  .toLowerCase() ??
-              '';
-
-          return nameA.compareTo(
-            nameB,
-          );
-        },
-      );
+      _sortCategories();
 
       return true;
     } catch (error) {
@@ -185,20 +174,20 @@ class CategoryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await categoryService.deleteCategory(
+      await categoryService
+          .deleteCategory(
         categoryId,
       );
 
       categories.removeWhere(
         (category) =>
-            category['id']?.toString() ==
+            category['id']
+                ?.toString() ==
             categoryId,
       );
 
-      if (
-        selectedCategoryId ==
-        categoryId
-      ) {
+      if (selectedCategoryId ==
+          categoryId) {
         selectedCategoryId =
             categories.isNotEmpty
                 ? categories.first['id']
@@ -227,11 +216,36 @@ class CategoryProvider extends ChangeNotifier {
   ) {
     selectedCategoryId =
         categoryId;
+
     notifyListeners();
   }
 
   void clearError() {
     errorMessage = null;
     notifyListeners();
+  }
+
+  void _sortCategories() {
+    categories.sort(
+      (a, b) {
+        final nameA =
+            (a['nameEn'] ??
+                    a['name'] ??
+                    '')
+                .toString()
+                .toLowerCase();
+
+        final nameB =
+            (b['nameEn'] ??
+                    b['name'] ??
+                    '')
+                .toString()
+                .toLowerCase();
+
+        return nameA.compareTo(
+          nameB,
+        );
+      },
+    );
   }
 }

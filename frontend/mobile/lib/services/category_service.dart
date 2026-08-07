@@ -5,9 +5,10 @@ import '../core/api/api_client.dart';
 class CategoryService {
   final ApiClient apiClient = ApiClient();
 
-  Future<List<dynamic>> getCategories() async {
+  Future<List> getCategories() async {
     try {
-      final response = await apiClient.dio.get(
+      final response =
+          await apiClient.dio.get(
         '/categories',
       );
 
@@ -27,16 +28,28 @@ class CategoryService {
     }
   }
 
-  Future<Map<String, dynamic>> createCategory({
+  Future<Map<String, dynamic>>
+      createCategory({
     required String name,
+    required String nameEn,
+    required String nameAr,
     String? description,
+    String? descriptionEn,
+    String? descriptionAr,
   }) async {
     try {
-      final response = await apiClient.dio.post(
+      final response =
+          await apiClient.dio.post(
         '/categories',
         data: {
           'name': name,
+          'nameEn': nameEn,
+          'nameAr': nameAr,
           'description': description,
+          'descriptionEn':
+              descriptionEn,
+          'descriptionAr':
+              descriptionAr,
         },
       );
 
@@ -60,17 +73,29 @@ class CategoryService {
     }
   }
 
-  Future<Map<String, dynamic>> updateCategory({
+  Future<Map<String, dynamic>>
+      updateCategory({
     required String categoryId,
     required String name,
+    required String nameEn,
+    required String nameAr,
     String? description,
+    String? descriptionEn,
+    String? descriptionAr,
   }) async {
     try {
-      final response = await apiClient.dio.patch(
+      final response =
+          await apiClient.dio.patch(
         '/categories/$categoryId',
         data: {
           'name': name,
+          'nameEn': nameEn,
+          'nameAr': nameAr,
           'description': description,
+          'descriptionEn':
+              descriptionEn,
+          'descriptionAr':
+              descriptionAr,
         },
       );
 

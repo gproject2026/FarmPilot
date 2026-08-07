@@ -345,4 +345,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productIdNotFound => 'Product ID was not found';
+
+  @override
+  String get available => 'Available';
+
+  @override
+  String get outOfStock => 'Out of Stock';
+
+  @override
+  String get hidden => 'Hidden';
 }

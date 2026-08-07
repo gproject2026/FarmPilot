@@ -144,5 +144,8 @@
 "useContent": "Use Content",
 "marketingContentAdded": "Marketing content added to the form",
 "generateMarketingContent": "Generate Marketing Content",
-"productIdNotFound": "Product ID was not found"
+"productIdNotFound": "Product ID was not found",
+"available": "Available",
+"outOfStock": "Out of Stock",
+"hidden": "Hidden"
 }

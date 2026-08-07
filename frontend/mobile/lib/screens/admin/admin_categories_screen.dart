@@ -21,35 +21,73 @@ class _AdminCategoriesScreenState
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
+        if (!mounted) {
+          return;
+        }
+
         _loadCategories();
       },
     );
   }
 
   Future<void> _loadCategories() async {
-    await Provider.of<CategoryProvider>(
+    final provider =
+        Provider.of<CategoryProvider>(
       context,
       listen: false,
-    ).loadCategories();
+    );
+
+    await provider.loadCategories();
+  }
+
+  String? _optionalText(
+    TextEditingController controller,
+  ) {
+    final value =
+        controller.text.trim();
+
+    return value.isEmpty
+        ? null
+        : value;
   }
 
   Future<void> _openCategoryDialog({
     Map<String, dynamic>? category,
   }) async {
-    final nameController =
+    final nameEnController =
         TextEditingController(
       text:
-          category?['name']
-              ?.toString() ??
-          '',
+          category?['nameEn']
+                  ?.toString() ??
+              category?['name']
+                  ?.toString() ??
+              '',
     );
 
-    final descriptionController =
+    final nameArController =
         TextEditingController(
       text:
-          category?['description']
-              ?.toString() ??
-          '',
+          category?['nameAr']
+                  ?.toString() ??
+              '',
+    );
+
+    final descriptionEnController =
+        TextEditingController(
+      text:
+          category?['descriptionEn']
+                  ?.toString() ??
+              category?['description']
+                  ?.toString() ??
+              '',
+    );
+
+    final descriptionArController =
+        TextEditingController(
+      text:
+          category?['descriptionAr']
+                  ?.toString() ??
+              '',
     );
 
     final isEditing =
@@ -67,38 +105,116 @@ class _AdminCategoriesScreenState
                 ? 'Edit Category'
                 : 'Add Category',
           ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize:
-                  MainAxisSize.min,
-              children: [
-                TextField(
-                  controller:
-                      nameController,
-                  decoration:
-                      const InputDecoration(
-                    labelText:
-                        'Category Name',
-                    border:
-                        OutlineInputBorder(),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize:
+                    MainAxisSize.min,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'English',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  height: 14,
-                ),
-                TextField(
-                  controller:
-                      descriptionController,
-                  maxLines: 4,
-                  decoration:
-                      const InputDecoration(
-                    labelText:
-                        'Description',
-                    border:
-                        OutlineInputBorder(),
+                  const SizedBox(
+                    height: 12,
                   ),
-                ),
-              ],
+                  TextField(
+                    controller:
+                        nameEnController,
+                    textDirection:
+                        TextDirection.ltr,
+                    decoration:
+                        const InputDecoration(
+                      labelText:
+                          'Category Name (English)',
+                      border:
+                          OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 14,
+                  ),
+                  TextField(
+                    controller:
+                        descriptionEnController,
+                    textDirection:
+                        TextDirection.ltr,
+                    maxLines: 3,
+                    decoration:
+                        const InputDecoration(
+                      labelText:
+                          'Description (English)',
+                      border:
+                          OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 24,
+                  ),
+                  const Divider(),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  const Align(
+                    alignment:
+                        Alignment.centerRight,
+                    child: Text(
+                      'العربية',
+                      textDirection:
+                          TextDirection.rtl,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  TextField(
+                    controller:
+                        nameArController,
+                    textDirection:
+                        TextDirection.rtl,
+                    textAlign:
+                        TextAlign.right,
+                    decoration:
+                        const InputDecoration(
+                      labelText:
+                          'اسم التصنيف (العربية)',
+                      border:
+                          OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 14,
+                  ),
+                  TextField(
+                    controller:
+                        descriptionArController,
+                    textDirection:
+                        TextDirection.rtl,
+                    textAlign:
+                        TextAlign.right,
+                    maxLines: 3,
+                    decoration:
+                        const InputDecoration(
+                      labelText:
+                          'الوصف (العربية)',
+                      border:
+                          OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -115,17 +231,22 @@ class _AdminCategoriesScreenState
             ),
             ElevatedButton(
               onPressed: () {
-                final name =
-                    nameController.text
+                final nameEn =
+                    nameEnController.text
                         .trim();
 
-                if (name.isEmpty) {
+                final nameAr =
+                    nameArController.text
+                        .trim();
+
+                if (nameEn.isEmpty ||
+                    nameAr.isEmpty) {
                   ScaffoldMessenger.of(
                     dialogContext,
                   ).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        'Category name is required',
+                        'English and Arabic category names are required',
                       ),
                     ),
                   );
@@ -158,6 +279,11 @@ class _AdminCategoriesScreenState
 
     if (result != true ||
         !mounted) {
+      nameEnController.dispose();
+      nameArController.dispose();
+      descriptionEnController.dispose();
+      descriptionArController.dispose();
+
       return;
     }
 
@@ -167,16 +293,26 @@ class _AdminCategoriesScreenState
       listen: false,
     );
 
-    final name =
-        nameController.text.trim();
+    final nameEn =
+        nameEnController.text.trim();
 
-    final description =
-        descriptionController.text
-                .trim()
-                .isEmpty
-            ? null
-            : descriptionController.text
-                .trim();
+    final nameAr =
+        nameArController.text.trim();
+
+    final descriptionEn =
+        _optionalText(
+      descriptionEnController,
+    );
+
+    final descriptionAr =
+        _optionalText(
+      descriptionArController,
+    );
+
+    nameEnController.dispose();
+    nameArController.dispose();
+    descriptionEnController.dispose();
+    descriptionArController.dispose();
 
     bool success;
 
@@ -185,14 +321,28 @@ class _AdminCategoriesScreenState
           await provider.updateCategory(
         categoryId:
             category['id'].toString(),
-        name: name,
-        description: description,
+        name: nameEn,
+        nameEn: nameEn,
+        nameAr: nameAr,
+        description:
+            descriptionEn,
+        descriptionEn:
+            descriptionEn,
+        descriptionAr:
+            descriptionAr,
       );
     } else {
       success =
           await provider.createCategory(
-        name: name,
-        description: description,
+        name: nameEn,
+        nameEn: nameEn,
+        nameAr: nameAr,
+        description:
+            descriptionEn,
+        descriptionEn:
+            descriptionEn,
+        descriptionAr:
+            descriptionAr,
       );
     }
 
@@ -234,7 +384,9 @@ class _AdminCategoriesScreenState
     Map<String, dynamic> category,
   ) async {
     final categoryName =
-        category['name']
+        category['nameEn']
+                ?.toString() ??
+            category['name']
                 ?.toString() ??
             'Category';
 
@@ -543,8 +695,7 @@ class _AdminCategoriesScreenState
             height: 150,
           ),
           Icon(
-            Icons
-                .category_outlined,
+            Icons.category_outlined,
             size: 75,
             color: Colors.grey,
           ),
@@ -570,16 +721,53 @@ class _AdminCategoriesScreenState
   Widget _categoryCard(
     Map<String, dynamic> category,
   ) {
-    final name =
-        category['name']
-                ?.toString() ??
-            'Unnamed Category';
+    final nameEn =
+        category['nameEn']
+                ?.toString()
+                .trim() ??
+            '';
 
-    final description =
+    final nameAr =
+        category['nameAr']
+                ?.toString()
+                .trim() ??
+            '';
+
+    final fallbackName =
+        category['name']
+                ?.toString()
+                .trim() ??
+            '';
+
+    final displayNameEn =
+        nameEn.isNotEmpty
+            ? nameEn
+            : fallbackName.isNotEmpty
+                ? fallbackName
+                : 'Unnamed Category';
+
+    final descriptionEn =
+        category['descriptionEn']
+                ?.toString()
+                .trim() ??
+            '';
+
+    final descriptionAr =
+        category['descriptionAr']
+                ?.toString()
+                .trim() ??
+            '';
+
+    final fallbackDescription =
         category['description']
                 ?.toString()
                 .trim() ??
             '';
+
+    final displayDescriptionEn =
+        descriptionEn.isNotEmpty
+            ? descriptionEn
+            : fallbackDescription;
 
     final productCount =
         _productCount(
@@ -614,8 +802,7 @@ class _AdminCategoriesScreenState
                   Colors.green
                       .shade100,
               child: Icon(
-                Icons
-                    .category_outlined,
+                Icons.category_outlined,
                 color: Colors.green
                     .shade700,
               ),
@@ -629,7 +816,7 @@ class _AdminCategoriesScreenState
                     CrossAxisAlignment.start,
                 children: [
                   Text(
-                    name,
+                    displayNameEn,
                     style:
                         const TextStyle(
                       fontSize: 18,
@@ -637,13 +824,48 @@ class _AdminCategoriesScreenState
                           FontWeight.bold,
                     ),
                   ),
-                  if (description
+                  if (nameAr
+                      .isNotEmpty) ...[
+                    const SizedBox(
+                      height: 4,
+                    ),
+                    Text(
+                      nameAr,
+                      textDirection:
+                          TextDirection.rtl,
+                      style:
+                          const TextStyle(
+                        fontSize: 16,
+                        fontWeight:
+                            FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                  if (displayDescriptionEn
                       .isNotEmpty) ...[
                     const SizedBox(
                       height: 6,
                     ),
                     Text(
-                      description,
+                      displayDescriptionEn,
+                      style:
+                          TextStyle(
+                        color: Colors
+                            .grey
+                            .shade700,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                  if (descriptionAr
+                      .isNotEmpty) ...[
+                    const SizedBox(
+                      height: 4,
+                    ),
+                    Text(
+                      descriptionAr,
+                      textDirection:
+                          TextDirection.rtl,
                       style:
                           TextStyle(
                         color: Colors

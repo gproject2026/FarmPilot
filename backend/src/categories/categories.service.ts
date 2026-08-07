@@ -18,8 +18,50 @@ export class CategoriesService {
   create(
     createCategoryDto: CreateCategoryDto,
   ) {
+    const name =
+      createCategoryDto.name.trim();
+
+    const description =
+      this.cleanOptionalText(
+        createCategoryDto.description,
+      );
+
+    const nameEn =
+      this.cleanOptionalText(
+        createCategoryDto.nameEn,
+      ) ?? name;
+
+    const nameAr =
+      this.cleanOptionalText(
+        createCategoryDto.nameAr,
+      );
+
+    const descriptionEn =
+      this.cleanOptionalText(
+        createCategoryDto.descriptionEn,
+      ) ?? description;
+
+    const descriptionAr =
+      this.cleanOptionalText(
+        createCategoryDto.descriptionAr,
+      );
+
     return this.prisma.category.create({
-      data: createCategoryDto,
+      data: {
+        name,
+        description,
+        nameEn,
+        nameAr,
+        descriptionEn,
+        descriptionAr,
+      },
+      include: {
+        _count: {
+          select: {
+            products: true,
+          },
+        },
+      },
     });
   }
 
@@ -68,15 +110,75 @@ export class CategoriesService {
     id: string,
     updateCategoryDto: UpdateCategoryDto,
   ) {
-    await this.findOne(
-      id,
-    );
+    const currentCategory =
+      await this.findOne(
+        id,
+      );
+
+    const data = {
+      name:
+          updateCategoryDto.name !==
+                  undefined
+              ? updateCategoryDto.name.trim()
+              : undefined,
+
+      description:
+          updateCategoryDto.description !==
+                  undefined
+              ? this.cleanOptionalText(
+                  updateCategoryDto.description,
+                )
+              : undefined,
+
+      nameEn:
+          updateCategoryDto.nameEn !==
+                  undefined
+              ? this.cleanOptionalText(
+                  updateCategoryDto.nameEn,
+                )
+              : undefined,
+
+      nameAr:
+          updateCategoryDto.nameAr !==
+                  undefined
+              ? this.cleanOptionalText(
+                  updateCategoryDto.nameAr,
+                )
+              : undefined,
+
+      descriptionEn:
+          updateCategoryDto.descriptionEn !==
+                  undefined
+              ? this.cleanOptionalText(
+                  updateCategoryDto.descriptionEn,
+                )
+              : undefined,
+
+      descriptionAr:
+          updateCategoryDto.descriptionAr !==
+                  undefined
+              ? this.cleanOptionalText(
+                  updateCategoryDto.descriptionAr,
+                )
+              : undefined,
+    };
+
+    if (
+      updateCategoryDto.name !==
+        undefined &&
+      updateCategoryDto.nameEn ===
+        undefined &&
+      currentCategory.nameEn == null
+    ) {
+      data.nameEn =
+          updateCategoryDto.name.trim();
+    }
 
     return this.prisma.category.update({
       where: {
         id,
       },
-      data: updateCategoryDto,
+      data,
       include: {
         _count: {
           select: {
@@ -123,5 +225,20 @@ export class CategoriesService {
         id,
       },
     });
+  }
+
+  private cleanOptionalText(
+    value?: string | null,
+  ) {
+    if (value == null) {
+      return null;
+    }
+
+    const cleaned =
+        value.trim();
+
+    return cleaned.length === 0
+        ? null
+        : cleaned;
   }
 }

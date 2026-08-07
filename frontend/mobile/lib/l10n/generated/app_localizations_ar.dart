@@ -343,4 +343,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get productIdNotFound => 'لم يتم العثور على معرف المنتج';
+
+  @override
+  String get available => 'متاح';
+
+  @override
+  String get outOfStock => 'غير متوفر';
+
+  @override
+  String get hidden => 'مخفي';
 }
