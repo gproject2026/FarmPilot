@@ -6,6 +6,7 @@ import '../../providers/dashboard_provider.dart';
 import 'admin_orders_screen.dart';
 import 'admin_products_screen.dart';
 import 'admin_users_screen.dart';
+import 'admin_categories_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({
@@ -65,6 +66,14 @@ class _AdminDashboardScreenState
       ),
     );
   }
+  void _openManageCategories() {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) =>
+          const AdminCategoriesScreen(),
+    ),
+  );
+}
 
   void _logout() {
     final authProvider =
@@ -415,9 +424,18 @@ class _AdminDashboardScreenState
                       onPressed:
                           _openManageProducts,
                     ),
+                    
                     const SizedBox(
-                      height: 20,
-                    ),
+  height: 12,
+),
+_adminToolButton(
+  icon: Icons.category_outlined,
+  title: 'Manage Categories',
+  onPressed: _openManageCategories,
+),
+const SizedBox(
+  height: 20,
+),
                   ],
                 ),
               ),
