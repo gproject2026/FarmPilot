@@ -72,5 +72,20 @@
 },
 "shoppingCart": "Shopping Cart",
 "shoppingCartSubtitle": "Review your products and complete checkout",
-"myProfileSubtitle": "View and edit your personal information"
+"myProfileSubtitle": "View and edit your personal information",
+"adminDashboard": "Admin Dashboard",
+"refresh": "Refresh",
+"unableToLoadAdminDashboard": "Unable to load admin dashboard",
+"tryAgain": "Try Again",
+"welcomeAdmin": "Welcome Admin",
+"systemOverviewStatistics": "System overview and statistics",
+"totalUsers": "Total Users",
+"farmers": "Farmers",
+"customers": "Customers",
+"diagnoses": "Diagnoses",
+"adminTools": "Admin Tools",
+"manageUsers": "Manage Users",
+"manageOrders": "Manage Orders",
+"manageProducts": "Manage Products",
+"manageCategories": "Manage Categories"
 }

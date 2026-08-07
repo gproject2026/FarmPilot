@@ -439,6 +439,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View and edit your personal information'**
   String get myProfileSubtitle;
+
+  /// No description provided for @adminDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Dashboard'**
+  String get adminDashboard;
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// No description provided for @unableToLoadAdminDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load admin dashboard'**
+  String get unableToLoadAdminDashboard;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// No description provided for @welcomeAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Admin'**
+  String get welcomeAdmin;
+
+  /// No description provided for @systemOverviewStatistics.
+  ///
+  /// In en, this message translates to:
+  /// **'System overview and statistics'**
+  String get systemOverviewStatistics;
+
+  /// No description provided for @totalUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Users'**
+  String get totalUsers;
+
+  /// No description provided for @farmers.
+  ///
+  /// In en, this message translates to:
+  /// **'Farmers'**
+  String get farmers;
+
+  /// No description provided for @customers.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers'**
+  String get customers;
+
+  /// No description provided for @diagnoses.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnoses'**
+  String get diagnoses;
+
+  /// No description provided for @adminTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Tools'**
+  String get adminTools;
+
+  /// No description provided for @manageUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Users'**
+  String get manageUsers;
+
+  /// No description provided for @manageOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Orders'**
+  String get manageOrders;
+
+  /// No description provided for @manageProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Products'**
+  String get manageProducts;
+
+  /// No description provided for @manageCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Categories'**
+  String get manageCategories;
 }
 
 class _AppLocalizationsDelegate

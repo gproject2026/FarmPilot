@@ -185,4 +185,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get myProfileSubtitle => 'View and edit your personal information';
+
+  @override
+  String get adminDashboard => 'Admin Dashboard';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get unableToLoadAdminDashboard => 'Unable to load admin dashboard';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String get welcomeAdmin => 'Welcome Admin';
+
+  @override
+  String get systemOverviewStatistics => 'System overview and statistics';
+
+  @override
+  String get totalUsers => 'Total Users';
+
+  @override
+  String get farmers => 'Farmers';
+
+  @override
+  String get customers => 'Customers';
+
+  @override
+  String get diagnoses => 'Diagnoses';
+
+  @override
+  String get adminTools => 'Admin Tools';
+
+  @override
+  String get manageUsers => 'Manage Users';
+
+  @override
+  String get manageOrders => 'Manage Orders';
+
+  @override
+  String get manageProducts => 'Manage Products';
+
+  @override
+  String get manageCategories => 'Manage Categories';
 }

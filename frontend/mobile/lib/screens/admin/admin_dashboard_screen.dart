@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../providers/locale_provider.dart';
+import 'admin_categories_screen.dart';
 import 'admin_orders_screen.dart';
 import 'admin_products_screen.dart';
 import 'admin_users_screen.dart';
-import 'admin_categories_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({
@@ -66,14 +68,26 @@ class _AdminDashboardScreenState
       ),
     );
   }
+
   void _openManageCategories() {
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) =>
-          const AdminCategoriesScreen(),
-    ),
-  );
-}
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            const AdminCategoriesScreen(),
+      ),
+    );
+  }
+
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
 
   void _logout() {
     final authProvider =
@@ -99,27 +113,103 @@ class _AdminDashboardScreenState
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     final dashboardProvider =
         Provider.of<DashboardProvider>(
       context,
     );
 
+    final localeProvider =
+        Provider.of<LocaleProvider>(
+      context,
+    );
+
+    final l10n =
+        AppLocalizations.of(context)!;
+
     final data =
         dashboardProvider.dashboardData;
 
+    final isArabic =
+        localeProvider
+                .locale.languageCode ==
+            'ar';
+
     return Scaffold(
       backgroundColor:
-          const Color(0xFFF5F7F4),
+          const Color(
+        0xFFF5F7F4,
+      ),
       appBar: AppBar(
-        title: const Text(
-          'Admin Dashboard',
+        title: Text(
+          l10n.adminDashboard,
         ),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+        backgroundColor:
+            Colors.green,
+        foregroundColor:
+            Colors.white,
         actions: [
+          PopupMenuButton<String>(
+            tooltip:
+                l10n.changeLanguage,
+            icon: const Icon(
+              Icons.language,
+            ),
+            onSelected:
+                _changeLanguage,
+            itemBuilder:
+                (context) {
+              return [
+                PopupMenuItem<String>(
+                  value: 'en',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color:
+                            !isArabic
+                                ? Colors.green
+                                : Colors
+                                    .transparent,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        l10n.english,
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'ar',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color:
+                            isArabic
+                                ? Colors.green
+                                : Colors
+                                    .transparent,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        l10n.arabic,
+                      ),
+                    ],
+                  ),
+                ),
+              ];
+            },
+          ),
           IconButton(
-            tooltip: 'Refresh',
+            tooltip:
+                l10n.refresh,
             onPressed:
                 dashboardProvider.isLoading
                     ? null
@@ -129,8 +219,10 @@ class _AdminDashboardScreenState
             ),
           ),
           IconButton(
-            tooltip: 'Logout',
-            onPressed: _logout,
+            tooltip:
+                l10n.logout,
+            onPressed:
+                _logout,
             icon: const Icon(
               Icons.logout,
             ),
@@ -147,23 +239,29 @@ class _AdminDashboardScreenState
               : data == null
                   ? _buildErrorState(
                       dashboardProvider,
+                      l10n,
                     )
                   : _buildDashboard(
                       data,
+                      l10n,
                     ),
     );
   }
 
   Widget _buildErrorState(
     DashboardProvider dashboardProvider,
+    AppLocalizations l10n,
   ) {
     return RefreshIndicator(
-      onRefresh: _loadDashboard,
+      onRefresh:
+          _loadDashboard,
       child: ListView(
         physics:
             const AlwaysScrollableScrollPhysics(),
         padding:
-            const EdgeInsets.all(24),
+            const EdgeInsets.all(
+          24,
+        ),
         children: [
           const SizedBox(
             height: 120,
@@ -181,7 +279,8 @@ class _AdminDashboardScreenState
             child: Text(
               dashboardProvider
                       .errorMessage ??
-                  'Unable to load admin dashboard',
+                  l10n
+                      .unableToLoadAdminDashboard,
               textAlign:
                   TextAlign.center,
               style:
@@ -203,8 +302,8 @@ class _AdminDashboardScreenState
               icon: const Icon(
                 Icons.refresh,
               ),
-              label: const Text(
-                'Try Again',
+              label: Text(
+                l10n.tryAgain,
               ),
             ),
           ),
@@ -215,9 +314,11 @@ class _AdminDashboardScreenState
 
   Widget _buildDashboard(
     Map<String, dynamic> data,
+    AppLocalizations l10n,
   ) {
     return RefreshIndicator(
-      onRefresh: _loadDashboard,
+      onRefresh:
+          _loadDashboard,
       child: LayoutBuilder(
         builder: (
           context,
@@ -274,11 +375,13 @@ class _AdminDashboardScreenState
                     const SizedBox(
                       height: 8,
                     ),
-                    const Center(
+                    Center(
                       child: Text(
-                        'Welcome Admin',
+                        l10n.welcomeAdmin,
+                        textAlign:
+                            TextAlign.center,
                         style:
-                            TextStyle(
+                            const TextStyle(
                           fontSize: 26,
                           fontWeight:
                               FontWeight
@@ -291,7 +394,10 @@ class _AdminDashboardScreenState
                     ),
                     Center(
                       child: Text(
-                        'System overview and statistics',
+                        l10n
+                            .systemOverviewStatistics,
+                        textAlign:
+                            TextAlign.center,
                         style:
                             TextStyle(
                           fontSize: 15,
@@ -319,7 +425,7 @@ class _AdminDashboardScreenState
                       children: [
                         _statCard(
                           title:
-                              'Total Users',
+                              l10n.totalUsers,
                           value: _value(
                             data[
                                 'totalUsers'],
@@ -329,7 +435,7 @@ class _AdminDashboardScreenState
                         ),
                         _statCard(
                           title:
-                              'Farmers',
+                              l10n.farmers,
                           value: _value(
                             data[
                                 'totalFarmers'],
@@ -339,7 +445,7 @@ class _AdminDashboardScreenState
                         ),
                         _statCard(
                           title:
-                              'Customers',
+                              l10n.customers,
                           value: _value(
                             data[
                                 'totalCustomers'],
@@ -349,7 +455,7 @@ class _AdminDashboardScreenState
                         ),
                         _statCard(
                           title:
-                              'Products',
+                              l10n.products,
                           value: _value(
                             data[
                                 'totalProducts'],
@@ -359,7 +465,7 @@ class _AdminDashboardScreenState
                         ),
                         _statCard(
                           title:
-                              'Orders',
+                              l10n.orders,
                           value: _value(
                             data[
                                 'totalOrders'],
@@ -369,7 +475,7 @@ class _AdminDashboardScreenState
                         ),
                         _statCard(
                           title:
-                              'Diagnoses',
+                              l10n.diagnoses,
                           value: _value(
                             data[
                                 'totalDiagnoses'],
@@ -382,13 +488,13 @@ class _AdminDashboardScreenState
                     const SizedBox(
                       height: 28,
                     ),
-                    const Text(
-                      'Admin Tools',
-                      style: TextStyle(
+                    Text(
+                      l10n.adminTools,
+                      style:
+                          const TextStyle(
                         fontSize: 22,
                         fontWeight:
-                            FontWeight
-                                .bold,
+                            FontWeight.bold,
                       ),
                     ),
                     const SizedBox(
@@ -398,7 +504,7 @@ class _AdminDashboardScreenState
                       icon: Icons
                           .manage_accounts,
                       title:
-                          'Manage Users',
+                          l10n.manageUsers,
                       onPressed:
                           _openManageUsers,
                     ),
@@ -409,7 +515,7 @@ class _AdminDashboardScreenState
                       icon: Icons
                           .receipt_long_outlined,
                       title:
-                          'Manage Orders',
+                          l10n.manageOrders,
                       onPressed:
                           _openManageOrders,
                     ),
@@ -420,22 +526,24 @@ class _AdminDashboardScreenState
                       icon: Icons
                           .inventory_2_outlined,
                       title:
-                          'Manage Products',
+                          l10n.manageProducts,
                       onPressed:
                           _openManageProducts,
                     ),
-                    
                     const SizedBox(
-  height: 12,
-),
-_adminToolButton(
-  icon: Icons.category_outlined,
-  title: 'Manage Categories',
-  onPressed: _openManageCategories,
-),
-const SizedBox(
-  height: 20,
-),
+                      height: 12,
+                    ),
+                    _adminToolButton(
+                      icon: Icons
+                          .category_outlined,
+                      title:
+                          l10n.manageCategories,
+                      onPressed:
+                          _openManageCategories,
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
                   ],
                 ),
               ),
@@ -452,9 +560,12 @@ const SizedBox(
     required VoidCallback onPressed,
   }) {
     return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
+      width:
+          double.infinity,
+      child:
+          ElevatedButton.icon(
+        onPressed:
+            onPressed,
         icon: Icon(
           icon,
         ),
@@ -496,7 +607,8 @@ const SizedBox(
   }) {
     return Card(
       elevation: 2,
-      margin: EdgeInsets.zero,
+      margin:
+          EdgeInsets.zero,
       shape:
           RoundedRectangleBorder(
         borderRadius:
@@ -515,11 +627,13 @@ const SizedBox(
             CircleAvatar(
               radius: 25,
               backgroundColor:
-                  Colors.green.shade100,
+                  Colors.green
+                      .shade100,
               child: Icon(
                 icon,
                 color: Colors
-                    .green.shade700,
+                    .green
+                    .shade700,
                 size: 25,
               ),
             ),

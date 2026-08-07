@@ -184,4 +184,49 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get myProfileSubtitle => 'عرض وتعديل معلوماتك الشخصية';
+
+  @override
+  String get adminDashboard => 'لوحة تحكم المسؤول';
+
+  @override
+  String get refresh => 'تحديث';
+
+  @override
+  String get unableToLoadAdminDashboard => 'تعذر تحميل لوحة تحكم المسؤول';
+
+  @override
+  String get tryAgain => 'إعادة المحاولة';
+
+  @override
+  String get welcomeAdmin => 'مرحبًا بالمسؤول';
+
+  @override
+  String get systemOverviewStatistics => 'نظرة عامة وإحصائيات النظام';
+
+  @override
+  String get totalUsers => 'إجمالي المستخدمين';
+
+  @override
+  String get farmers => 'المزارعون';
+
+  @override
+  String get customers => 'العملاء';
+
+  @override
+  String get diagnoses => 'التشخيصات';
+
+  @override
+  String get adminTools => 'أدوات المسؤول';
+
+  @override
+  String get manageUsers => 'إدارة المستخدمين';
+
+  @override
+  String get manageOrders => 'إدارة الطلبات';
+
+  @override
+  String get manageProducts => 'إدارة المنتجات';
+
+  @override
+  String get manageCategories => 'إدارة التصنيفات';
 }

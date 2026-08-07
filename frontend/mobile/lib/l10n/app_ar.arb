@@ -71,5 +71,20 @@
 },
 "shoppingCart": "سلة التسوق",
 "shoppingCartSubtitle": "راجع منتجاتك وأكمل عملية الشراء",
-"myProfileSubtitle": "عرض وتعديل معلوماتك الشخصية"
+"myProfileSubtitle": "عرض وتعديل معلوماتك الشخصية",
+"adminDashboard": "لوحة تحكم المسؤول",
+"refresh": "تحديث",
+"unableToLoadAdminDashboard": "تعذر تحميل لوحة تحكم المسؤول",
+"tryAgain": "إعادة المحاولة",
+"welcomeAdmin": "مرحبًا بالمسؤول",
+"systemOverviewStatistics": "نظرة عامة وإحصائيات النظام",
+"totalUsers": "إجمالي المستخدمين",
+"farmers": "المزارعون",
+"customers": "العملاء",
+"diagnoses": "التشخيصات",
+"adminTools": "أدوات المسؤول",
+"manageUsers": "إدارة المستخدمين",
+"manageOrders": "إدارة الطلبات",
+"manageProducts": "إدارة المنتجات",
+"manageCategories": "إدارة التصنيفات"
 }
