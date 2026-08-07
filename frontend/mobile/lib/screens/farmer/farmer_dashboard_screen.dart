@@ -237,6 +237,7 @@ class _FarmerDashboardScreenState
                         const SizedBox(
                           height: 30,
                         ),
+
                         _navigationButton(
                           icon: Icons
                               .inventory_2_outlined,
@@ -263,6 +264,7 @@ class _FarmerDashboardScreenState
                         const SizedBox(
                           height: 14,
                         ),
+
                         _navigationButton(
                           icon:
                               Icons.eco_outlined,
@@ -289,6 +291,7 @@ class _FarmerDashboardScreenState
                         const SizedBox(
                           height: 14,
                         ),
+
                         _navigationButton(
                           icon: Icons
                               .local_florist_outlined,
@@ -307,13 +310,21 @@ class _FarmerDashboardScreenState
                               return;
                             }
 
-                            await dashboardProvider
-                                .loadFarmerDashboard();
+                            await Future.wait([
+                              dashboardProvider
+                                  .loadFarmerDashboard(),
+                              Provider.of<
+                                  NotificationProvider>(
+                                context,
+                                listen: false,
+                              ).loadNotifications(),
+                            ]);
                           },
                         ),
                         const SizedBox(
                           height: 14,
                         ),
+
                         _navigationButton(
                           icon:
                               Icons.history,
@@ -339,6 +350,7 @@ class _FarmerDashboardScreenState
                         const SizedBox(
                           height: 14,
                         ),
+
                         _navigationButton(
                           icon: Icons
                               .notifications_active_outlined,
@@ -365,6 +377,7 @@ class _FarmerDashboardScreenState
                         const SizedBox(
                           height: 14,
                         ),
+
                         _navigationButton(
                           icon: Icons
                               .notifications_outlined,
@@ -379,6 +392,7 @@ class _FarmerDashboardScreenState
                         const SizedBox(
                           height: 14,
                         ),
+
                         _navigationButton(
                           icon: Icons
                               .person_outline,
@@ -397,6 +411,7 @@ class _FarmerDashboardScreenState
                         const SizedBox(
                           height: 28,
                         ),
+
                         dashboardCard(
                           title:
                               'Products',
@@ -408,6 +423,7 @@ class _FarmerDashboardScreenState
                           icon:
                               Icons.inventory_2,
                         ),
+
                         dashboardCard(
                           title:
                               'Crops',
@@ -419,6 +435,7 @@ class _FarmerDashboardScreenState
                           icon:
                               Icons.eco,
                         ),
+
                         dashboardCard(
                           title:
                               'AI Diagnoses',
@@ -430,6 +447,7 @@ class _FarmerDashboardScreenState
                           icon: Icons
                               .health_and_safety_outlined,
                         ),
+
                         dashboardCard(
                           title:
                               'Orders',
@@ -441,6 +459,7 @@ class _FarmerDashboardScreenState
                           icon: Icons
                               .shopping_cart_outlined,
                         ),
+
                         dashboardCard(
                           title:
                               'Total Sales',

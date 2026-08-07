@@ -17,6 +17,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 
 import { AnalyzeDiagnosisDto } from './dto/analyze-diagnosis.dto';
 import { CreateDiagnosisDto } from './dto/create-diagnosis.dto';
+import { TranslateDiagnosisDto } from './dto/translate-diagnosis.dto';
 import { UpdateDiagnosisDto } from './dto/update-diagnosis.dto';
 import { DiagnosesService } from './diagnoses.service';
 
@@ -44,6 +45,18 @@ export class DiagnosesController {
     return this.diagnosesService.analyze(
       analyzeDiagnosisDto,
       user.id,
+    );
+  }
+
+  @Post('translate')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.FARMER)
+  translate(
+    @Body()
+    translateDiagnosisDto: TranslateDiagnosisDto,
+  ) {
+    return this.diagnosesService.translateToArabic(
+      translateDiagnosisDto,
     );
   }
 
@@ -121,4 +134,4 @@ export class DiagnosesController {
       user.id,
     );
   }
-}
+} 

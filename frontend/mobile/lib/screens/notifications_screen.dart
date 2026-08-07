@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/notification_provider.dart';
+import 'farmer/notification_diagnosis_screen.dart';
 
 class NotificationsScreen
     extends StatefulWidget {
@@ -251,6 +252,10 @@ class _NotificationCard
     final type =
         notification['type']?.toString() ?? '';
 
+    final diagnosisId =
+        notification['diagnosisId']
+            ?.toString();
+
     final isRead =
         notification['isRead'] == true;
 
@@ -260,6 +265,10 @@ class _NotificationCard
               ?.toString() ??
           '',
     );
+
+    final hasDiagnosis =
+        diagnosisId != null &&
+        diagnosisId.trim().isNotEmpty;
 
     return Card(
       elevation: isRead ? 1 : 3,
@@ -279,36 +288,61 @@ class _NotificationCard
         borderRadius:
             BorderRadius.circular(16),
         onTap: () async {
-          if (isRead || id.isEmpty) {
-            return;
-          }
-
           final provider =
               Provider.of<NotificationProvider>(
             context,
             listen: false,
           );
 
-          final success =
-              await provider.markAsRead(id);
+          if (!isRead && id.isNotEmpty) {
+            final success =
+                await provider.markAsRead(
+              id,
+            );
+
+            if (!context.mounted) {
+              return;
+            }
+
+            if (!success) {
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      provider.errorMessage ??
+                          'Failed to mark notification as read',
+                    ),
+                    backgroundColor:
+                        Colors.red,
+                  ),
+                );
+
+              return;
+            }
+          }
+
+          if (diagnosisId == null ||
+              diagnosisId
+                  .trim()
+                  .isEmpty) {
+            return;
+          }
 
           if (!context.mounted) {
             return;
           }
 
-          if (!success) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text(
-                    provider.errorMessage ??
-                        'Failed to mark notification as read',
-                  ),
-                  backgroundColor: Colors.red,
-                ),
-              );
-          }
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  NotificationDiagnosisScreen(
+                diagnosisId:
+                    diagnosisId.trim(),
+              ),
+            ),
+          );
         },
         child: Padding(
           padding:
@@ -379,6 +413,35 @@ class _NotificationCard
                         ),
                       ),
                     ],
+                    if (hasDiagnosis) ...[
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons
+                                .open_in_new_outlined,
+                            size: 16,
+                            color:
+                                Colors.green.shade700,
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          Text(
+                            'Tap to view diagnosis',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  Colors.green.shade700,
+                              fontWeight:
+                                  FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(
                       height: 10,
                     ),
@@ -430,6 +493,17 @@ class _NotificationCard
                   ],
                 ),
               ),
+              if (hasDiagnosis)
+                const Padding(
+                  padding:
+                      EdgeInsets.only(
+                    left: 8,
+                  ),
+                  child: Icon(
+                    Icons.chevron_right,
+                    color: Colors.grey,
+                  ),
+                ),
             ],
           ),
         ),
@@ -442,6 +516,19 @@ class _NotificationCard
   ) {
     final normalizedType =
         type.toUpperCase();
+
+    if (normalizedType.contains(
+      'DIAGNOSIS_HIGH_RISK',
+    )) {
+      return Icons.warning_amber_rounded;
+    }
+
+    if (normalizedType.contains(
+      'DIAGNOSIS',
+    )) {
+      return Icons
+          .health_and_safety_outlined;
+    }
 
     if (normalizedType.contains(
       'ORDER',

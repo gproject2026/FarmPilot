@@ -82,6 +82,90 @@ class DiagnosisService {
     }
   }
 
+  Future<Map<String, dynamic>>
+      getDiagnosisById(
+    String diagnosisId,
+  ) async {
+    try {
+      final response = await _dio.get(
+        '/diagnoses/$diagnosisId',
+      );
+
+      if (response.data
+          is Map<String, dynamic>) {
+        return response.data;
+      }
+
+      return Map<String, dynamic>.from(
+        jsonDecode(
+          jsonEncode(response.data),
+        ),
+      );
+    } on DioException catch (error) {
+      throw Exception(
+        _getServerMessage(
+          error,
+          fallback:
+              'Failed to load diagnosis details',
+        ),
+      );
+    } catch (error) {
+      throw Exception(
+        'Failed to load diagnosis details: $error',
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>>
+      translateDiagnosisToArabic({
+    required String plantName,
+    required String diseaseName,
+    required List<String> visibleSymptoms,
+    required String description,
+    required String causes,
+    required String treatment,
+    required String prevention,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/diagnoses/translate',
+        data: {
+          'plantName': plantName,
+          'diseaseName': diseaseName,
+          'visibleSymptoms':
+              visibleSymptoms,
+          'description': description,
+          'causes': causes,
+          'treatment': treatment,
+          'prevention': prevention,
+        },
+      );
+
+      if (response.data
+          is Map<String, dynamic>) {
+        return response.data;
+      }
+
+      return Map<String, dynamic>.from(
+        jsonDecode(
+          jsonEncode(response.data),
+        ),
+      );
+    } on DioException catch (error) {
+      throw Exception(
+        _getServerMessage(
+          error,
+          fallback:
+              'Failed to translate diagnosis',
+        ),
+      );
+    } catch (error) {
+      throw Exception(
+        'Failed to translate diagnosis: $error',
+      );
+    }
+  }
+
   Future<void> deleteDiagnosis(
     String diagnosisId,
   ) async {
@@ -120,7 +204,10 @@ class DiagnosisService {
       }
 
       if (message != null &&
-          message.toString().trim().isNotEmpty) {
+          message
+              .toString()
+              .trim()
+              .isNotEmpty) {
         return message.toString();
       }
     }

@@ -133,8 +133,9 @@ model Diagnosis {
   prevention  String?
   createdAt   DateTime @default(now()) @map("created_at")
 
-  farmer User  @relation(fields: [farmerId], references: [id])
-  crop   Crop? @relation(fields: [cropId], references: [id])
+  farmer        User           @relation(fields: [farmerId], references: [id])
+  crop          Crop?          @relation(fields: [cropId], references: [id])
+  notifications Notification[]
 
   @@map("diagnoses")
 }
@@ -209,15 +210,17 @@ model Reminder {
 }
 
 model Notification {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  title     String   @db.VarChar(150)
-  message   String
-  type      String?  @db.VarChar(50)
-  isRead    Boolean  @default(false) @map("is_read")
-  createdAt DateTime @default(now()) @map("created_at")
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  diagnosisId String?  @map("diagnosis_id") @db.Uuid
+  title       String   @db.VarChar(150)
+  message     String
+  type        String?  @db.VarChar(50)
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
+  diagnosis Diagnosis? @relation(fields: [diagnosisId], references: [id], onDelete: SetNull)
 
   @@map("notifications")
 }

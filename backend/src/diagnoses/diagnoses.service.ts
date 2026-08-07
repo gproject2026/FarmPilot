@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 import { AnalyzeDiagnosisDto } from './dto/analyze-diagnosis.dto';
 import { CreateDiagnosisDto } from './dto/create-diagnosis.dto';
+import { TranslateDiagnosisDto } from './dto/translate-diagnosis.dto';
 import { UpdateDiagnosisDto } from './dto/update-diagnosis.dto';
 
 @Injectable()
@@ -79,6 +80,7 @@ export class DiagnosesService {
 
     await this.createDiagnosisNotification({
       farmerId,
+      diagnosisId: diagnosis.id,
       plantName: detectedPlantName,
       diseaseName,
       analysis,
@@ -115,6 +117,35 @@ export class DiagnosesService {
         'This is a preliminary AI-assisted assessment and not a laboratory diagnosis. Consult an agricultural specialist before applying hazardous chemicals.',
     };
   }
+  async translateToArabic(
+  translateDiagnosisDto: TranslateDiagnosisDto,
+) {
+  const translation =
+    await this.geminiService.translateDiagnosisToArabic({
+      plantName:
+        translateDiagnosisDto.plantName,
+      diseaseName:
+        translateDiagnosisDto.diseaseName,
+      visibleSymptoms:
+        translateDiagnosisDto.visibleSymptoms ??
+        [],
+      description:
+        translateDiagnosisDto.description,
+      causes:
+        translateDiagnosisDto.causes,
+      treatment:
+        translateDiagnosisDto.treatment,
+      prevention:
+        translateDiagnosisDto.prevention,
+    });
+
+  return {
+    message:
+      'Diagnosis translated successfully',
+    language: 'ar',
+    translation,
+  };
+}
 
   async create(
     createDiagnosisDto: CreateDiagnosisDto,
@@ -284,6 +315,7 @@ export class DiagnosesService {
   private async createDiagnosisNotification(
     params: {
       farmerId: string;
+      diagnosisId: string;
       plantName: string;
       diseaseName: string;
       analysis: PlantDiagnosisResult;
@@ -291,6 +323,7 @@ export class DiagnosesService {
   ) {
     const {
       farmerId,
+      diagnosisId,
       plantName,
       diseaseName,
       analysis,
@@ -306,6 +339,7 @@ export class DiagnosesService {
     try {
       await this.notificationsService.create({
         userId: farmerId,
+        diagnosisId,
         title: notification.title,
         message: notification.message,
         type: notification.type,

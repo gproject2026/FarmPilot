@@ -24,6 +24,16 @@ export interface PlantDiagnosisResult {
   needsExpertReview: boolean;
 }
 
+export interface DiagnosisTranslationResult {
+  plantName: string;
+  diseaseName: string;
+  visibleSymptoms: string[];
+  description: string;
+  causes: string;
+  treatment: string;
+  prevention: string;
+}
+
 @Injectable()
 export class GeminiService {
   private readonly ai: GoogleGenAI;
@@ -56,6 +66,135 @@ export class GeminiService {
       });
 
     return response.text ?? '';
+  }
+
+  async translateDiagnosisToArabic(
+    params: {
+      plantName: string;
+      diseaseName: string;
+      visibleSymptoms: string[];
+      description: string;
+      causes: string;
+      treatment: string;
+      prevention: string;
+    },
+  ): Promise<DiagnosisTranslationResult> {
+    const {
+      plantName,
+      diseaseName,
+      visibleSymptoms,
+      description,
+      causes,
+      treatment,
+      prevention,
+    } = params;
+
+    const prompt = [
+      'Translate the following plant diagnosis content into clear, natural Arabic.',
+      'Do not add new medical or agricultural information.',
+      'Preserve the original meaning accurately.',
+      'Use simple Arabic suitable for farmers and general users.',
+      'Keep scientific names unchanged if present.',
+      'Do not translate percentages, IDs, or technical codes.',
+      '',
+      `Plant name: ${plantName}`,
+      `Disease name: ${diseaseName}`,
+      `Visible symptoms: ${visibleSymptoms.join(' | ')}`,
+      `Description: ${description}`,
+      `Possible causes: ${causes}`,
+      `Recommended treatment: ${treatment}`,
+      `Prevention: ${prevention}`,
+    ].join('\n');
+
+    let responseText: string | undefined;
+
+    try {
+      const response =
+        await this.ai.models.generateContent({
+          model: this.modelName,
+          contents: prompt,
+          config: {
+            responseMimeType:
+              'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                plantName: {
+                  type: Type.STRING,
+                },
+                diseaseName: {
+                  type: Type.STRING,
+                },
+                visibleSymptoms: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.STRING,
+                  },
+                },
+                description: {
+                  type: Type.STRING,
+                },
+                causes: {
+                  type: Type.STRING,
+                },
+                treatment: {
+                  type: Type.STRING,
+                },
+                prevention: {
+                  type: Type.STRING,
+                },
+              },
+              required: [
+                'plantName',
+                'diseaseName',
+                'visibleSymptoms',
+                'description',
+                'causes',
+                'treatment',
+                'prevention',
+              ],
+            },
+          },
+        });
+
+      responseText =
+        response.text;
+    } catch (error) {
+      console.error(
+        'Gemini diagnosis translation error:',
+        error,
+      );
+
+      throw new BadGatewayException(
+        'Gemini could not translate the diagnosis',
+      );
+    }
+
+    if (!responseText) {
+      throw new InternalServerErrorException(
+        'Gemini did not return a translation result',
+      );
+    }
+
+    try {
+      const result =
+        JSON.parse(
+          responseText,
+        ) as DiagnosisTranslationResult;
+
+      result.visibleSymptoms =
+        Array.isArray(
+          result.visibleSymptoms,
+        )
+          ? result.visibleSymptoms
+          : [];
+
+      return result;
+    } catch {
+      throw new InternalServerErrorException(
+        'Gemini returned an invalid translation response',
+      );
+    }
   }
 
   async analyzePlantImage(params: {
@@ -272,4 +411,4 @@ export class GeminiService {
       );
     }
   }
-}
+} 

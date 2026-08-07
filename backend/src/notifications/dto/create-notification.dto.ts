@@ -5,9 +5,12 @@ import {
 } from 'class-validator';
 
 export class CreateNotificationDto {
-
   @IsUUID()
   userId!: string;
+
+  @IsOptional()
+  @IsUUID()
+  diagnosisId?: string;
 
   @IsString()
   title!: string;
@@ -18,4 +21,4 @@ export class CreateNotificationDto {
   @IsOptional()
   @IsString()
   type?: string;
-}
+} 
