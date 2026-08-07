@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../notifications_screen.dart';
 import 'diagnose_plant_screen.dart';
@@ -28,9 +30,11 @@ class _FarmerDashboardScreenState
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        _loadData();
+      },
+    );
   }
 
   Future<void> _loadData() async {
@@ -47,6 +51,12 @@ class _FarmerDashboardScreenState
   }
 
   Future<void> _openNotifications() async {
+    final notificationProvider =
+        Provider.of<NotificationProvider>(
+      context,
+      listen: false,
+    );
+
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -59,10 +69,8 @@ class _FarmerDashboardScreenState
       return;
     }
 
-    await Provider.of<NotificationProvider>(
-      context,
-      listen: false,
-    ).loadNotifications();
+    await notificationProvider
+        .loadNotifications();
   }
 
   Future<void> _logout() async {
@@ -78,21 +86,37 @@ class _FarmerDashboardScreenState
       listen: false,
     );
 
-    notificationProvider.clearNotifications();
+    notificationProvider
+        .clearNotifications();
+
     authProvider.logout();
 
     if (!mounted) {
       return;
     }
 
-    Navigator.of(context).pushNamedAndRemoveUntil(
+    Navigator.of(context)
+        .pushNamedAndRemoveUntil(
       '/',
       (route) => false,
     );
   }
 
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     final dashboardProvider =
         Provider.of<DashboardProvider>(
       context,
@@ -103,20 +127,92 @@ class _FarmerDashboardScreenState
       context,
     );
 
+    final localeProvider =
+        Provider.of<LocaleProvider>(
+      context,
+    );
+
+    final l10n =
+        AppLocalizations.of(context)!;
+
+    final isArabic =
+        localeProvider
+                .locale.languageCode ==
+            'ar';
+
     return Scaffold(
       backgroundColor:
-          const Color(0xFFF5F7F4),
+          const Color(
+        0xFFF5F7F4,
+      ),
       appBar: AppBar(
-        title: const Text(
-          'Farmer Dashboard',
+        title: Text(
+          l10n.farmerDashboard,
         ),
         backgroundColor:
             Colors.green,
         foregroundColor:
             Colors.white,
         actions: [
+          PopupMenuButton<String>(
+            tooltip:
+                l10n.changeLanguage,
+            icon: const Icon(
+              Icons.language,
+            ),
+            onSelected:
+                _changeLanguage,
+            itemBuilder:
+                (context) {
+              return [
+                PopupMenuItem<String>(
+                  value: 'en',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color:
+                            !isArabic
+                                ? Colors.green
+                                : Colors
+                                    .transparent,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        l10n.english,
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'ar',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color:
+                            isArabic
+                                ? Colors.green
+                                : Colors
+                                    .transparent,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        l10n.arabic,
+                      ),
+                    ],
+                  ),
+                ),
+              ];
+            },
+          ),
           IconButton(
-            tooltip: 'Notifications',
+            tooltip:
+                l10n.notifications,
             onPressed:
                 _openNotifications,
             icon: Stack(
@@ -124,7 +220,8 @@ class _FarmerDashboardScreenState
                   Clip.none,
               children: [
                 const Icon(
-                  Icons.notifications_outlined,
+                  Icons
+                      .notifications_outlined,
                 ),
                 if (notificationProvider
                         .unreadCount >
@@ -132,7 +229,8 @@ class _FarmerDashboardScreenState
                   Positioned(
                     top: -7,
                     right: -7,
-                    child: Container(
+                    child:
+                        Container(
                       constraints:
                           const BoxConstraints(
                         minWidth: 18,
@@ -146,13 +244,16 @@ class _FarmerDashboardScreenState
                           Alignment.center,
                       decoration:
                           BoxDecoration(
-                        color: Colors.red,
+                        color:
+                            Colors.red,
                         borderRadius:
                             BorderRadius.circular(
                           10,
                         ),
-                        border: Border.all(
-                          color: Colors.white,
+                        border:
+                            Border.all(
+                          color:
+                              Colors.white,
                           width: 1.5,
                         ),
                       ),
@@ -166,7 +267,8 @@ class _FarmerDashboardScreenState
                                 .toString(),
                         style:
                             const TextStyle(
-                          color: Colors.white,
+                          color:
+                              Colors.white,
                           fontSize: 10,
                           fontWeight:
                               FontWeight.bold,
@@ -178,303 +280,312 @@ class _FarmerDashboardScreenState
             ),
           ),
           IconButton(
-            tooltip: 'Logout',
-            onPressed: _logout,
+            tooltip:
+                l10n.logout,
+            onPressed:
+                _logout,
             icon: const Icon(
               Icons.logout,
             ),
           ),
         ],
       ),
-      body: dashboardProvider.isLoading &&
-              dashboardProvider
-                      .dashboardData ==
-                  null
-          ? const Center(
-              child:
-                  CircularProgressIndicator(),
-            )
-          : dashboardProvider
-                      .dashboardData ==
-                  null
-              ? RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: ListView(
-                    physics:
-                        const AlwaysScrollableScrollPhysics(),
-                    children: const [
-                      SizedBox(
-                        height: 250,
-                      ),
-                      Center(
-                        child: Text(
-                          'No Data',
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
+      body:
+          dashboardProvider.isLoading &&
+                  dashboardProvider
+                          .dashboardData ==
+                      null
+              ? const Center(
                   child:
-                      SingleChildScrollView(
-                    physics:
-                        const AlwaysScrollableScrollPhysics(),
-                    padding:
-                        const EdgeInsets.all(
-                      20,
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Welcome Farmer 🌱',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight:
-                                FontWeight.bold,
+                      CircularProgressIndicator(),
+                )
+              : dashboardProvider
+                          .dashboardData ==
+                      null
+                  ? RefreshIndicator(
+                      onRefresh:
+                          _loadData,
+                      child:
+                          ListView(
+                        physics:
+                            const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          const SizedBox(
+                            height: 250,
                           ),
+                          Center(
+                            child: Text(
+                              l10n.noData,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh:
+                          _loadData,
+                      child:
+                          SingleChildScrollView(
+                        physics:
+                            const AlwaysScrollableScrollPhysics(),
+                        padding:
+                            const EdgeInsets.all(
+                          20,
                         ),
-                        const SizedBox(
-                          height: 30,
-                        ),
-
-                        _navigationButton(
-                          icon: Icons
-                              .inventory_2_outlined,
-                          label:
-                              'My Products',
-                          onPressed:
-                              () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const MyProductsScreen(),
+                        child: Column(
+                          children: [
+                            Text(
+                              l10n
+                                  .welcomeFarmer,
+                              textAlign:
+                                  TextAlign.center,
+                              style:
+                                  const TextStyle(
+                                fontSize: 28,
+                                fontWeight:
+                                    FontWeight.bold,
                               ),
-                            );
+                            ),
+                            const SizedBox(
+                              height: 30,
+                            ),
+                            _navigationButton(
+                              icon: Icons
+                                  .inventory_2_outlined,
+                              label:
+                                  l10n.myProducts,
+                              onPressed:
+                                  () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const MyProductsScreen(),
+                                  ),
+                                );
 
-                            if (!mounted) {
-                              return;
-                            }
+                                if (!mounted) {
+                                  return;
+                                }
 
-                            await dashboardProvider
-                                .loadFarmerDashboard();
-                          },
+                                await dashboardProvider
+                                    .loadFarmerDashboard();
+                              },
+                            ),
+                            const SizedBox(
+                              height: 14,
+                            ),
+                            _navigationButton(
+                              icon:
+                                  Icons.eco_outlined,
+                              label:
+                                  l10n.myCrops,
+                              onPressed:
+                                  () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const MyCropsScreen(),
+                                  ),
+                                );
+
+                                if (!mounted) {
+                                  return;
+                                }
+
+                                await dashboardProvider
+                                    .loadFarmerDashboard();
+                              },
+                            ),
+                            const SizedBox(
+                              height: 14,
+                            ),
+                            _navigationButton(
+                              icon: Icons
+                                  .local_florist_outlined,
+                              label:
+                                  l10n.plantDiagnosis,
+                              onPressed:
+                                  () async {
+                                final currentNotificationProvider =
+                                    Provider.of<
+                                        NotificationProvider>(
+                                  context,
+                                  listen:
+                                      false,
+                                );
+
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const DiagnosePlantScreen(),
+                                  ),
+                                );
+
+                                if (!mounted) {
+                                  return;
+                                }
+
+                                await Future.wait([
+                                  dashboardProvider
+                                      .loadFarmerDashboard(),
+                                  currentNotificationProvider
+                                      .loadNotifications(),
+                                ]);
+                              },
+                            ),
+                            const SizedBox(
+                              height: 14,
+                            ),
+                            _navigationButton(
+                              icon:
+                                  Icons.history,
+                              label:
+                                  l10n.diagnosisHistory,
+                              onPressed:
+                                  () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const DiagnosisHistoryScreen(),
+                                  ),
+                                );
+
+                                if (!mounted) {
+                                  return;
+                                }
+
+                                await dashboardProvider
+                                    .loadFarmerDashboard();
+                              },
+                            ),
+                            const SizedBox(
+                              height: 14,
+                            ),
+                            _navigationButton(
+                              icon: Icons
+                                  .notifications_active_outlined,
+                              label:
+                                  l10n.reminders,
+                              onPressed:
+                                  () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const RemindersScreen(),
+                                  ),
+                                );
+
+                                if (!mounted) {
+                                  return;
+                                }
+
+                                await dashboardProvider
+                                    .loadFarmerDashboard();
+                              },
+                            ),
+                            const SizedBox(
+                              height: 14,
+                            ),
+                            _navigationButton(
+                              icon: Icons
+                                  .notifications_outlined,
+                              label:
+                                  notificationProvider
+                                              .unreadCount >
+                                          0
+                                      ? '${l10n.notifications} '
+                                          '(${notificationProvider.unreadCount})'
+                                      : l10n
+                                          .notifications,
+                              onPressed:
+                                  _openNotifications,
+                            ),
+                            const SizedBox(
+                              height: 14,
+                            ),
+                            _navigationButton(
+                              icon: Icons
+                                  .person_outline,
+                              label:
+                                  l10n.myProfile,
+                              onPressed:
+                                  () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ProfileScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(
+                              height: 28,
+                            ),
+                            dashboardCard(
+                              title:
+                                  l10n.products,
+                              value:
+                                  dashboardProvider
+                                      .dashboardData![
+                                          'productsCount']
+                                      .toString(),
+                              icon:
+                                  Icons.inventory_2,
+                            ),
+                            dashboardCard(
+                              title:
+                                  l10n.crops,
+                              value:
+                                  dashboardProvider
+                                      .dashboardData![
+                                          'cropsCount']
+                                      .toString(),
+                              icon:
+                                  Icons.eco,
+                            ),
+                            dashboardCard(
+                              title:
+                                  l10n.aiDiagnoses,
+                              value:
+                                  dashboardProvider
+                                      .dashboardData![
+                                          'diagnosesCount']
+                                      .toString(),
+                              icon: Icons
+                                  .health_and_safety_outlined,
+                            ),
+                            dashboardCard(
+                              title:
+                                  l10n.orders,
+                              value:
+                                  dashboardProvider
+                                      .dashboardData![
+                                          'ordersCount']
+                                      .toString(),
+                              icon: Icons
+                                  .shopping_cart_outlined,
+                            ),
+                            dashboardCard(
+                              title:
+                                  l10n.totalSales,
+                              value:
+                                  dashboardProvider
+                                      .dashboardData![
+                                          'totalSales']
+                                      .toString(),
+                              icon: Icons
+                                  .payments_outlined,
+                            ),
+                          ],
                         ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-
-                        _navigationButton(
-                          icon:
-                              Icons.eco_outlined,
-                          label:
-                              'My Crops',
-                          onPressed:
-                              () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const MyCropsScreen(),
-                              ),
-                            );
-
-                            if (!mounted) {
-                              return;
-                            }
-
-                            await dashboardProvider
-                                .loadFarmerDashboard();
-                          },
-                        ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-
-                        _navigationButton(
-                          icon: Icons
-                              .local_florist_outlined,
-                          label:
-                              'Plant Diagnosis',
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const DiagnosePlantScreen(),
-                              ),
-                            );
-
-                            if (!mounted) {
-                              return;
-                            }
-
-                            await Future.wait([
-                              dashboardProvider
-                                  .loadFarmerDashboard(),
-                              Provider.of<
-                                  NotificationProvider>(
-                                context,
-                                listen: false,
-                              ).loadNotifications(),
-                            ]);
-                          },
-                        ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-
-                        _navigationButton(
-                          icon:
-                              Icons.history,
-                          label:
-                              'Diagnosis History',
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const DiagnosisHistoryScreen(),
-                              ),
-                            );
-
-                            if (!mounted) {
-                              return;
-                            }
-
-                            await dashboardProvider
-                                .loadFarmerDashboard();
-                          },
-                        ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-
-                        _navigationButton(
-                          icon: Icons
-                              .notifications_active_outlined,
-                          label:
-                              'Reminders',
-                          onPressed:
-                              () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const RemindersScreen(),
-                              ),
-                            );
-
-                            if (!mounted) {
-                              return;
-                            }
-
-                            await dashboardProvider
-                                .loadFarmerDashboard();
-                          },
-                        ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-
-                        _navigationButton(
-                          icon: Icons
-                              .notifications_outlined,
-                          label: notificationProvider
-                                      .unreadCount >
-                                  0
-                              ? 'Notifications (${notificationProvider.unreadCount})'
-                              : 'Notifications',
-                          onPressed:
-                              _openNotifications,
-                        ),
-                        const SizedBox(
-                          height: 14,
-                        ),
-
-                        _navigationButton(
-                          icon: Icons
-                              .person_outline,
-                          label:
-                              'My Profile',
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    const ProfileScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(
-                          height: 28,
-                        ),
-
-                        dashboardCard(
-                          title:
-                              'Products',
-                          value:
-                              dashboardProvider
-                                  .dashboardData![
-                                      'productsCount']
-                                  .toString(),
-                          icon:
-                              Icons.inventory_2,
-                        ),
-
-                        dashboardCard(
-                          title:
-                              'Crops',
-                          value:
-                              dashboardProvider
-                                  .dashboardData![
-                                      'cropsCount']
-                                  .toString(),
-                          icon:
-                              Icons.eco,
-                        ),
-
-                        dashboardCard(
-                          title:
-                              'AI Diagnoses',
-                          value:
-                              dashboardProvider
-                                  .dashboardData![
-                                      'diagnosesCount']
-                                  .toString(),
-                          icon: Icons
-                              .health_and_safety_outlined,
-                        ),
-
-                        dashboardCard(
-                          title:
-                              'Orders',
-                          value:
-                              dashboardProvider
-                                  .dashboardData![
-                                      'ordersCount']
-                                  .toString(),
-                          icon: Icons
-                              .shopping_cart_outlined,
-                        ),
-
-                        dashboardCard(
-                          title:
-                              'Total Sales',
-                          value:
-                              dashboardProvider
-                                  .dashboardData![
-                                      'totalSales']
-                                  .toString(),
-                          icon:
-                              Icons.payments_outlined,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
     );
   }
 
@@ -484,10 +595,13 @@ class _FarmerDashboardScreenState
     required VoidCallback onPressed,
   }) {
     return SizedBox(
-      width: double.infinity,
+      width:
+          double.infinity,
       height: 50,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
+      child:
+          ElevatedButton.icon(
+        onPressed:
+            onPressed,
         icon: Icon(
           icon,
         ),
@@ -516,7 +630,8 @@ class _FarmerDashboardScreenState
         ),
       ),
       child: ListTile(
-        leading: CircleAvatar(
+        leading:
+            CircleAvatar(
           backgroundColor:
               Colors.green.shade100,
           child: Icon(

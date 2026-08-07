@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../customer/customer_dashboard_screen.dart';
 import '../farmer/farmer_dashboard_screen.dart';
@@ -17,7 +19,8 @@ class LoginScreen extends StatefulWidget {
       _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState
+    extends State<LoginScreen> {
   final emailController =
       TextEditingController();
 
@@ -41,6 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
       listen: false,
     );
 
+    final l10n =
+        AppLocalizations.of(context)!;
+
     final email =
         emailController.text.trim();
 
@@ -51,9 +57,10 @@ class _LoginScreenState extends State<LoginScreen> {
         password.isEmpty) {
       ScaffoldMessenger.of(context)
           .showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Please enter email and password',
+            l10n
+                .pleaseEnterEmailPassword,
           ),
         ),
       );
@@ -114,8 +121,8 @@ class _LoginScreenState extends State<LoginScreen> {
           .showSnackBar(
         SnackBar(
           content: Text(
-            'Unsupported role: '
-            '${authProvider.userRole ?? 'Unknown'}',
+            '${l10n.unsupportedRole}: '
+            '${authProvider.userRole ?? l10n.unknown}',
           ),
         ),
       );
@@ -135,34 +142,123 @@ class _LoginScreenState extends State<LoginScreen> {
                   '',
                 ),
           ),
-          backgroundColor: Colors.red,
+          backgroundColor:
+              Colors.red,
         ),
       );
     }
   }
 
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    final localeProvider =
+        Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    );
+
+    localeProvider.setLocale(
+      Locale(languageCode),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     final authProvider =
         Provider.of<AuthProvider>(
       context,
     );
 
+    final localeProvider =
+        Provider.of<LocaleProvider>(
+      context,
+    );
+
+    final l10n =
+        AppLocalizations.of(context)!;
+
+    final isArabic =
+        localeProvider
+                .locale.languageCode ==
+            'ar';
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'FarmPilot Login',
+        title: Text(
+          '${l10n.appName} - ${l10n.login}',
         ),
         backgroundColor:
             Colors.green,
         foregroundColor:
             Colors.white,
+        actions: [
+          PopupMenuButton<String>(
+            tooltip:
+                l10n.changeLanguage,
+            icon: const Icon(
+              Icons.language,
+            ),
+            onSelected:
+                _changeLanguage,
+            itemBuilder:
+                (context) {
+              return [
+                PopupMenuItem(
+                  value: 'en',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color: !isArabic
+                            ? Colors.green
+                            : Colors
+                                .transparent,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        l10n.english,
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'ar',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color: isArabic
+                            ? Colors.green
+                            : Colors
+                                .transparent,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        l10n.arabic,
+                      ),
+                    ],
+                  ),
+                ),
+              ];
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Center(
-          child: SingleChildScrollView(
+          child:
+              SingleChildScrollView(
             padding:
-                const EdgeInsets.all(20),
+                const EdgeInsets.all(
+              20,
+            ),
             child: ConstrainedBox(
               constraints:
                   const BoxConstraints(
@@ -170,19 +266,25 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               child: Column(
                 mainAxisAlignment:
-                    MainAxisAlignment.center,
+                    MainAxisAlignment
+                        .center,
                 children: [
                   const Icon(
                     Icons.eco,
                     size: 80,
-                    color: Colors.green,
+                    color:
+                        Colors.green,
                   ),
                   const SizedBox(
                     height: 16,
                   ),
-                  const Text(
-                    'Welcome to FarmPilot',
-                    style: TextStyle(
+                  Text(
+                    l10n
+                        .welcomeToFarmPilot,
+                    textAlign:
+                        TextAlign.center,
+                    style:
+                        const TextStyle(
                       fontSize: 26,
                       fontWeight:
                           FontWeight.bold,
@@ -198,18 +300,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextInputType
                             .emailAddress,
                     textInputAction:
-                        TextInputAction.next,
-                    autofillHints: const [
+                        TextInputAction
+                            .next,
+                    autofillHints:
+                        const [
                       AutofillHints.email,
                     ],
                     decoration:
-                        const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(
-                        Icons.email_outlined,
+                        InputDecoration(
+                      labelText:
+                          l10n.email,
+                      prefixIcon:
+                          const Icon(
+                        Icons
+                            .email_outlined,
                       ),
                       border:
-                          OutlineInputBorder(),
+                          const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(
@@ -221,11 +328,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText:
                         obscurePassword,
                     textInputAction:
-                        TextInputAction.done,
-                    autofillHints: const [
-                      AutofillHints.password,
+                        TextInputAction
+                            .done,
+                    autofillHints:
+                        const [
+                      AutofillHints
+                          .password,
                     ],
-                    onSubmitted: (_) {
+                    onSubmitted:
+                        (_) {
                       if (!authProvider
                           .isLoading) {
                         _login();
@@ -233,22 +344,29 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     decoration:
                         InputDecoration(
-                      labelText: 'Password',
+                      labelText:
+                          l10n.password,
                       prefixIcon:
                           const Icon(
-                        Icons.lock_outline,
+                        Icons
+                            .lock_outline,
                       ),
                       suffixIcon:
                           IconButton(
                         tooltip:
                             obscurePassword
-                                ? 'Show password'
-                                : 'Hide password',
-                        onPressed: () {
-                          setState(() {
-                            obscurePassword =
-                                !obscurePassword;
-                          });
+                                ? l10n
+                                    .showPassword
+                                : l10n
+                                    .hidePassword,
+                        onPressed:
+                            () {
+                          setState(
+                            () {
+                              obscurePassword =
+                                  !obscurePassword;
+                            },
+                          );
                         },
                         icon: Icon(
                           obscurePassword
@@ -264,13 +382,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Align(
                     alignment:
-                        Alignment.centerRight,
-                    child: TextButton(
+                        AlignmentDirectional
+                            .centerEnd,
+                    child:
+                        TextButton(
                       onPressed:
-                          authProvider.isLoading
+                          authProvider
+                                  .isLoading
                               ? null
                               : () {
-                                  Navigator.push(
+                                  Navigator
+                                      .push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) =>
@@ -278,8 +400,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   );
                                 },
-                      child: const Text(
-                        'Forgot Password?',
+                      child: Text(
+                        l10n
+                            .forgotPassword,
                       ),
                     ),
                   ),
@@ -293,22 +416,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     child:
                         ElevatedButton(
                       onPressed:
-                          authProvider.isLoading
+                          authProvider
+                                  .isLoading
                               ? null
                               : _login,
                       child:
-                          authProvider.isLoading
+                          authProvider
+                                  .isLoading
                               ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
+                                  width:
+                                      24,
+                                  height:
+                                      24,
                                   child:
                                       CircularProgressIndicator(
                                     strokeWidth:
                                         2,
                                   ),
                                 )
-                              : const Text(
-                                  'Login',
+                              : Text(
+                                  l10n.login,
                                 ),
                     ),
                   ),

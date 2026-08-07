@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+
+import 'l10n/generated/app_localizations.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/cart_provider.dart';
@@ -8,6 +11,7 @@ import 'providers/crop_provider.dart';
 import 'providers/dashboard_provider.dart';
 import 'providers/diagnosis_provider.dart';
 import 'providers/favorite_provider.dart';
+import 'providers/locale_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/order_provider.dart';
 import 'providers/product_provider.dart';
@@ -33,53 +37,101 @@ class FarmPilotApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(),
+          create: (_) =>
+              AuthProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => CategoryProvider(),
+          create: (_) =>
+              CategoryProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => ProductProvider(),
+          create: (_) =>
+              ProductProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => CropProvider(),
+          create: (_) =>
+              CropProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => DiagnosisProvider(),
+          create: (_) =>
+              DiagnosisProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => ReminderProvider(),
+          create: (_) =>
+              ReminderProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => OrderProvider(),
+          create: (_) =>
+              OrderProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => CartProvider(),
+          create: (_) =>
+              CartProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => DashboardProvider(),
+          create: (_) =>
+              DashboardProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => ProfileProvider(),
+          create: (_) =>
+              ProfileProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => FavoriteProvider(),
+          create: (_) =>
+              FavoriteProvider(),
         ),
         ChangeNotifierProvider(
           create: (_) =>
               NotificationProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => UserProvider(),
+          create: (_) =>
+              UserProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              LocaleProvider(),
         ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'FarmPilot',
-        theme: ThemeData(
-          primarySwatch: Colors.green,
-        ),
-        home: const LoginScreen(),
+      child: Consumer<LocaleProvider>(
+        builder: (
+          context,
+          localeProvider,
+          child,
+        ) {
+          return MaterialApp(
+            debugShowCheckedModeBanner:
+                false,
+
+            title:
+                'FarmPilot',
+
+            locale:
+                localeProvider.locale,
+
+            supportedLocales:
+                AppLocalizations
+                    .supportedLocales,
+
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations
+                  .delegate,
+              GlobalWidgetsLocalizations
+                  .delegate,
+              GlobalCupertinoLocalizations
+                  .delegate,
+            ],
+
+            theme: ThemeData(
+              primarySwatch:
+                  Colors.green,
+            ),
+
+            home:
+                const LoginScreen(),
+          );
+        },
       ),
     );
   }
