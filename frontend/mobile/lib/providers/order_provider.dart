@@ -8,6 +8,7 @@ class OrderProvider extends ChangeNotifier {
 
   List<OrderModel> _customerOrders = [];
   List<OrderModel> _farmerOrders = [];
+  List<OrderModel> _adminOrders = [];
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -18,6 +19,10 @@ class OrderProvider extends ChangeNotifier {
 
   List<OrderModel> get farmerOrders {
     return List.unmodifiable(_farmerOrders);
+  }
+
+  List<OrderModel> get adminOrders {
+    return List.unmodifiable(_adminOrders);
   }
 
   bool get isLoading => _isLoading;
@@ -58,6 +63,24 @@ class OrderProvider extends ChangeNotifier {
     try {
       _farmerOrders =
           await _orderService.getFarmerOrders(
+        token: token,
+      );
+    } catch (error) {
+      _errorMessage = _cleanError(error);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> fetchAdminOrders({
+    required String token,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      _adminOrders =
+          await _orderService.getAdminOrders(
         token: token,
       );
     } catch (error) {
@@ -141,6 +164,11 @@ class OrderProvider extends ChangeNotifier {
         updatedOrder: updatedOrder,
       );
 
+      _replaceOrder(
+        orders: _adminOrders,
+        updatedOrder: updatedOrder,
+      );
+
       return true;
     } catch (error) {
       _errorMessage = _cleanError(error);
@@ -187,18 +215,20 @@ class OrderProvider extends ChangeNotifier {
         status: 'CANCELLED',
       );
 
-      // حذف الطلب من قائمة العميل باستخدام رقم الطلب نفسه
       _customerOrders.removeWhere(
         (order) => order.id == orderId,
       );
 
-      // إبقاء الطلب عند المزارع بحالة CANCELLED
       _replaceOrder(
         orders: _farmerOrders,
         updatedOrder: updatedOrder,
       );
 
-      // تحديث الشاشة فورًا
+      _replaceOrder(
+        orders: _adminOrders,
+        updatedOrder: updatedOrder,
+      );
+
       notifyListeners();
 
       return true;
@@ -218,6 +248,7 @@ class OrderProvider extends ChangeNotifier {
   void clearOrders() {
     _customerOrders = [];
     _farmerOrders = [];
+    _adminOrders = [];
     _errorMessage = null;
 
     notifyListeners();

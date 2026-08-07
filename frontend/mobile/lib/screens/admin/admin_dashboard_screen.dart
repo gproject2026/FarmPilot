@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import 'admin_orders_screen.dart';
 import 'admin_users_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -41,6 +42,14 @@ class _AdminDashboardScreenState
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const AdminUsersScreen(),
+      ),
+    );
+  }
+
+  void _openManageOrders() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AdminOrdersScreen(),
       ),
     );
   }
@@ -187,7 +196,6 @@ class _AdminDashboardScreenState
           final width = constraints.maxWidth;
 
           int crossAxisCount;
-
           double childAspectRatio;
 
           if (width >= 1000) {
@@ -326,6 +334,7 @@ class _AdminDashboardScreenState
                     const SizedBox(
                       height: 14,
                     ),
+
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -362,6 +371,48 @@ class _AdminDashboardScreenState
                         ),
                       ),
                     ),
+
+                    const SizedBox(
+                      height: 12,
+                    ),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed:
+                            _openManageOrders,
+                        icon: const Icon(
+                          Icons.receipt_long_outlined,
+                        ),
+                        label: const Text(
+                          'Manage Orders',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight:
+                                FontWeight.w600,
+                          ),
+                        ),
+                        style:
+                            ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Colors.green,
+                          foregroundColor:
+                              Colors.white,
+                          padding:
+                              const EdgeInsets.symmetric(
+                            vertical: 17,
+                          ),
+                          shape:
+                              RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(
+                              14,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(
                       height: 20,
                     ),

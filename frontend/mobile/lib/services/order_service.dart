@@ -10,21 +10,29 @@ class OrderService {
     required String token,
   }) async {
     final response = await http.get(
-      Uri.parse('${AppConstants.baseUrl}/orders/my'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/my',
+      ),
       headers: _headers(token),
     );
 
     if (response.statusCode == 200) {
-      final decodedBody = jsonDecode(response.body);
+      final decodedBody =
+          jsonDecode(response.body);
 
       if (decodedBody is! List) {
-        throw Exception('Invalid customer orders response');
+        throw Exception(
+          'Invalid customer orders response',
+        );
       }
 
       return decodedBody
           .map(
-            (item) => OrderModel.fromJson(
-              Map<String, dynamic>.from(item),
+            (item) =>
+                OrderModel.fromJson(
+              Map<String, dynamic>.from(
+                item,
+              ),
             ),
           )
           .toList();
@@ -42,21 +50,29 @@ class OrderService {
     required String token,
   }) async {
     final response = await http.get(
-      Uri.parse('${AppConstants.baseUrl}/orders/farmer'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/farmer',
+      ),
       headers: _headers(token),
     );
 
     if (response.statusCode == 200) {
-      final decodedBody = jsonDecode(response.body);
+      final decodedBody =
+          jsonDecode(response.body);
 
       if (decodedBody is! List) {
-        throw Exception('Invalid farmer orders response');
+        throw Exception(
+          'Invalid farmer orders response',
+        );
       }
 
       return decodedBody
           .map(
-            (item) => OrderModel.fromJson(
-              Map<String, dynamic>.from(item),
+            (item) =>
+                OrderModel.fromJson(
+              Map<String, dynamic>.from(
+                item,
+              ),
             ),
           )
           .toList();
@@ -70,12 +86,54 @@ class OrderService {
     );
   }
 
+  Future<List<OrderModel>> getAdminOrders({
+    required String token,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/admin',
+      ),
+      headers: _headers(token),
+    );
+
+    if (response.statusCode == 200) {
+      final decodedBody =
+          jsonDecode(response.body);
+
+      if (decodedBody is! List) {
+        throw Exception(
+          'Invalid admin orders response',
+        );
+      }
+
+      return decodedBody
+          .map(
+            (item) =>
+                OrderModel.fromJson(
+              Map<String, dynamic>.from(
+                item,
+              ),
+            ),
+          )
+          .toList();
+    }
+
+    throw Exception(
+      _readErrorMessage(
+        response.body,
+        'Failed to load admin orders',
+      ),
+    );
+  }
+
   Future<OrderModel> getOrderById({
     required String token,
     required String orderId,
   }) async {
     final response = await http.get(
-      Uri.parse('${AppConstants.baseUrl}/orders/$orderId'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/$orderId',
+      ),
       headers: _headers(token),
     );
 
@@ -100,7 +158,9 @@ class OrderService {
     required List<Map<String, dynamic>> items,
   }) async {
     final response = await http.post(
-      Uri.parse('${AppConstants.baseUrl}/orders'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders',
+      ),
       headers: _headers(token),
       body: jsonEncode({
         'items': items,
@@ -155,7 +215,9 @@ class OrderService {
     );
   }
 
-  Map<String, String> _headers(String token) {
+  Map<String, String> _headers(
+    String token,
+  ) {
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -167,10 +229,13 @@ class OrderService {
     String fallbackMessage,
   ) {
     try {
-      final decodedBody = jsonDecode(responseBody);
+      final decodedBody =
+          jsonDecode(responseBody);
 
-      if (decodedBody is Map<String, dynamic>) {
-        final message = decodedBody['message'];
+      if (decodedBody
+          is Map<String, dynamic>) {
+        final message =
+            decodedBody['message'];
 
         if (message is String) {
           return message;
@@ -181,7 +246,7 @@ class OrderService {
         }
       }
     } catch (_) {
-      // Use the fallback message.
+      // Use fallback message.
     }
 
     return fallbackMessage;
