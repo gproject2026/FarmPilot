@@ -131,4 +131,57 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get totalSales => 'إجمالي المبيعات';
+
+  @override
+  String get customerDashboard => 'لوحة تحكم العميل';
+
+  @override
+  String get customer => 'العميل';
+
+  @override
+  String welcomeCustomer(String name) {
+    return 'مرحبًا $name 👋';
+  }
+
+  @override
+  String get customerDashboardSubtitle => 'تصفح المنتجات الطازجة وتابع طلباتك.';
+
+  @override
+  String get browseMarketplace => 'تصفح السوق';
+
+  @override
+  String get myOrders => 'طلباتي';
+
+  @override
+  String get myOrdersSubtitle => 'عرض طلباتك الحالية والسابقة';
+
+  @override
+  String get marketplace => 'السوق';
+
+  @override
+  String get marketplaceSubtitle =>
+      'تصفح المنتجات المتاحة وأضفها إلى سلة التسوق';
+
+  @override
+  String get myFavorites => 'المفضلة';
+
+  @override
+  String get myFavoritesSubtitle => 'عرض المنتجات التي حفظتها لوقت لاحق';
+
+  @override
+  String get latestNotifications => 'عرض أحدث الإشعارات';
+
+  @override
+  String unreadNotifications(int count) {
+    return '$count إشعارات غير مقروءة';
+  }
+
+  @override
+  String get shoppingCart => 'سلة التسوق';
+
+  @override
+  String get shoppingCartSubtitle => 'راجع منتجاتك وأكمل عملية الشراء';
+
+  @override
+  String get myProfileSubtitle => 'عرض وتعديل معلوماتك الشخصية';
 }

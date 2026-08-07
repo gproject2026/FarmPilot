@@ -130,4 +130,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get totalSales => 'Total Sales';
+
+  @override
+  String get customerDashboard => 'Customer Dashboard';
+
+  @override
+  String get customer => 'Customer';
+
+  @override
+  String welcomeCustomer(String name) {
+    return 'Welcome $name 👋';
+  }
+
+  @override
+  String get customerDashboardSubtitle =>
+      'Browse fresh products and follow your orders.';
+
+  @override
+  String get browseMarketplace => 'Browse Marketplace';
+
+  @override
+  String get myOrders => 'My Orders';
+
+  @override
+  String get myOrdersSubtitle => 'View your current and previous orders';
+
+  @override
+  String get marketplace => 'Marketplace';
+
+  @override
+  String get marketplaceSubtitle =>
+      'Browse available products and add them to your cart';
+
+  @override
+  String get myFavorites => 'My Favorites';
+
+  @override
+  String get myFavoritesSubtitle => 'View products you saved for later';
+
+  @override
+  String get latestNotifications => 'View your latest notifications';
+
+  @override
+  String unreadNotifications(int count) {
+    return '$count unread notifications';
+  }
+
+  @override
+  String get shoppingCart => 'Shopping Cart';
+
+  @override
+  String get shoppingCartSubtitle =>
+      'Review your products and complete checkout';
+
+  @override
+  String get myProfileSubtitle => 'View and edit your personal information';
 }

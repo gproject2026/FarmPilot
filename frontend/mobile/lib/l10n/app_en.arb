@@ -42,5 +42,35 @@
 "myProfile": "My Profile",
 "noData": "No Data",
 "aiDiagnoses": "AI Diagnoses",
-"totalSales": "Total Sales"
+"totalSales": "Total Sales",
+"customerDashboard": "Customer Dashboard",
+"customer": "Customer",
+"welcomeCustomer": "Welcome {name} 👋",
+"@welcomeCustomer": {
+  "placeholders": {
+    "name": {
+      "type": "String"
+    }
+  }
+},
+"customerDashboardSubtitle": "Browse fresh products and follow your orders.",
+"browseMarketplace": "Browse Marketplace",
+"myOrders": "My Orders",
+"myOrdersSubtitle": "View your current and previous orders",
+"marketplace": "Marketplace",
+"marketplaceSubtitle": "Browse available products and add them to your cart",
+"myFavorites": "My Favorites",
+"myFavoritesSubtitle": "View products you saved for later",
+"latestNotifications": "View your latest notifications",
+"unreadNotifications": "{count} unread notifications",
+"@unreadNotifications": {
+  "placeholders": {
+    "count": {
+      "type": "int"
+    }
+  }
+},
+"shoppingCart": "Shopping Cart",
+"shoppingCartSubtitle": "Review your products and complete checkout",
+"myProfileSubtitle": "View and edit your personal information"
 }

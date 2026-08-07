@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/favorite_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../farmer/profile_screen.dart';
 import '../notifications_screen.dart';
@@ -11,16 +13,14 @@ import 'customer_favorites_screen.dart';
 import 'customer_orders_screen.dart';
 import 'customer_products_screen.dart';
 
-class CustomerDashboardScreen
-    extends StatefulWidget {
+class CustomerDashboardScreen extends StatefulWidget {
   const CustomerDashboardScreen({
     super.key,
   });
 
   @override
-  State<CustomerDashboardScreen>
-      createState() =>
-          _CustomerDashboardScreenState();
+  State<CustomerDashboardScreen> createState() =>
+      _CustomerDashboardScreenState();
 }
 
 class _CustomerDashboardScreenState
@@ -49,59 +49,195 @@ class _CustomerDashboardScreenState
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Future<void> _openNotifications() async {
+    final notificationProvider =
+        Provider.of<NotificationProvider>(
+      context,
+      listen: false,
+    );
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            const NotificationsScreen(),
+      ),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    await notificationProvider
+        .loadNotifications();
+  }
+
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
+
+  void _logout() {
     final authProvider =
-        Provider.of<AuthProvider>(context);
+        Provider.of<AuthProvider>(
+      context,
+      listen: false,
+    );
+
+    final favoriteProvider =
+        Provider.of<FavoriteProvider>(
+      context,
+      listen: false,
+    );
+
+    final notificationProvider =
+        Provider.of<NotificationProvider>(
+      context,
+      listen: false,
+    );
+
+    favoriteProvider.clearFavorites();
+
+    notificationProvider
+        .clearNotifications();
+
+    authProvider.logout();
+
+    Navigator.of(context)
+        .pushNamedAndRemoveUntil(
+      '/',
+      (route) => false,
+    );
+  }
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    final authProvider =
+        Provider.of<AuthProvider>(
+      context,
+    );
 
     final notificationProvider =
         Provider.of<NotificationProvider>(
       context,
     );
 
+    final localeProvider =
+        Provider.of<LocaleProvider>(
+      context,
+    );
+
+    final l10n =
+        AppLocalizations.of(context)!;
+
     final userName = authProvider
             .userData?['fullName']
             ?.toString() ??
-        'Customer';
+        l10n.customer;
+
+    final isArabic =
+        localeProvider
+                .locale.languageCode ==
+            'ar';
 
     return Scaffold(
       backgroundColor:
-          const Color(0xFFF5F7F4),
+          const Color(
+        0xFFF5F7F4,
+      ),
       appBar: AppBar(
-        title: const Text(
-          'Customer Dashboard',
+        title: Text(
+          l10n.customerDashboard,
         ),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+        backgroundColor:
+            Colors.green,
+        foregroundColor:
+            Colors.white,
         actions: [
+          PopupMenuButton<String>(
+            tooltip:
+                l10n.changeLanguage,
+            icon: const Icon(
+              Icons.language,
+            ),
+            onSelected:
+                _changeLanguage,
+            itemBuilder:
+                (context) {
+              return [
+                PopupMenuItem<String>(
+                  value: 'en',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color:
+                            !isArabic
+                                ? Colors.green
+                                : Colors
+                                    .transparent,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        l10n.english,
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'ar',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color:
+                            isArabic
+                                ? Colors.green
+                                : Colors
+                                    .transparent,
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        l10n.arabic,
+                      ),
+                    ],
+                  ),
+                ),
+              ];
+            },
+          ),
           Stack(
-            alignment: Alignment.center,
+            alignment:
+                Alignment.center,
             children: [
               IconButton(
-                tooltip: 'Notifications',
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const NotificationsScreen(),
-                    ),
-                  );
-
-                  if (mounted) {
-                    _loadNotifications();
-                  }
-                },
+                tooltip:
+                    l10n.notifications,
+                onPressed:
+                    _openNotifications,
                 icon: const Icon(
-                  Icons.notifications_outlined,
+                  Icons
+                      .notifications_outlined,
                 ),
               ),
               if (notificationProvider
                       .unreadCount >
                   0)
-                Positioned(
+                PositionedDirectional(
                   top: 7,
-                  right: 6,
+                  end: 6,
                   child: Container(
                     constraints:
                         const BoxConstraints(
@@ -115,8 +251,10 @@ class _CustomerDashboardScreenState
                     ),
                     decoration:
                         const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
+                      color:
+                          Colors.red,
+                      shape:
+                          BoxShape.circle,
                     ),
                     child: Text(
                       notificationProvider
@@ -128,8 +266,10 @@ class _CustomerDashboardScreenState
                               .toString(),
                       textAlign:
                           TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style:
+                          const TextStyle(
+                        color:
+                            Colors.white,
                         fontSize: 10,
                         fontWeight:
                             FontWeight.bold,
@@ -140,47 +280,40 @@ class _CustomerDashboardScreenState
             ],
           ),
           IconButton(
-            onPressed: () {
-              Provider.of<FavoriteProvider>(
-                context,
-                listen: false,
-              ).clearFavorites();
-
-              Provider.of<
-                  NotificationProvider>(
-                context,
-                listen: false,
-              ).clearNotifications();
-
-              authProvider.logout();
-
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil(
-                '/',
-                (route) => false,
-              );
-            },
+            onPressed:
+                _logout,
             icon: const Icon(
               Icons.logout,
             ),
-            tooltip: 'Logout',
+            tooltip:
+                l10n.logout,
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _loadNotifications,
-        child: SingleChildScrollView(
+        onRefresh:
+            _loadNotifications,
+        child:
+            SingleChildScrollView(
           physics:
               const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(20),
+          padding:
+              const EdgeInsets.all(
+            20,
+          ),
           child: Column(
             crossAxisAlignment:
-                CrossAxisAlignment.stretch,
+                CrossAxisAlignment
+                    .stretch,
             children: [
               Text(
-                'Welcome $userName 👋',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
+                l10n.welcomeCustomer(
+                  userName,
+                ),
+                textAlign:
+                    TextAlign.center,
+                style:
+                    const TextStyle(
                   fontSize: 28,
                   fontWeight:
                       FontWeight.bold,
@@ -190,8 +323,10 @@ class _CustomerDashboardScreenState
                 height: 12,
               ),
               Text(
-                'Browse fresh products and follow your orders.',
-                textAlign: TextAlign.center,
+                l10n
+                    .customerDashboardSubtitle,
+                textAlign:
+                    TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
                   color:
@@ -202,9 +337,11 @@ class _CustomerDashboardScreenState
                 height: 30,
               ),
               SizedBox(
-                width: double.infinity,
+                width:
+                    double.infinity,
                 height: 52,
-                child: ElevatedButton.icon(
+                child:
+                    ElevatedButton.icon(
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -215,10 +352,12 @@ class _CustomerDashboardScreenState
                     );
                   },
                   icon: const Icon(
-                    Icons.storefront_outlined,
+                    Icons
+                        .storefront_outlined,
                   ),
-                  label: const Text(
-                    'Browse Marketplace',
+                  label: Text(
+                    l10n
+                        .browseMarketplace,
                   ),
                 ),
               ),
@@ -226,9 +365,10 @@ class _CustomerDashboardScreenState
                 height: 24,
               ),
               _DashboardCard(
-                title: 'My Orders',
+                title:
+                    l10n.myOrders,
                 subtitle:
-                    'View your current and previous orders',
+                    l10n.myOrdersSubtitle,
                 icon: Icons
                     .shopping_bag_outlined,
                 onTap: () {
@@ -245,11 +385,12 @@ class _CustomerDashboardScreenState
                 height: 12,
               ),
               _DashboardCard(
-                title: 'Marketplace',
+                title:
+                    l10n.marketplace,
                 subtitle:
-                    'Browse available products and add them to your cart',
-                icon:
-                    Icons.storefront_outlined,
+                    l10n.marketplaceSubtitle,
+                icon: Icons
+                    .storefront_outlined,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -264,9 +405,10 @@ class _CustomerDashboardScreenState
                 height: 12,
               ),
               _DashboardCard(
-                title: 'My Favorites',
+                title:
+                    l10n.myFavorites,
                 subtitle:
-                    'View products you saved for later',
+                    l10n.myFavoritesSubtitle,
                 icon:
                     Icons.favorite_outline,
                 onTap: () {
@@ -283,35 +425,32 @@ class _CustomerDashboardScreenState
                 height: 12,
               ),
               _DashboardCard(
-                title: 'Notifications',
-                subtitle: notificationProvider
-                            .unreadCount >
-                        0
-                    ? '${notificationProvider.unreadCount} unread notifications'
-                    : 'View your latest notifications',
+                title:
+                    l10n.notifications,
+                subtitle:
+                    notificationProvider
+                                .unreadCount >
+                            0
+                        ? l10n
+                            .unreadNotifications(
+                            notificationProvider
+                                .unreadCount,
+                          )
+                        : l10n
+                            .latestNotifications,
                 icon: Icons
                     .notifications_outlined,
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const NotificationsScreen(),
-                    ),
-                  );
-
-                  if (mounted) {
-                    _loadNotifications();
-                  }
-                },
+                onTap:
+                    _openNotifications,
               ),
               const SizedBox(
                 height: 12,
               ),
               _DashboardCard(
-                title: 'Shopping Cart',
+                title:
+                    l10n.shoppingCart,
                 subtitle:
-                    'Review your products and complete checkout',
+                    l10n.shoppingCartSubtitle,
                 icon: Icons
                     .shopping_cart_outlined,
                 onTap: () {
@@ -328,9 +467,10 @@ class _CustomerDashboardScreenState
                 height: 12,
               ),
               _DashboardCard(
-                title: 'My Profile',
+                title:
+                    l10n.myProfile,
                 subtitle:
-                    'View and edit your personal information',
+                    l10n.myProfileSubtitle,
                 icon:
                     Icons.person_outline,
                 onTap: () {
@@ -366,15 +506,21 @@ class _DashboardCard
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Card(
       elevation: 1,
-      shape: RoundedRectangleBorder(
+      shape:
+          RoundedRectangleBorder(
         borderRadius:
-            BorderRadius.circular(16),
+            BorderRadius.circular(
+          16,
+        ),
       ),
       child: ListTile(
-        onTap: onTap,
+        onTap:
+            onTap,
         contentPadding:
             const EdgeInsets.symmetric(
           horizontal: 18,
@@ -385,12 +531,14 @@ class _DashboardCard
               Colors.green.shade100,
           child: Icon(
             icon,
-            color: Colors.green.shade700,
+            color:
+                Colors.green.shade700,
           ),
         ),
         title: Text(
           title,
-          style: const TextStyle(
+          style:
+              const TextStyle(
             fontSize: 17,
             fontWeight:
                 FontWeight.bold,

@@ -343,6 +343,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total Sales'**
   String get totalSales;
+
+  /// No description provided for @customerDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Dashboard'**
+  String get customerDashboard;
+
+  /// No description provided for @customer.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get customer;
+
+  /// No description provided for @welcomeCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome {name} 👋'**
+  String welcomeCustomer(String name);
+
+  /// No description provided for @customerDashboardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse fresh products and follow your orders.'**
+  String get customerDashboardSubtitle;
+
+  /// No description provided for @browseMarketplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Marketplace'**
+  String get browseMarketplace;
+
+  /// No description provided for @myOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'My Orders'**
+  String get myOrders;
+
+  /// No description provided for @myOrdersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View your current and previous orders'**
+  String get myOrdersSubtitle;
+
+  /// No description provided for @marketplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Marketplace'**
+  String get marketplace;
+
+  /// No description provided for @marketplaceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse available products and add them to your cart'**
+  String get marketplaceSubtitle;
+
+  /// No description provided for @myFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'My Favorites'**
+  String get myFavorites;
+
+  /// No description provided for @myFavoritesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View products you saved for later'**
+  String get myFavoritesSubtitle;
+
+  /// No description provided for @latestNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'View your latest notifications'**
+  String get latestNotifications;
+
+  /// No description provided for @unreadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unread notifications'**
+  String unreadNotifications(int count);
+
+  /// No description provided for @shoppingCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping Cart'**
+  String get shoppingCart;
+
+  /// No description provided for @shoppingCartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your products and complete checkout'**
+  String get shoppingCartSubtitle;
+
+  /// No description provided for @myProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View and edit your personal information'**
+  String get myProfileSubtitle;
 }
 
 class _AppLocalizationsDelegate

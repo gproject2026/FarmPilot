@@ -41,5 +41,35 @@
 "myProfile": "ملفي الشخصي",
 "noData": "لا توجد بيانات",
 "aiDiagnoses": "تشخيصات الذكاء الاصطناعي",
-"totalSales": "إجمالي المبيعات"
+"totalSales": "إجمالي المبيعات",
+"customerDashboard": "لوحة تحكم العميل",
+"customer": "العميل",
+"welcomeCustomer": "مرحبًا {name} 👋",
+"@welcomeCustomer": {
+  "placeholders": {
+    "name": {
+      "type": "String"
+    }
+  }
+},
+"customerDashboardSubtitle": "تصفح المنتجات الطازجة وتابع طلباتك.",
+"browseMarketplace": "تصفح السوق",
+"myOrders": "طلباتي",
+"myOrdersSubtitle": "عرض طلباتك الحالية والسابقة",
+"marketplace": "السوق",
+"marketplaceSubtitle": "تصفح المنتجات المتاحة وأضفها إلى سلة التسوق",
+"myFavorites": "المفضلة",
+"myFavoritesSubtitle": "عرض المنتجات التي حفظتها لوقت لاحق",
+"latestNotifications": "عرض أحدث الإشعارات",
+"unreadNotifications": "{count} إشعارات غير مقروءة",
+"@unreadNotifications": {
+  "placeholders": {
+    "count": {
+      "type": "int"
+    }
+  }
+},
+"shoppingCart": "سلة التسوق",
+"shoppingCartSubtitle": "راجع منتجاتك وأكمل عملية الشراء",
+"myProfileSubtitle": "عرض وتعديل معلوماتك الشخصية"
 }
