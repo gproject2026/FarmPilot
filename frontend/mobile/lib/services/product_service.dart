@@ -7,7 +7,7 @@ import '../core/api/api_client.dart';
 class ProductService {
   final ApiClient apiClient = ApiClient();
 
-  Future<List<dynamic>> getAllProducts() async {
+  Future<List> getAllProducts() async {
     try {
       final response = await apiClient.dio.get(
         '/products',
@@ -29,7 +29,7 @@ class ProductService {
     }
   }
 
-  Future<List<dynamic>> getMyProducts() async {
+  Future<List> getMyProducts() async {
     try {
       final response = await apiClient.dio.get(
         '/products/my',
@@ -51,7 +51,7 @@ class ProductService {
     }
   }
 
-  Future<List<dynamic>> getAdminProducts() async {
+  Future<List> getAdminProducts() async {
     try {
       final response = await apiClient.dio.get(
         '/products/admin/all',
@@ -73,12 +73,14 @@ class ProductService {
     }
   }
 
-  Future<Map<String, dynamic>> updateProductStatus({
+  Future<Map<String, dynamic>>
+      updateProductStatus({
     required String productId,
     required String status,
   }) async {
     try {
-      final response = await apiClient.dio.patch(
+      final response =
+          await apiClient.dio.patch(
         '/products/admin/$productId/status',
         data: {
           'status': status,
@@ -129,7 +131,7 @@ class ProductService {
     }
   }
 
-  Future<String> uploadProductImage({
+  Future uploadProductImage({
     required Uint8List imageBytes,
     required String fileName,
   }) async {
@@ -141,15 +143,18 @@ class ProductService {
         ),
       });
 
-      final response = await apiClient.dio.post(
+      final response =
+          await apiClient.dio.post(
         '/uploads/image',
         data: formData,
         options: Options(
-          contentType: 'multipart/form-data',
+          contentType:
+              'multipart/form-data',
         ),
       );
 
-      final responseData = response.data;
+      final responseData =
+          response.data;
 
       if (responseData is! Map) {
         throw Exception(
@@ -191,6 +196,10 @@ class ProductService {
     required String categoryId,
     required String name,
     required String description,
+    required String nameEn,
+    required String nameAr,
+    required String descriptionEn,
+    required String descriptionAr,
     required double price,
     required int quantity,
     required String unit,
@@ -201,8 +210,19 @@ class ProductService {
         '/products',
         data: {
           'categoryId': categoryId,
+
+          // old fields for compatibility
           'name': name,
           'description': description,
+
+          // bilingual fields
+          'nameEn': nameEn,
+          'nameAr': nameAr,
+          'descriptionEn':
+              descriptionEn,
+          'descriptionAr':
+              descriptionAr,
+
           'price': price,
           'quantity': quantity,
           'unit': unit,
@@ -221,6 +241,10 @@ class ProductService {
     required String categoryId,
     required String name,
     required String description,
+    required String nameEn,
+    required String nameAr,
+    required String descriptionEn,
+    required String descriptionAr,
     required double price,
     required int quantity,
     required String unit,
@@ -231,8 +255,19 @@ class ProductService {
         '/products/$productId',
         data: {
           'categoryId': categoryId,
+
+          // old fields for compatibility
           'name': name,
           'description': description,
+
+          // bilingual fields
+          'nameEn': nameEn,
+          'nameAr': nameAr,
+          'descriptionEn':
+              descriptionEn,
+          'descriptionAr':
+              descriptionAr,
+
           'price': price,
           'quantity': quantity,
           'unit': unit,

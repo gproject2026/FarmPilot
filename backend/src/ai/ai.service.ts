@@ -1,11 +1,14 @@
 import {
+  BadGatewayException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+
 import { MarketingDescriptionDto } from './dto/marketing-description.dto';
+import { GeminiService } from './gemini.service';
 
 interface MarketingContent {
   title: string;
@@ -18,6 +21,7 @@ interface MarketingContent {
 export class AiService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly geminiService: GeminiService,
   ) {}
 
   async generateMarketingDescription(
@@ -37,6 +41,13 @@ export class AiService {
     const productId =
       marketingDescriptionDto.productId;
 
+    const language =
+      marketingDescriptionDto.language
+        ?.trim()
+        .toLowerCase() === 'ar'
+        ? 'ar'
+        : 'en';
+
     if (productId) {
       await this.validateProductOwnership(
         productId,
@@ -45,10 +56,11 @@ export class AiService {
     }
 
     const generatedContent =
-      this.generateContent({
+      await this.generateContentWithGemini({
         productName,
         productDetails,
         targetAudience,
+        language,
       });
 
     const marketingLog =
@@ -60,6 +72,7 @@ export class AiService {
             productName,
             productDetails,
             targetAudience,
+            language,
           }),
           generatedTitle:
             generatedContent.title,
@@ -78,15 +91,21 @@ export class AiService {
 
     return {
       message:
-        'Marketing content generated successfully',
-      marketingLogId: marketingLog.id,
-      title: generatedContent.title,
+        language === 'ar'
+          ? 'تم إنشاء المحتوى التسويقي بنجاح'
+          : 'Marketing content generated successfully',
+      marketingLogId:
+        marketingLog.id,
+      title:
+        generatedContent.title,
       description:
         generatedContent.description,
-      keywords: generatedContent.keywords,
+      keywords:
+        generatedContent.keywords,
       suggestions:
         generatedContent.suggestions,
-      createdAt: marketingLog.createdAt,
+      createdAt:
+        marketingLog.createdAt,
     };
   }
 
@@ -111,221 +130,290 @@ export class AiService {
       );
     }
 
-    if (product.farmerId !== farmerId) {
+    if (
+      product.farmerId !== farmerId
+    ) {
       throw new ForbiddenException(
         'You cannot generate marketing content for this product',
       );
     }
   }
 
-  private generateContent(params: {
-  productName: string;
-  productDetails: string;
-  targetAudience?: string;
-}): MarketingContent {
-  const {
-    productName,
-    productDetails,
-    targetAudience,
-  } = params;
-
-  const cleanProductName =
-    productName.trim();
-
-  const normalizedProductName =
-    cleanProductName.toLowerCase();
-
-  const normalizedDetails =
-    productDetails.toLowerCase();
-
-  const audience =
-    targetAudience &&
-    targetAudience.trim().length > 0
-      ? targetAudience.trim()
-      : 'customers looking for fresh and reliable farm products';
-
-  const normalizedAudience =
-    audience.toLowerCase();
-
-  const containsFresh =
-    normalizedProductName.includes(
-      'fresh',
-    );
-
-  const titleOptions = containsFresh
-    ? [
-        `Premium ${cleanProductName}`,
-        `High Quality ${cleanProductName}`,
-        `Locally Grown ${cleanProductName}`,
-        `Farm Selected ${cleanProductName}`,
-      ]
-    : [
-        `Fresh ${cleanProductName}`,
-        `Premium ${cleanProductName}`,
-        `Locally Grown ${cleanProductName}`,
-        `Farm Fresh ${cleanProductName}`,
-      ];
-
-  const titleIndex =
-    Date.now() % titleOptions.length;
-
-  const title =
-    titleOptions[titleIndex];
-
-  const descriptionOptions = [
-    `Bring freshness and dependable quality to your table with ${cleanProductName}. ` +
-      `${productDetails}. ` +
-      `This product is prepared for ${audience} and offers a convenient farm-to-customer experience through FarmPilot.`,
-
-    `Choose ${cleanProductName} for a reliable combination of freshness, value, and quality. ` +
-      `${productDetails}. ` +
-      `It is a suitable choice for ${audience} who are looking for trusted local farm products.`,
-
-    `Enjoy the natural quality of ${cleanProductName}. ` +
-      `${productDetails}. ` +
-      `Carefully offered for ${audience}, this product is a practical choice for customers who value freshness and dependable service.`,
-
-    `Discover a better way to shop for ${cleanProductName}. ` +
-      `${productDetails}. ` +
-      `FarmPilot connects ${audience} with quality farm products in a simple and convenient way.`,
-  ];
-
-  const descriptionIndex =
-    Date.now() % descriptionOptions.length;
-
-  const description =
-    descriptionOptions[
-      descriptionIndex
-    ];
-
-  const keywords =
-    this.generateKeywords(
-      cleanProductName,
-      productDetails,
-    );
-
-  const suggestions: string[] = [
-    'Use a clear and well-lit image that shows the real product.',
-    'Mention the available quantity, unit, and expected availability.',
-    'Highlight the product origin, freshness, and harvesting method.',
-    'Keep the price clear and competitive.',
-    'Update the product stock regularly.',
-  ];
-
-  if (
-    normalizedDetails.includes(
-      'daily',
-    )
-  ) {
-    suggestions.push(
-      'Emphasize that the product is harvested or prepared daily.',
-    );
-  }
-
-  if (
-    normalizedDetails.includes(
-      'organic',
-    )
-  ) {
-    suggestions.push(
-      'Highlight the organic growing method in the product title and description.',
-    );
-  }
-
-  if (
-    normalizedDetails.includes(
-      'local',
-    )
-  ) {
-    suggestions.push(
-      'Promote the product as locally grown to attract nearby customers.',
-    );
-  }
-
-  if (
-    normalizedAudience.includes(
-      'restaurant',
-    )
-  ) {
-    suggestions.push(
-      'Offer bulk quantity options for restaurants and food businesses.',
-    );
-  }
-
-  return {
-    title,
-    description,
-    keywords,
-    suggestions,
-  };
-}
-
-  private generateKeywords(
-    productName: string,
-    productDetails: string,
-  ) {
-    const ignoredWords = new Set([
-      'and',
-      'the',
-      'with',
-      'from',
-      'this',
-      'that',
-      'your',
-      'for',
-      'are',
-      'our',
-      'was',
-      'have',
-      'has',
-      'product',
-    ]);
-
-    const detailWords = productDetails
-      .toLowerCase()
-      .replace(
-        /[^a-z0-9\s-]/g,
-        ' ',
-      )
-      .split(/\s+/)
-      .filter(
-        (word) =>
-          word.length >= 4 &&
-          !ignoredWords.has(word),
-      );
-
-    const uniqueDetailWords = [
-      ...new Set(detailWords),
-    ].slice(0, 4);
-
-    return [
-      productName.toLowerCase(),
-      ...uniqueDetailWords,
-      'fresh produce',
-      'farm product',
-      'local farming',
-      'high quality',
-      'FarmPilot',
-    ];
-  }
-
-  private buildInputText(params: {
-    productName: string;
-    productDetails: string;
-    targetAudience?: string;
-  }) {
+  private async generateContentWithGemini(
+    params: {
+      productName: string;
+      productDetails: string;
+      targetAudience?: string;
+      language: 'ar' | 'en';
+    },
+  ): Promise<MarketingContent> {
     const {
       productName,
       productDetails,
       targetAudience,
+      language,
+    } = params;
+
+    const languageInstruction =
+      language === 'ar'
+        ? [
+            'Write ALL generated marketing content in clear, natural Arabic.',
+            'The title, description, keywords, and suggestions must all be in Arabic.',
+            'Do not include English marketing words unless they are a brand name or unavoidable proper noun.',
+            'Use simple Arabic suitable for farmers and general customers.',
+          ].join(' ')
+        : [
+            'Write ALL generated marketing content in clear, natural English.',
+            'The title, description, keywords, and suggestions must all be in English.',
+            'Do not include Arabic words unless they are part of the original product name or a proper noun.',
+          ].join(' ');
+
+    const prompt = [
+      'You are a marketing assistant for FarmPilot, a marketplace that connects farmers directly with customers.',
+      '',
+      languageInstruction,
+      '',
+      'Create useful and realistic marketing content for the following farm product.',
+      '',
+      `Product name: ${productName}`,
+      `Product details: ${productDetails}`,
+      `Target audience: ${
+        targetAudience?.trim() ||
+        (language === 'ar'
+          ? 'العملاء الباحثون عن منتجات زراعية طازجة وموثوقة'
+          : 'customers looking for fresh and reliable farm products')
+      }`,
+      '',
+      'Requirements:',
+      '- Create one attractive but realistic marketing title.',
+      '- Create one concise marketing description.',
+      '- Do not invent certifications, health claims, discounts, quantities, prices, or product qualities that were not provided.',
+      '- Return between 5 and 8 useful keywords.',
+      '- Return between 4 and 6 practical marketing suggestions.',
+      '- Suggestions should help the farmer improve the product listing.',
+      '- Keep the content suitable for an agricultural marketplace.',
+      '- Do not use markdown.',
+      '- Do not wrap the response in ```json code fences.',
+      '',
+      'Return ONLY valid JSON using exactly this structure:',
+      '{',
+      '  "title": "string",',
+      '  "description": "string",',
+      '  "keywords": ["string"],',
+      '  "suggestions": ["string"]',
+      '}',
+    ].join('\n');
+
+    let responseText: string;
+
+    try {
+      responseText =
+        await this.geminiService.generateText(
+          prompt,
+        );
+    } catch (error) {
+      console.error(
+        'Gemini marketing generation error:',
+        error,
+      );
+
+      throw new BadGatewayException(
+        language === 'ar'
+          ? 'تعذر إنشاء المحتوى التسويقي باستخدام الذكاء الاصطناعي'
+          : 'AI could not generate marketing content',
+      );
+    }
+
+    if (
+      !responseText ||
+      responseText.trim().length === 0
+    ) {
+      throw new BadGatewayException(
+        language === 'ar'
+          ? 'لم يُرجع الذكاء الاصطناعي محتوى تسويقيًا'
+          : 'AI did not return marketing content',
+      );
+    }
+
+    return this.parseMarketingContent(
+      responseText,
+      language,
+    );
+  }
+
+  private parseMarketingContent(
+    responseText: string,
+    language: 'ar' | 'en',
+  ): MarketingContent {
+    const cleanedResponse =
+      this.cleanJsonResponse(
+        responseText,
+      );
+
+    let parsed: unknown;
+
+    try {
+      parsed =
+        JSON.parse(
+          cleanedResponse,
+        );
+    } catch (error) {
+      console.error(
+        'Invalid Gemini marketing JSON:',
+        responseText,
+      );
+
+      throw new BadGatewayException(
+        language === 'ar'
+          ? 'أعاد الذكاء الاصطناعي استجابة غير صالحة'
+          : 'AI returned an invalid marketing response',
+      );
+    }
+
+    if (
+      parsed === null ||
+      typeof parsed !== 'object' ||
+      Array.isArray(parsed)
+    ) {
+      throw new BadGatewayException(
+        language === 'ar'
+          ? 'أعاد الذكاء الاصطناعي استجابة غير صالحة'
+          : 'AI returned an invalid marketing response',
+      );
+    }
+
+    const data =
+      parsed as Record<string, unknown>;
+
+    const title =
+      typeof data.title === 'string'
+        ? data.title.trim()
+        : '';
+
+    const description =
+      typeof data.description === 'string'
+        ? data.description.trim()
+        : '';
+
+    const keywords =
+      this.normalizeStringArray(
+        data.keywords,
+      );
+
+    const suggestions =
+      this.normalizeStringArray(
+        data.suggestions,
+      );
+
+    if (
+      title.length === 0 ||
+      description.length === 0 ||
+      keywords.length === 0 ||
+      suggestions.length === 0
+    ) {
+      throw new BadGatewayException(
+        language === 'ar'
+          ? 'المحتوى الذي تم إنشاؤه غير مكتمل'
+          : 'Generated marketing content is incomplete',
+      );
+    }
+
+    return {
+      title,
+      description,
+      keywords,
+      suggestions,
+    };
+  }
+
+  private normalizeStringArray(
+    value: unknown,
+  ): string[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .filter(
+        (item) =>
+          typeof item === 'string',
+      )
+      .map(
+        (item) =>
+          (item as string).trim(),
+      )
+      .filter(
+        (item) =>
+          item.length > 0,
+      );
+  }
+
+  private cleanJsonResponse(
+    responseText: string,
+  ) {
+    let cleaned =
+      responseText.trim();
+
+    if (
+      cleaned.startsWith('```')
+    ) {
+      cleaned =
+        cleaned.replace(
+          /^```(?:json)?\s*/i,
+          '',
+        );
+
+      cleaned =
+        cleaned.replace(
+          /\s*```$/,
+          '',
+        );
+    }
+
+    const firstBrace =
+      cleaned.indexOf('{');
+
+    const lastBrace =
+      cleaned.lastIndexOf('}');
+
+    if (
+      firstBrace !== -1 &&
+      lastBrace !== -1 &&
+      lastBrace > firstBrace
+    ) {
+      cleaned =
+        cleaned.substring(
+          firstBrace,
+          lastBrace + 1,
+        );
+    }
+
+    return cleaned.trim();
+  }
+
+  private buildInputText(
+    params: {
+      productName: string;
+      productDetails: string;
+      targetAudience?: string;
+      language: 'ar' | 'en';
+    },
+  ) {
+    const {
+      productName,
+      productDetails,
+      targetAudience,
+      language,
     } = params;
 
     return [
       `Product name: ${productName}`,
       `Product details: ${productDetails}`,
       `Target audience: ${
-        targetAudience ?? 'General customers'
+        targetAudience ??
+        'General customers'
       }`,
+      `Language: ${language}`,
     ].join('\n');
   }
 }

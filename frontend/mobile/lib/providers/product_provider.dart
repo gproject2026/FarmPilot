@@ -20,9 +20,9 @@ class ProductProvider extends ChangeNotifier {
 
   String? errorMessage;
 
-  List<dynamic> products = [];
+  List products = [];
 
-  List<dynamic> adminProducts = [];
+  List adminProducts = [];
 
   Future<void> loadAllProducts() async {
     isLoading = true;
@@ -31,7 +31,8 @@ class ProductProvider extends ChangeNotifier {
 
     try {
       products =
-          await productService.getAllProducts();
+          await productService
+              .getAllProducts();
     } catch (error) {
       errorMessage = error
           .toString()
@@ -52,7 +53,8 @@ class ProductProvider extends ChangeNotifier {
 
     try {
       products =
-          await productService.getMyProducts();
+          await productService
+              .getMyProducts();
     } catch (error) {
       errorMessage = error
           .toString()
@@ -107,7 +109,8 @@ class ProductProvider extends ChangeNotifier {
       final index =
           adminProducts.indexWhere(
         (product) =>
-            product['id']?.toString() ==
+            product['id']
+                ?.toString() ==
             productId,
       );
 
@@ -136,6 +139,7 @@ class ProductProvider extends ChangeNotifier {
       generateMarketingContent({
     required String productName,
     required String productDetails,
+    required String language,
     String? productId,
     String? targetAudience,
   }) async {
@@ -147,6 +151,7 @@ class ProductProvider extends ChangeNotifier {
           .generateMarketingContent(
         productName: productName,
         productDetails: productDetails,
+        language: language,
         productId: productId,
         targetAudience: targetAudience,
       );
@@ -156,7 +161,7 @@ class ProductProvider extends ChangeNotifier {
     }
   }
 
-  Future<String> uploadProductImage({
+  Future uploadProductImage({
     required Uint8List imageBytes,
     required String fileName,
   }) async {
@@ -179,6 +184,10 @@ class ProductProvider extends ChangeNotifier {
     required String categoryId,
     required String name,
     required String description,
+    required String nameEn,
+    required String nameAr,
+    required String descriptionEn,
+    required String descriptionAr,
     required double price,
     required int quantity,
     required String unit,
@@ -192,6 +201,12 @@ class ProductProvider extends ChangeNotifier {
         categoryId: categoryId,
         name: name,
         description: description,
+        nameEn: nameEn,
+        nameAr: nameAr,
+        descriptionEn:
+            descriptionEn,
+        descriptionAr:
+            descriptionAr,
         price: price,
         quantity: quantity,
         unit: unit,
@@ -212,6 +227,10 @@ class ProductProvider extends ChangeNotifier {
     required String categoryId,
     required String name,
     required String description,
+    required String nameEn,
+    required String nameAr,
+    required String descriptionEn,
+    required String descriptionAr,
     required double price,
     required int quantity,
     required String unit,
@@ -226,6 +245,12 @@ class ProductProvider extends ChangeNotifier {
         categoryId: categoryId,
         name: name,
         description: description,
+        nameEn: nameEn,
+        nameAr: nameAr,
+        descriptionEn:
+            descriptionEn,
+        descriptionAr:
+            descriptionAr,
         price: price,
         quantity: quantity,
         unit: unit,

@@ -51,11 +51,13 @@ class _AddProductScreenState
 
   String? currentImageUrl;
 
+  bool localizedDataLoaded = false;
+
   @override
   void initState() {
     super.initState();
 
-    _fillProductData();
+    _fillCommonProductData();
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
@@ -66,6 +68,19 @@ class _AddProductScreenState
         _initializeCategories();
       },
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (localizedDataLoaded) {
+      return;
+    }
+
+    _fillLocalizedProductData();
+
+    localizedDataLoaded = true;
   }
 
   Future<void> _initializeCategories() async {
@@ -96,21 +111,12 @@ class _AddProductScreenState
     }
   }
 
-  void _fillProductData() {
+  void _fillCommonProductData() {
     if (!widget.isEditing) {
       return;
     }
 
     final product = widget.product!;
-
-    nameController.text =
-        product['name']?.toString() ??
-            '';
-
-    descriptionController.text =
-        product['description']
-                ?.toString() ??
-            '';
 
     priceController.text =
         product['price']?.toString() ??
@@ -129,6 +135,67 @@ class _AddProductScreenState
         product['imageUrl']?.toString();
   }
 
+  void _fillLocalizedProductData() {
+    if (!widget.isEditing) {
+      return;
+    }
+
+    final product = widget.product!;
+
+    final languageCode =
+        Localizations.localeOf(
+      context,
+    ).languageCode;
+
+    if (languageCode == 'ar') {
+      nameController.text =
+          _firstNonEmpty([
+        product['nameAr'],
+        product['name'],
+        product['nameEn'],
+      ]);
+
+      descriptionController.text =
+          _firstNonEmpty([
+        product['descriptionAr'],
+        product['description'],
+        product['descriptionEn'],
+      ]);
+
+      return;
+    }
+
+    nameController.text =
+        _firstNonEmpty([
+      product['nameEn'],
+      product['name'],
+      product['nameAr'],
+    ]);
+
+    descriptionController.text =
+        _firstNonEmpty([
+      product['descriptionEn'],
+      product['description'],
+      product['descriptionAr'],
+    ]);
+  }
+
+  String _firstNonEmpty(
+    List<dynamic> values,
+  ) {
+    for (final value in values) {
+      final text =
+          value?.toString().trim() ??
+              '';
+
+      if (text.isNotEmpty) {
+        return text;
+      }
+    }
+
+    return '';
+  }
+
   String? _buildImageUrl(
     String? imageUrl,
   ) {
@@ -137,7 +204,8 @@ class _AddProductScreenState
       return null;
     }
 
-    final value = imageUrl.trim();
+    final value =
+        imageUrl.trim();
 
     if (value.startsWith(
           'http://',
@@ -153,6 +221,71 @@ class _AddProductScreenState
     }
 
     return '${AppConstants.baseUrl}/$value';
+  }
+
+  String _getCategoryName(
+    dynamic category,
+    BuildContext context,
+  ) {
+    if (category is! Map) {
+      return '';
+    }
+
+    final languageCode =
+        Localizations.localeOf(
+      context,
+    ).languageCode;
+
+    final name =
+        category['name']
+            ?.toString()
+            .trim();
+
+    final nameEn =
+        category['nameEn']
+            ?.toString()
+            .trim();
+
+    final nameAr =
+        category['nameAr']
+            ?.toString()
+            .trim();
+
+    if (languageCode == 'ar') {
+      if (nameAr != null &&
+          nameAr.isNotEmpty) {
+        return nameAr;
+      }
+
+      if (name != null &&
+          name.isNotEmpty) {
+        return name;
+      }
+
+      if (nameEn != null &&
+          nameEn.isNotEmpty) {
+        return nameEn;
+      }
+
+      return '';
+    }
+
+    if (nameEn != null &&
+        nameEn.isNotEmpty) {
+      return nameEn;
+    }
+
+    if (name != null &&
+        name.isNotEmpty) {
+      return name;
+    }
+
+    if (nameAr != null &&
+        nameAr.isNotEmpty) {
+      return nameAr;
+    }
+
+    return '';
   }
 
   Future<void> _pickImage() async {
@@ -262,6 +395,11 @@ class _AddProductScreenState
       return;
     }
 
+    final language =
+        Localizations.localeOf(
+      context,
+    ).languageCode;
+
     try {
       final result =
           await productProvider
@@ -272,6 +410,7 @@ class _AddProductScreenState
                 ? l10n
                     .freshFarmProduct
                 : productDetails,
+        language: language,
         productId:
             widget.isEditing
                 ? widget.product!['id']
@@ -481,8 +620,8 @@ class _AddProductScreenState
                                 Icons
                                     .check_circle_outline,
                                 size: 18,
-                                color: Colors
-                                    .green,
+                                color:
+                                    Colors.green,
                               ),
                               const SizedBox(
                                 width: 8,
@@ -641,6 +780,34 @@ class _AddProductScreenState
       return;
     }
 
+    final languageCode =
+        Localizations.localeOf(
+      context,
+    ).languageCode;
+
+    final isArabic =
+        languageCode == 'ar';
+
+    final nameAr =
+        isArabic
+            ? name
+            : '';
+
+    final descriptionAr =
+        isArabic
+            ? description
+            : '';
+
+    final nameEn =
+        isArabic
+            ? ''
+            : name;
+
+    final descriptionEn =
+        isArabic
+            ? ''
+            : description;
+
     try {
       String? imageUrl =
           currentImageUrl;
@@ -673,8 +840,21 @@ class _AddProductScreenState
             .updateProduct(
           productId: productId,
           categoryId: categoryId,
+
+          // Legacy fields
           name: name,
           description: description,
+
+          // Current language only.
+          // Backend + Gemini generate
+          // the opposite language.
+          nameEn: nameEn,
+          nameAr: nameAr,
+          descriptionEn:
+              descriptionEn,
+          descriptionAr:
+              descriptionAr,
+
           price: price,
           quantity: quantity,
           unit: unit,
@@ -684,8 +864,21 @@ class _AddProductScreenState
         await productProvider
             .createProduct(
           categoryId: categoryId,
+
+          // Legacy fields
           name: name,
           description: description,
+
+          // Current language only.
+          // Backend + Gemini generate
+          // the opposite language.
+          nameEn: nameEn,
+          nameAr: nameAr,
+          descriptionEn:
+              descriptionEn,
+          descriptionAr:
+              descriptionAr,
+
           price: price,
           quantity: quantity,
           unit: unit,
@@ -785,14 +978,19 @@ class _AddProductScreenState
                       (
                         category,
                       ) {
+                        final categoryName =
+                            _getCategoryName(
+                          category,
+                          context,
+                        );
+
                         return DropdownMenuItem<
                             String>(
                           value:
                               category['id']
                                   .toString(),
                           child: Text(
-                            category['name']
-                                .toString(),
+                            categoryName,
                           ),
                         );
                       },

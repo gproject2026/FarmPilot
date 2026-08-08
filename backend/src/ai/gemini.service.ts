@@ -34,6 +34,11 @@ export interface DiagnosisTranslationResult {
   prevention: string;
 }
 
+export interface ProductTranslationResult {
+  productName: string;
+  description: string;
+}
+
 @Injectable()
 export class GeminiService {
   private readonly ai: GoogleGenAI;
@@ -66,6 +71,123 @@ export class GeminiService {
       });
 
     return response.text ?? '';
+  }
+
+  async translateProductContent(params: {
+    productName: string;
+    description: string;
+    targetLanguage: 'ar' | 'en';
+  }): Promise<ProductTranslationResult> {
+    const {
+      productName,
+      description,
+      targetLanguage,
+    } = params;
+
+    const targetLanguageName =
+      targetLanguage === 'ar'
+        ? 'Arabic'
+        : 'English';
+
+    const prompt = [
+      `Translate the following farm product content into clear, natural ${targetLanguageName}.`,
+      'Preserve the original meaning accurately.',
+      'Do not add information that was not provided.',
+      'Do not invent certifications, health claims, prices, quantities, discounts, origins, or product qualities.',
+      'The translated product name should sound natural and suitable for an agricultural marketplace.',
+      'The translated description should be clear and suitable for customers.',
+      'Keep brand names and proper nouns unchanged when appropriate.',
+      `Return all translated text in ${targetLanguageName}.`,
+      '',
+      `Product name: ${productName}`,
+      `Description: ${description}`,
+    ].join('\n');
+
+    let responseText:
+      | string
+      | undefined;
+
+    try {
+      const response =
+        await this.ai.models.generateContent({
+          model: this.modelName,
+          contents: prompt,
+          config: {
+            responseMimeType:
+              'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                productName: {
+                  type: Type.STRING,
+                },
+                description: {
+                  type: Type.STRING,
+                },
+              },
+              required: [
+                'productName',
+                'description',
+              ],
+            },
+          },
+        });
+
+      responseText =
+        response.text;
+    } catch (error) {
+      console.error(
+        'Gemini product translation error:',
+        error,
+      );
+
+      throw new BadGatewayException(
+        'Gemini could not translate the product content',
+      );
+    }
+
+    if (!responseText) {
+      throw new InternalServerErrorException(
+        'Gemini did not return a product translation',
+      );
+    }
+
+    try {
+      const result =
+        JSON.parse(
+          responseText,
+        ) as ProductTranslationResult;
+
+      const translatedName =
+        result.productName
+          ?.toString()
+          .trim();
+
+      const translatedDescription =
+        result.description
+          ?.toString()
+          .trim();
+
+      if (
+        !translatedName ||
+        translatedName.length === 0
+      ) {
+        throw new Error(
+          'Invalid translated product name',
+        );
+      }
+
+      return {
+        productName:
+          translatedName,
+        description:
+          translatedDescription ?? '',
+      };
+    } catch {
+      throw new InternalServerErrorException(
+        'Gemini returned an invalid product translation response',
+      );
+    }
   }
 
   async translateDiagnosisToArabic(
@@ -106,7 +228,9 @@ export class GeminiService {
       `Prevention: ${prevention}`,
     ].join('\n');
 
-    let responseText: string | undefined;
+    let responseText:
+      | string
+      | undefined;
 
     try {
       const response =
@@ -211,9 +335,10 @@ export class GeminiService {
     let imageResponse: Response;
 
     try {
-      imageResponse = await fetch(
-        imageUrl,
-      );
+      imageResponse =
+        await fetch(
+          imageUrl,
+        );
     } catch {
       throw new BadGatewayException(
         'Failed to download the plant image',
@@ -232,19 +357,24 @@ export class GeminiService {
       ) ?? 'image/jpeg';
 
     if (
-      !contentType.startsWith('image/')
+      !contentType.startsWith(
+        'image/',
+      )
     ) {
       throw new BadGatewayException(
         'The provided URL does not contain a valid image',
       );
     }
 
-    const imageBuffer = Buffer.from(
-      await imageResponse.arrayBuffer(),
-    );
+    const imageBuffer =
+      Buffer.from(
+        await imageResponse.arrayBuffer(),
+      );
 
     const imageBase64 =
-      imageBuffer.toString('base64');
+      imageBuffer.toString(
+        'base64',
+      );
 
     const prompt = [
       'Analyze the uploaded image as a plant health specialist.',
@@ -271,7 +401,9 @@ export class GeminiService {
       'Return concise but useful information.',
     ].join('\n');
 
-    let responseText: string | undefined;
+    let responseText:
+      | string
+      | undefined;
 
     try {
       const response =
@@ -283,8 +415,10 @@ export class GeminiService {
             },
             {
               inlineData: {
-                mimeType: contentType,
-                data: imageBase64,
+                mimeType:
+                  contentType,
+                data:
+                  imageBase64,
               },
             },
           ],
@@ -383,19 +517,21 @@ export class GeminiService {
     }
 
     try {
-      const result = JSON.parse(
-        responseText,
-      ) as PlantDiagnosisResult;
+      const result =
+        JSON.parse(
+          responseText,
+        ) as PlantDiagnosisResult;
 
-      result.confidence = Math.max(
-        0,
-        Math.min(
-          100,
-          Number(
-            result.confidence,
-          ) || 0,
-        ),
-      );
+      result.confidence =
+        Math.max(
+          0,
+          Math.min(
+            100,
+            Number(
+              result.confidence,
+            ) || 0,
+          ),
+        );
 
       result.visibleSymptoms =
         Array.isArray(
@@ -411,4 +547,4 @@ export class GeminiService {
       );
     }
   }
-} 
+}

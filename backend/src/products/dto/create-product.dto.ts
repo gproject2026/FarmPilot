@@ -20,6 +20,22 @@ export class CreateProductDto {
   @IsString()
   description?: string;
 
+  @IsOptional()
+  @IsString()
+  nameEn?: string;
+
+  @IsOptional()
+  @IsString()
+  nameAr?: string;
+
+  @IsOptional()
+  @IsString()
+  descriptionEn?: string;
+
+  @IsOptional()
+  @IsString()
+  descriptionAr?: string;
+
   @IsNumber()
   @Min(0)
   price!: number;

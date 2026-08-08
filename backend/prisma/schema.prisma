@@ -81,18 +81,25 @@ model Category {
 }
 
 model Product {
-  id          String        @id @default(uuid()) @db.Uuid
-  farmerId    String        @map("farmer_id") @db.Uuid
-  categoryId  String        @map("category_id") @db.Uuid
-  name        String        @db.VarChar(150)
+  id         String @id @default(uuid()) @db.Uuid
+  farmerId   String @map("farmer_id") @db.Uuid
+  categoryId String @map("category_id") @db.Uuid
+
+  name        String  @db.VarChar(150)
   description String?
-  price       Decimal       @db.Decimal(10, 2)
-  quantity    Int
-  unit        String        @db.VarChar(30)
-  imageUrl    String?       @map("image_url")
-  status      ProductStatus @default(AVAILABLE)
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  nameEn        String? @map("name_en") @db.VarChar(150)
+  nameAr        String? @map("name_ar") @db.VarChar(150)
+  descriptionEn String? @map("description_en")
+  descriptionAr String? @map("description_ar")
+
+  price     Decimal       @db.Decimal(10, 2)
+  quantity  Int
+  unit      String        @db.VarChar(30)
+  imageUrl  String?       @map("image_url")
+  status    ProductStatus @default(AVAILABLE)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
 
   farmer          User             @relation(fields: [farmerId], references: [id])
   category        Category         @relation(fields: [categoryId], references: [id])

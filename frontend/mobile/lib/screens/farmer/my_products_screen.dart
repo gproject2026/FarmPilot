@@ -76,6 +76,71 @@ class _MyProductsScreenState
     }
   }
 
+  String _getCategoryName(
+    dynamic category,
+    BuildContext context,
+  ) {
+    if (category is! Map) {
+      return '';
+    }
+
+    final languageCode =
+        Localizations.localeOf(
+      context,
+    ).languageCode;
+
+    final name =
+        category['name']
+            ?.toString()
+            .trim();
+
+    final nameEn =
+        category['nameEn']
+            ?.toString()
+            .trim();
+
+    final nameAr =
+        category['nameAr']
+            ?.toString()
+            .trim();
+
+    if (languageCode == 'ar') {
+      if (nameAr != null &&
+          nameAr.isNotEmpty) {
+        return nameAr;
+      }
+
+      if (name != null &&
+          name.isNotEmpty) {
+        return name;
+      }
+
+      if (nameEn != null &&
+          nameEn.isNotEmpty) {
+        return nameEn;
+      }
+
+      return '';
+    }
+
+    if (nameEn != null &&
+        nameEn.isNotEmpty) {
+      return nameEn;
+    }
+
+    if (name != null &&
+        name.isNotEmpty) {
+      return name;
+    }
+
+    if (nameAr != null &&
+        nameAr.isNotEmpty) {
+      return nameAr;
+    }
+
+    return '';
+  }
+
   Future<void> _deleteProduct({
     required String productId,
     required String productName,
@@ -355,12 +420,10 @@ class _MyProductsScreenState
                                   'category'];
 
                           final categoryName =
-                              category is Map
-                                  ? category[
-                                              'name']
-                                          ?.toString() ??
-                                      ''
-                                  : '';
+                              _getCategoryName(
+                            category,
+                            context,
+                          );
 
                           final translatedStatus =
                               _translateProductStatus(

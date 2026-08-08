@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ProductStatus } from '@prisma/client';
 
+import { GeminiService } from '../ai/gemini.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
 
@@ -16,16 +17,185 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly uploadsService: UploadsService,
+    private readonly geminiService: GeminiService,
   ) {}
 
   async create(
     createProductDto: CreateProductDto,
     farmerId: string,
   ) {
+    const legacyName =
+      createProductDto.name.trim();
+
+    const legacyDescription =
+      this.cleanOptionalText(
+        createProductDto.description,
+      );
+
+    let nameEn =
+      this.cleanOptionalText(
+        createProductDto.nameEn,
+      );
+
+    let nameAr =
+      this.cleanOptionalText(
+        createProductDto.nameAr,
+      );
+
+    let descriptionEn =
+      this.cleanOptionalText(
+        createProductDto.descriptionEn,
+      );
+
+    let descriptionAr =
+      this.cleanOptionalText(
+        createProductDto.descriptionAr,
+      );
+
+    if (!nameEn && !nameAr) {
+      if (
+        this.containsArabic(
+          legacyName,
+        )
+      ) {
+        nameAr =
+          legacyName;
+
+        descriptionAr =
+          legacyDescription;
+
+        const translation =
+          await this.geminiService
+              .translateProductContent({
+            productName:
+              legacyName,
+            description:
+              legacyDescription ?? '',
+            targetLanguage:
+              'en',
+          });
+
+        nameEn =
+          translation.productName;
+
+        descriptionEn =
+          this.cleanOptionalText(
+            translation.description,
+          );
+      } else {
+        nameEn =
+          legacyName;
+
+        descriptionEn =
+          legacyDescription;
+
+        const translation =
+          await this.geminiService
+              .translateProductContent({
+            productName:
+              legacyName,
+            description:
+              legacyDescription ?? '',
+            targetLanguage:
+              'ar',
+          });
+
+        nameAr =
+          translation.productName;
+
+        descriptionAr =
+          this.cleanOptionalText(
+            translation.description,
+          );
+      }
+    } else if (
+      nameAr &&
+      !nameEn
+    ) {
+      const translation =
+        await this.geminiService
+            .translateProductContent({
+          productName:
+            nameAr,
+          description:
+            descriptionAr ?? '',
+          targetLanguage:
+            'en',
+        });
+
+      nameEn =
+        translation.productName;
+
+      descriptionEn =
+        this.cleanOptionalText(
+          translation.description,
+        );
+    } else if (
+      nameEn &&
+      !nameAr
+    ) {
+      const translation =
+        await this.geminiService
+            .translateProductContent({
+          productName:
+            nameEn,
+          description:
+            descriptionEn ?? '',
+          targetLanguage:
+            'ar',
+        });
+
+      nameAr =
+        translation.productName;
+
+      descriptionAr =
+        this.cleanOptionalText(
+          translation.description,
+        );
+    }
+
+    const legacyNameToSave =
+      nameEn ??
+      nameAr ??
+      legacyName;
+
+    const legacyDescriptionToSave =
+      descriptionEn ??
+      descriptionAr ??
+      legacyDescription;
+
     return this.prisma.product.create({
       data: {
-        ...createProductDto,
         farmerId,
+
+        categoryId:
+          createProductDto.categoryId,
+
+        name:
+          legacyNameToSave,
+
+        description:
+          legacyDescriptionToSave,
+
+        nameEn,
+        nameAr,
+        descriptionEn,
+        descriptionAr,
+
+        price:
+          createProductDto.price,
+
+        quantity:
+          createProductDto.quantity,
+
+        unit:
+          createProductDto.unit.trim(),
+
+        imageUrl:
+          createProductDto.imageUrl,
+      },
+      include: {
+        category: true,
       },
     });
   }
@@ -134,16 +304,215 @@ export class ProductsService {
       updateProductDto.imageUrl !==
         product.imageUrl
     ) {
-      await this.uploadsService.removeImage(
+      await this.uploadsService
+          .removeImage(
         product.imageUrl,
       );
     }
+
+    let nameEn =
+      updateProductDto.nameEn !==
+      undefined
+        ? this.cleanOptionalText(
+            updateProductDto.nameEn,
+          )
+        : product.nameEn;
+
+    let nameAr =
+      updateProductDto.nameAr !==
+      undefined
+        ? this.cleanOptionalText(
+            updateProductDto.nameAr,
+          )
+        : product.nameAr;
+
+    let descriptionEn =
+      updateProductDto.descriptionEn !==
+      undefined
+        ? this.cleanOptionalText(
+            updateProductDto.descriptionEn,
+          )
+        : product.descriptionEn;
+
+    let descriptionAr =
+      updateProductDto.descriptionAr !==
+      undefined
+        ? this.cleanOptionalText(
+            updateProductDto.descriptionAr,
+          )
+        : product.descriptionAr;
+
+    const incomingName =
+      updateProductDto.name
+        ?.trim();
+
+    const incomingDescription =
+      updateProductDto.description !==
+      undefined
+        ? this.cleanOptionalText(
+            updateProductDto.description,
+          )
+        : undefined;
+
+    if (
+      updateProductDto.nameAr !==
+        undefined &&
+      nameAr
+    ) {
+      const translation =
+        await this.geminiService
+            .translateProductContent({
+          productName:
+            nameAr,
+          description:
+            descriptionAr ?? '',
+          targetLanguage:
+            'en',
+        });
+
+      nameEn =
+        translation.productName;
+
+      descriptionEn =
+        this.cleanOptionalText(
+          translation.description,
+        );
+    } else if (
+      updateProductDto.nameEn !==
+        undefined &&
+      nameEn
+    ) {
+      const translation =
+        await this.geminiService
+            .translateProductContent({
+          productName:
+            nameEn,
+          description:
+            descriptionEn ?? '',
+          targetLanguage:
+            'ar',
+        });
+
+      nameAr =
+        translation.productName;
+
+      descriptionAr =
+        this.cleanOptionalText(
+          translation.description,
+        );
+    } else if (
+      incomingName &&
+      updateProductDto.nameAr ===
+        undefined &&
+      updateProductDto.nameEn ===
+        undefined
+    ) {
+      if (
+        this.containsArabic(
+          incomingName,
+        )
+      ) {
+        nameAr =
+          incomingName;
+
+        descriptionAr =
+          incomingDescription ??
+          descriptionAr;
+
+        const translation =
+          await this.geminiService
+              .translateProductContent({
+            productName:
+              incomingName,
+            description:
+              incomingDescription ?? '',
+            targetLanguage:
+              'en',
+          });
+
+        nameEn =
+          translation.productName;
+
+        descriptionEn =
+          this.cleanOptionalText(
+            translation.description,
+          );
+      } else {
+        nameEn =
+          incomingName;
+
+        descriptionEn =
+          incomingDescription ??
+          descriptionEn;
+
+        const translation =
+          await this.geminiService
+              .translateProductContent({
+            productName:
+              incomingName,
+            description:
+              incomingDescription ?? '',
+            targetLanguage:
+              'ar',
+          });
+
+        nameAr =
+          translation.productName;
+
+        descriptionAr =
+          this.cleanOptionalText(
+            translation.description,
+          );
+      }
+    }
+
+    const legacyName =
+      nameEn ??
+      nameAr ??
+      incomingName ??
+      product.name;
+
+    const legacyDescription =
+      descriptionEn ??
+      descriptionAr ??
+      incomingDescription ??
+      product.description;
 
     return this.prisma.product.update({
       where: {
         id,
       },
-      data: updateProductDto,
+      data: {
+        categoryId:
+          updateProductDto.categoryId,
+
+        name:
+          legacyName,
+
+        description:
+          legacyDescription,
+
+        nameEn,
+        nameAr,
+        descriptionEn,
+        descriptionAr,
+
+        price:
+          updateProductDto.price,
+
+        quantity:
+          updateProductDto.quantity,
+
+        unit:
+          updateProductDto.unit !==
+          undefined
+            ? updateProductDto.unit
+                .trim()
+            : undefined,
+
+        imageUrl:
+          updateProductDto.imageUrl,
+      },
       include: {
         category: true,
       },
@@ -218,7 +587,8 @@ export class ProductsService {
     }
 
     if (product.imageUrl) {
-      await this.uploadsService.removeImage(
+      await this.uploadsService
+          .removeImage(
         product.imageUrl,
       );
     }
@@ -228,5 +598,28 @@ export class ProductsService {
         id,
       },
     });
+  }
+
+  private cleanOptionalText(
+    value?: string | null,
+  ) {
+    if (value == null) {
+      return null;
+    }
+
+    const cleaned =
+      value.trim();
+
+    return cleaned.length === 0
+      ? null
+      : cleaned;
+  }
+
+  private containsArabic(
+    value: string,
+  ) {
+    return /[\u0600-\u06FF]/.test(
+      value,
+    );
   }
 }
