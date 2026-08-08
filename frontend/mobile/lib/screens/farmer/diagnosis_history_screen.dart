@@ -65,44 +65,31 @@ class _DiagnosisHistoryScreenState
   }
 
   String _getCropName(
-  Map<String, dynamic> diagnosis,
-) {
-  String cleanPlantName(String value) {
-    return value
-        .replaceAll(
-          RegExp(r'\s*\(.*?\)'),
-          '',
-        )
-        .trim();
-  }
+    Map<String, dynamic> diagnosis,
+  ) {
+    final detectedPlantName =
+        diagnosis['plantName']?.toString();
 
-  final detectedPlantName =
-      diagnosis['plantName']?.toString();
-
-  if (detectedPlantName != null &&
-      detectedPlantName.trim().isNotEmpty) {
-    return cleanPlantName(
-      detectedPlantName,
-    );
-  }
-
-  final crop = diagnosis['crop'];
-
-  if (crop is Map) {
-    final cropName =
-        crop['cropName']?.toString() ??
-            crop['name']?.toString();
-
-    if (cropName != null &&
-        cropName.trim().isNotEmpty) {
-      return cleanPlantName(
-        cropName,
-      );
+    if (detectedPlantName != null &&
+        detectedPlantName.trim().isNotEmpty) {
+      return detectedPlantName.trim();
     }
-  }
 
-  return 'Unknown Plant';
-}
+    final crop = diagnosis['crop'];
+
+    if (crop is Map) {
+      final cropName =
+          crop['cropName']?.toString() ??
+              crop['name']?.toString();
+
+      if (cropName != null &&
+          cropName.trim().isNotEmpty) {
+        return cropName.trim();
+      }
+    }
+
+    return 'Unknown Plant';
+  }
 
   double _getConfidence(
     Map<String, dynamic> diagnosis,
@@ -344,132 +331,6 @@ class _DiagnosisHistoryScreenState
         });
       }
     }
-  }
-
-  Future<void> _confirmDeleteDiagnosis(
-    Map<String, dynamic> diagnosis,
-  ) async {
-    final diagnosisId =
-        diagnosis['id']?.toString();
-
-    if (diagnosisId == null ||
-        diagnosisId.isEmpty) {
-      _showMessage(
-        'Diagnosis ID was not found',
-      );
-
-      return;
-    }
-
-    final diseaseName =
-        diagnosis['diseaseName']
-                ?.toString() ??
-            'this diagnosis';
-
-    final shouldDelete =
-        await showDialog<bool>(
-      context: context,
-      builder: (
-        dialogContext,
-      ) {
-        return AlertDialog(
-          title: const Row(
-            children: [
-              Icon(
-                Icons.delete_outline,
-                color: Colors.red,
-              ),
-              SizedBox(
-                width: 10,
-              ),
-              Expanded(
-                child: Text(
-                  'Delete Diagnosis',
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'Are you sure you want to delete "$diseaseName" from your diagnosis history? This action cannot be undone.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  false,
-                );
-              },
-              child: const Text(
-                'Cancel',
-              ),
-            ),
-            ElevatedButton.icon(
-              style:
-                  ElevatedButton.styleFrom(
-                backgroundColor:
-                    Colors.red,
-                foregroundColor:
-                    Colors.white,
-              ),
-              onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  true,
-                );
-              },
-              icon: const Icon(
-                Icons.delete_outline,
-              ),
-              label: const Text(
-                'Delete',
-              ),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (shouldDelete != true ||
-        !mounted) {
-      return;
-    }
-
-    final diagnosisProvider =
-        Provider.of<DiagnosisProvider>(
-      context,
-      listen: false,
-    );
-
-    final deleted =
-        await diagnosisProvider
-            .deleteDiagnosis(
-      diagnosisId,
-    );
-
-    if (!mounted) {
-      return;
-    }
-
-    if (deleted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Diagnosis deleted successfully',
-          ),
-          backgroundColor:
-              Colors.green,
-        ),
-      );
-
-      return;
-    }
-
-    _showMessage(
-      diagnosisProvider.errorMessage ??
-          'Failed to delete diagnosis',
-    );
   }
 
   void _showMessage(
@@ -719,21 +580,6 @@ class _DiagnosisHistoryScreenState
         _openingDiagnosisId ==
             diagnosisId;
 
-    final diagnosisProvider =
-        Provider.of<DiagnosisProvider>(
-      context,
-      listen: false,
-    );
-
-    final isDeleting =
-        diagnosisProvider
-                .deletingDiagnosisId ==
-            diagnosisId;
-
-    final isBusy =
-        isOpening ||
-        isDeleting;
-
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -747,7 +593,7 @@ class _DiagnosisHistoryScreenState
             BorderRadius.circular(
           16,
         ),
-        onTap: isBusy
+        onTap: isOpening
             ? null
             : () {
                 _openDiagnosis(
@@ -899,41 +745,21 @@ class _DiagnosisHistoryScreenState
               const SizedBox(
                 width: 8,
               ),
-              if (isBusy)
-                const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child:
-                      CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                )
-              else
-                Column(
-                  mainAxisAlignment:
-                      MainAxisAlignment
-                          .center,
-                  children: [
-                    IconButton(
-                      tooltip:
-                          'Delete diagnosis',
-                      onPressed: () {
-                        _confirmDeleteDiagnosis(
-                          diagnosis,
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        color: Colors.red,
+              isOpening
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child:
+                          CircularProgressIndicator(
+                        strokeWidth: 2,
                       ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right,
+                    )
+                  : const Icon(
+                      Icons
+                          .chevron_right,
                       color:
                           Colors.grey,
                     ),
-                  ],
-                ),
             ],
           ),
         ),

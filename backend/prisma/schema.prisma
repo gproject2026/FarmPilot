@@ -139,6 +139,14 @@ model Diagnosis {
   imageUrl    String   @map("image_url")
   diseaseName String?  @map("disease_name") @db.VarChar(150)
   confidence  Decimal? @db.Decimal(5, 2)
+
+  isPlant           Boolean? @map("is_plant")
+  isImageClear      Boolean? @map("is_image_clear")
+  isHealthy         Boolean? @map("is_healthy")
+  severity          String?  @db.VarChar(30)
+  visibleSymptoms   String?  @map("visible_symptoms")
+  needsExpertReview Boolean? @map("needs_expert_review")
+
   description String?
   causes      String?
   treatment   String?

@@ -64,14 +64,45 @@ export class DiagnosesService {
         data: {
           farmerId,
           cropId,
-          plantName: detectedPlantName,
+          plantName:
+            detectedPlantName,
           imageUrl,
           diseaseName,
-          confidence: analysis.confidence,
-          description: analysis.description,
-          causes: analysis.causes,
-          treatment: analysis.treatment,
-          prevention: analysis.prevention,
+          confidence:
+            analysis.confidence,
+
+          isPlant:
+            analysis.isPlant,
+
+          isImageClear:
+            analysis.isImageClear,
+
+          isHealthy:
+            analysis.isHealthy,
+
+          severity:
+            analysis.severity,
+
+          visibleSymptoms:
+            JSON.stringify(
+              analysis.visibleSymptoms ??
+                  [],
+            ),
+
+          needsExpertReview:
+            analysis.needsExpertReview,
+
+          description:
+            analysis.description,
+
+          causes:
+            analysis.causes,
+
+          treatment:
+            analysis.treatment,
+
+          prevention:
+            analysis.prevention,
         },
         include: {
           crop: true,
@@ -89,69 +120,109 @@ export class DiagnosesService {
     return {
       message:
         'Plant image analyzed successfully',
+
       diagnosis,
+
       analysis: {
-        isPlant: analysis.isPlant,
+        isPlant:
+          analysis.isPlant,
+
         isImageClear:
           analysis.isImageClear,
-        isHealthy: analysis.isHealthy,
-        plantName: detectedPlantName,
+
+        isHealthy:
+          analysis.isHealthy,
+
+        plantName:
+          detectedPlantName,
+
         diseaseName:
           diagnosis.diseaseName,
+
         confidence:
           analysis.confidence,
-        severity: analysis.severity,
+
+        severity:
+          analysis.severity,
+
         visibleSymptoms:
           analysis.visibleSymptoms,
+
         description:
           analysis.description,
-        causes: analysis.causes,
+
+        causes:
+          analysis.causes,
+
         treatment:
           analysis.treatment,
+
         prevention:
           analysis.prevention,
+
         needsExpertReview:
           analysis.needsExpertReview,
       },
+
       disclaimer:
         'This is a preliminary AI-assisted assessment and not a laboratory diagnosis. Consult an agricultural specialist before applying hazardous chemicals.',
     };
   }
-  async translateToArabic(
-  translateDiagnosisDto: TranslateDiagnosisDto,
-) {
-  const translation =
-    await this.geminiService.translateDiagnosisToArabic({
-      plantName:
-        translateDiagnosisDto.plantName,
-      diseaseName:
-        translateDiagnosisDto.diseaseName,
-      visibleSymptoms:
-        translateDiagnosisDto.visibleSymptoms ??
-        [],
-      description:
-        translateDiagnosisDto.description,
-      causes:
-        translateDiagnosisDto.causes,
-      treatment:
-        translateDiagnosisDto.treatment,
-      prevention:
-        translateDiagnosisDto.prevention,
-    });
 
-  return {
-    message:
-      'Diagnosis translated successfully',
-    language: 'ar',
-    translation,
-  };
-}
+  async translateToArabic(
+    translateDiagnosisDto: TranslateDiagnosisDto,
+  ) {
+    const translation =
+      await this.geminiService
+          .translateDiagnosisToArabic({
+        plantName:
+          translateDiagnosisDto
+              .plantName,
+
+        diseaseName:
+          translateDiagnosisDto
+              .diseaseName,
+
+        visibleSymptoms:
+          translateDiagnosisDto
+                  .visibleSymptoms ??
+              [],
+
+        description:
+          translateDiagnosisDto
+              .description,
+
+        causes:
+          translateDiagnosisDto
+              .causes,
+
+        treatment:
+          translateDiagnosisDto
+              .treatment,
+
+        prevention:
+          translateDiagnosisDto
+              .prevention,
+      });
+
+    return {
+      message:
+        'Diagnosis translated successfully',
+
+      language:
+        'ar',
+
+      translation,
+    };
+  }
 
   async create(
     createDiagnosisDto: CreateDiagnosisDto,
     farmerId: string,
   ) {
-    if (createDiagnosisDto.cropId) {
+    if (
+      createDiagnosisDto.cropId
+    ) {
       await this.validateCropOwnership(
         createDiagnosisDto.cropId,
         farmerId,
@@ -169,7 +240,8 @@ export class DiagnosesService {
   findAll() {
     return this.prisma.diagnosis.findMany({
       orderBy: {
-        createdAt: 'desc',
+        createdAt:
+          'desc',
       },
       include: {
         farmer: {
@@ -196,7 +268,8 @@ export class DiagnosesService {
         farmerId,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt:
+          'desc',
       },
       include: {
         crop: true,
@@ -208,7 +281,8 @@ export class DiagnosesService {
     id: string,
   ) {
     const diagnosis =
-      await this.prisma.diagnosis.findUnique({
+      await this.prisma.diagnosis
+          .findUnique({
         where: {
           id,
         },
@@ -243,7 +317,8 @@ export class DiagnosesService {
     farmerId: string,
   ) {
     const diagnosis =
-      await this.prisma.diagnosis.findUnique({
+      await this.prisma.diagnosis
+          .findUnique({
         where: {
           id,
         },
@@ -264,7 +339,9 @@ export class DiagnosesService {
       );
     }
 
-    if (updateDiagnosisDto.cropId) {
+    if (
+      updateDiagnosisDto.cropId
+    ) {
       await this.validateCropOwnership(
         updateDiagnosisDto.cropId,
         farmerId,
@@ -275,7 +352,8 @@ export class DiagnosesService {
       where: {
         id,
       },
-      data: updateDiagnosisDto,
+      data:
+        updateDiagnosisDto,
     });
   }
 
@@ -284,7 +362,8 @@ export class DiagnosesService {
     farmerId: string,
   ) {
     const diagnosis =
-      await this.prisma.diagnosis.findUnique({
+      await this.prisma.diagnosis
+          .findUnique({
         where: {
           id,
         },
@@ -337,12 +416,21 @@ export class DiagnosesService {
       });
 
     try {
-      await this.notificationsService.create({
-        userId: farmerId,
+      await this.notificationsService
+          .create({
+        userId:
+          farmerId,
+
         diagnosisId,
-        title: notification.title,
-        message: notification.message,
-        type: notification.type,
+
+        title:
+          notification.title,
+
+        message:
+          notification.message,
+
+        type:
+          notification.type,
       });
     } catch (error) {
       console.error(
@@ -365,34 +453,46 @@ export class DiagnosesService {
       analysis,
     } = params;
 
-    if (!analysis.isPlant) {
+    if (
+      !analysis.isPlant
+    ) {
       return {
         title:
           'No Plant Detected',
+
         message:
           'The uploaded image does not appear to contain a plant. Please upload a clear plant image and try again.',
+
         type:
           'DIAGNOSIS_WARNING',
       };
     }
 
-    if (!analysis.isImageClear) {
+    if (
+      !analysis.isImageClear
+    ) {
       return {
         title:
           'Image Needs Retake',
+
         message:
           `The image of ${plantName} was not clear enough for a reliable assessment. Please take a clearer, well-lit photo.`,
+
         type:
           'DIAGNOSIS_WARNING',
       };
     }
 
-    if (analysis.isHealthy) {
+    if (
+      analysis.isHealthy
+    ) {
       return {
         title:
           'Plant Appears Healthy',
+
         message:
           `${plantName} appears healthy. No clear disease was detected. Continue regular monitoring and preventive care.`,
+
         type:
           'DIAGNOSIS_HEALTHY',
       };
@@ -405,8 +505,10 @@ export class DiagnosesService {
       return {
         title:
           'High-Risk Plant Diagnosis',
+
         message:
           `${diseaseName} was detected in ${plantName} with ${analysis.confidence}% confidence. Immediate action and consultation with an agricultural specialist are recommended.`,
+
         type:
           'DIAGNOSIS_HIGH_RISK',
       };
@@ -419,8 +521,10 @@ export class DiagnosesService {
       return {
         title:
           'Plant Disease Detected',
+
         message:
           `${diseaseName} was detected in ${plantName} with ${analysis.confidence}% confidence. Follow the recommended treatment and monitor the plant closely.`,
+
         type:
           'DIAGNOSIS_MODERATE_RISK',
       };
@@ -432,8 +536,10 @@ export class DiagnosesService {
       return {
         title:
           'Expert Review Recommended',
+
         message:
           `${diseaseName} may be affecting ${plantName}. An agricultural specialist should review this case before chemical treatment is applied.`,
+
         type:
           'DIAGNOSIS_EXPERT_REVIEW',
       };
@@ -442,8 +548,10 @@ export class DiagnosesService {
     return {
       title:
         'Plant Diagnosis Completed',
+
       message:
         `${diseaseName} was detected in ${plantName} with ${analysis.confidence}% confidence. Review the diagnosis details for treatment and prevention guidance.`,
+
       type:
         'DIAGNOSIS_RESULT',
     };
@@ -456,11 +564,15 @@ export class DiagnosesService {
     const crop =
       await this.prisma.crop.findUnique({
         where: {
-          id: cropId,
+          id:
+            cropId,
         },
         select: {
-          id: true,
-          farmerId: true,
+          id:
+            true,
+
+          farmerId:
+            true,
         },
       });
 
@@ -483,15 +595,21 @@ export class DiagnosesService {
   private resolveDiseaseName(
     analysis: PlantDiagnosisResult,
   ) {
-    if (!analysis.isPlant) {
+    if (
+      !analysis.isPlant
+    ) {
       return 'No plant detected';
     }
 
-    if (!analysis.isImageClear) {
+    if (
+      !analysis.isImageClear
+    ) {
       return 'Image unclear';
     }
 
-    if (analysis.isHealthy) {
+    if (
+      analysis.isHealthy
+    ) {
       return 'No clear disease detected';
     }
 
