@@ -9,6 +9,7 @@ import '../../providers/notification_provider.dart';
 import '../notifications_screen.dart';
 import 'diagnose_plant_screen.dart';
 import 'diagnosis_history_screen.dart';
+import 'farmer_orders_screen.dart';
 import 'my_crops_screen.dart';
 import 'my_products_screen.dart';
 import 'profile_screen.dart';
@@ -335,8 +336,7 @@ class _FarmerDashboardScreenState
                         child: Column(
                           children: [
                             Text(
-                              l10n
-                                  .welcomeFarmer,
+                              l10n.welcomeFarmer,
                               textAlign:
                                   TextAlign.center,
                               style:
@@ -349,6 +349,7 @@ class _FarmerDashboardScreenState
                             const SizedBox(
                               height: 30,
                             ),
+
                             _navigationButton(
                               icon: Icons
                                   .inventory_2_outlined,
@@ -372,9 +373,43 @@ class _FarmerDashboardScreenState
                                     .loadFarmerDashboard();
                               },
                             ),
+
                             const SizedBox(
                               height: 14,
                             ),
+
+                            _navigationButton(
+                              icon: Icons
+                                  .shopping_cart_outlined,
+                              label:
+                                  'My Orders',
+                              onPressed:
+                                  () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const FarmerOrdersScreen(),
+                                  ),
+                                );
+
+                                if (!mounted) {
+                                  return;
+                                }
+
+                                await Future.wait([
+                                  dashboardProvider
+                                      .loadFarmerDashboard(),
+                                  notificationProvider
+                                      .loadNotifications(),
+                                ]);
+                              },
+                            ),
+
+                            const SizedBox(
+                              height: 14,
+                            ),
+
                             _navigationButton(
                               icon:
                                   Icons.eco_outlined,
@@ -398,9 +433,11 @@ class _FarmerDashboardScreenState
                                     .loadFarmerDashboard();
                               },
                             ),
+
                             const SizedBox(
                               height: 14,
                             ),
+
                             _navigationButton(
                               icon: Icons
                                   .local_florist_outlined,
@@ -436,9 +473,11 @@ class _FarmerDashboardScreenState
                                 ]);
                               },
                             ),
+
                             const SizedBox(
                               height: 14,
                             ),
+
                             _navigationButton(
                               icon:
                                   Icons.history,
@@ -462,9 +501,11 @@ class _FarmerDashboardScreenState
                                     .loadFarmerDashboard();
                               },
                             ),
+
                             const SizedBox(
                               height: 14,
                             ),
+
                             _navigationButton(
                               icon: Icons
                                   .notifications_active_outlined,
@@ -488,9 +529,11 @@ class _FarmerDashboardScreenState
                                     .loadFarmerDashboard();
                               },
                             ),
+
                             const SizedBox(
                               height: 14,
                             ),
+
                             _navigationButton(
                               icon: Icons
                                   .notifications_outlined,
@@ -505,9 +548,11 @@ class _FarmerDashboardScreenState
                               onPressed:
                                   _openNotifications,
                             ),
+
                             const SizedBox(
                               height: 14,
                             ),
+
                             _navigationButton(
                               icon: Icons
                                   .person_outline,
@@ -524,9 +569,11 @@ class _FarmerDashboardScreenState
                                 );
                               },
                             ),
+
                             const SizedBox(
                               height: 28,
                             ),
+
                             dashboardCard(
                               title:
                                   l10n.products,
@@ -538,6 +585,7 @@ class _FarmerDashboardScreenState
                               icon:
                                   Icons.inventory_2,
                             ),
+
                             dashboardCard(
                               title:
                                   l10n.crops,
@@ -549,6 +597,7 @@ class _FarmerDashboardScreenState
                               icon:
                                   Icons.eco,
                             ),
+
                             dashboardCard(
                               title:
                                   l10n.aiDiagnoses,
@@ -560,6 +609,7 @@ class _FarmerDashboardScreenState
                               icon: Icons
                                   .health_and_safety_outlined,
                             ),
+
                             dashboardCard(
                               title:
                                   l10n.orders,
@@ -571,6 +621,7 @@ class _FarmerDashboardScreenState
                               icon: Icons
                                   .shopping_cart_outlined,
                             ),
+
                             dashboardCard(
                               title:
                                   l10n.totalSales,

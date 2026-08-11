@@ -482,16 +482,68 @@ export class OrdersService {
           }
         }
 
-        return tx.order.update({
-          where: {
-            id,
-          },
-          data: {
-            status: newStatus,
-          },
-          include: this.orderInclude,
-        });
-      },
+        const updatedOrder =
+    await tx.order.update({
+  where: {
+    id,
+  },
+  data: {
+    status: newStatus,
+  },
+  include: this.orderInclude,
+});
+
+let notificationTitle: string;
+let notificationMessage: string;
+
+switch (newStatus) {
+  case OrderStatus.CONFIRMED:
+    notificationTitle =
+        'Order Confirmed';
+    notificationMessage =
+        'Your order has been confirmed by the farmer.';
+    break;
+
+  case OrderStatus.COMPLETED:
+    notificationTitle =
+        'Order Completed';
+    notificationMessage =
+        'Your order has been completed successfully.';
+    break;
+
+  case OrderStatus.CANCELLED:
+    notificationTitle =
+        'Order Cancelled';
+
+    if (userRole === UserRole.CUSTOMER) {
+      notificationMessage =
+          'Your order has been cancelled successfully.';
+    } else {
+      notificationMessage =
+          'Your order has been cancelled by the farmer.';
+    }
+
+    break;
+
+  default:
+    notificationTitle =
+        'Order Updated';
+    notificationMessage =
+        `Your order status has been updated to ${newStatus}.`;
+}
+
+await tx.notification.create({
+  data: {
+    userId: order.customerId,
+    title: notificationTitle,
+    message: notificationMessage,
+    type: 'ORDER',
+    isRead: false,
+  },
+});
+
+return updatedOrder;
+      },  
     );
-  }
+  } 
 }

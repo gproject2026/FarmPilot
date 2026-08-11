@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
+
+import 'customer/customer_orders_screen.dart';
+import 'farmer/farmer_orders_screen.dart';
 import 'farmer/notification_diagnosis_screen.dart';
 
-class NotificationsScreen
-    extends StatefulWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({
     super.key,
   });
@@ -44,9 +47,7 @@ class _NotificationsScreenState
         ..showSnackBar(
           SnackBar(
             content: Text(
-              e
-                  .toString()
-                  .replaceFirst(
+              e.toString().replaceFirst(
                     'Exception: ',
                     '',
                   ),
@@ -108,8 +109,7 @@ class _NotificationsScreenState
     );
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F7F4),
+      backgroundColor: const Color(0xFFF5F7F4),
       appBar: AppBar(
         title: const Text(
           'Notifications',
@@ -141,14 +141,11 @@ class _NotificationsScreenState
         ],
       ),
       body: notificationProvider.isLoading &&
-              notificationProvider
-                  .notifications.isEmpty
+              notificationProvider.notifications.isEmpty
           ? const Center(
-              child:
-                  CircularProgressIndicator(),
+              child: CircularProgressIndicator(),
             )
-          : notificationProvider
-                  .notifications.isEmpty
+          : notificationProvider.notifications.isEmpty
               ? RefreshIndicator(
                   onRefresh: _loadNotifications,
                   child: ListView(
@@ -159,8 +156,7 @@ class _NotificationsScreenState
                         height: 180,
                       ),
                       Icon(
-                        Icons
-                            .notifications_none_outlined,
+                        Icons.notifications_none_outlined,
                         size: 80,
                         color: Colors.grey,
                       ),
@@ -259,8 +255,7 @@ class _NotificationCard
     final isRead =
         notification['isRead'] == true;
 
-    final createdAt =
-        DateTime.tryParse(
+    final createdAt = DateTime.tryParse(
       notification['createdAt']
               ?.toString() ??
           '',
@@ -268,7 +263,13 @@ class _NotificationCard
 
     final hasDiagnosis =
         diagnosisId != null &&
-        diagnosisId.trim().isNotEmpty;
+            diagnosisId.trim().isNotEmpty;
+
+    final normalizedType =
+        type.trim().toUpperCase();
+
+    final isOrderNotification =
+        normalizedType.contains('ORDER');
 
     return Card(
       elevation: isRead ? 1 : 3,
@@ -288,7 +289,7 @@ class _NotificationCard
         borderRadius:
             BorderRadius.circular(16),
         onTap: () async {
-          final provider =
+          final notificationProvider =
               Provider.of<NotificationProvider>(
             context,
             listen: false,
@@ -296,7 +297,8 @@ class _NotificationCard
 
           if (!isRead && id.isNotEmpty) {
             final success =
-                await provider.markAsRead(
+                await notificationProvider
+                    .markAsRead(
               id,
             );
 
@@ -310,7 +312,8 @@ class _NotificationCard
                 ..showSnackBar(
                   SnackBar(
                     content: Text(
-                      provider.errorMessage ??
+                      notificationProvider
+                              .errorMessage ??
                           'Failed to mark notification as read',
                     ),
                     backgroundColor:
@@ -322,27 +325,69 @@ class _NotificationCard
             }
           }
 
-          if (diagnosisId == null ||
-              diagnosisId
-                  .trim()
-                  .isEmpty) {
-            return;
-          }
-
           if (!context.mounted) {
             return;
           }
 
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  NotificationDiagnosisScreen(
-                diagnosisId:
-                    diagnosisId.trim(),
+          // Diagnosis notification
+          if (hasDiagnosis) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    NotificationDiagnosisScreen(
+                  diagnosisId:
+                      diagnosisId.trim(),
+                ),
               ),
-            ),
-          );
+            );
+
+            return;
+          }
+
+          // Order notification
+          if (isOrderNotification) {
+            final authProvider =
+                Provider.of<AuthProvider>(
+              context,
+              listen: false,
+            );
+
+            final role = authProvider
+                    .userData?['role']
+                    ?.toString()
+                    .trim()
+                    .toUpperCase() ??
+                '';
+
+            if (!context.mounted) {
+              return;
+            }
+
+            if (role == 'FARMER') {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const FarmerOrdersScreen(),
+                ),
+              );
+
+              return;
+            }
+
+            if (role == 'CUSTOMER') {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const CustomerOrdersScreen(),
+                ),
+              );
+
+              return;
+            }
+          }
         },
         child: Padding(
           padding:
@@ -399,6 +444,7 @@ class _NotificationCard
                           ),
                       ],
                     ),
+
                     if (message.isNotEmpty) ...[
                       const SizedBox(
                         height: 8,
@@ -413,6 +459,7 @@ class _NotificationCard
                         ),
                       ),
                     ],
+
                     if (hasDiagnosis) ...[
                       const SizedBox(
                         height: 10,
@@ -420,8 +467,7 @@ class _NotificationCard
                       Row(
                         children: [
                           Icon(
-                            Icons
-                                .open_in_new_outlined,
+                            Icons.open_in_new_outlined,
                             size: 16,
                             color:
                                 Colors.green.shade700,
@@ -442,9 +488,40 @@ class _NotificationCard
                         ],
                       ),
                     ],
+
+                    if (isOrderNotification) ...[
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.open_in_new_outlined,
+                            size: 16,
+                            color:
+                                Colors.green.shade700,
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          Text(
+                            'Tap to view orders',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  Colors.green.shade700,
+                              fontWeight:
+                                  FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+
                     const SizedBox(
                       height: 10,
                     ),
+
                     Row(
                       children: [
                         if (type.isNotEmpty)
@@ -493,7 +570,9 @@ class _NotificationCard
                   ],
                 ),
               ),
-              if (hasDiagnosis)
+
+              if (hasDiagnosis ||
+                  isOrderNotification)
                 const Padding(
                   padding:
                       EdgeInsets.only(
@@ -566,30 +645,40 @@ class _NotificationCard
   String _formatDate(
     DateTime date,
   ) {
-    final localDate = date.toLocal();
+    final localDate =
+        date.toLocal();
 
     final day =
-        localDate.day.toString().padLeft(
+        localDate.day
+            .toString()
+            .padLeft(
               2,
               '0',
             );
 
     final month =
-        localDate.month.toString().padLeft(
+        localDate.month
+            .toString()
+            .padLeft(
               2,
               '0',
             );
 
-    final year = localDate.year;
+    final year =
+        localDate.year;
 
     final hour =
-        localDate.hour.toString().padLeft(
+        localDate.hour
+            .toString()
+            .padLeft(
               2,
               '0',
             );
 
     final minute =
-        localDate.minute.toString().padLeft(
+        localDate.minute
+            .toString()
+            .padLeft(
               2,
               '0',
             );

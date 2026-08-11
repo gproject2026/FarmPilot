@@ -4,16 +4,31 @@ import 'package:provider/provider.dart';
 import '../../providers/profile_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({
+    super.key,
+  });
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() =>
+      _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  final fullNameController = TextEditingController();
-  final phoneController = TextEditingController();
-  final addressController = TextEditingController();
+class _ProfileScreenState
+    extends State<ProfileScreen> {
+  final fullNameController =
+      TextEditingController();
+
+  final phoneController =
+      TextEditingController();
+
+  final addressController =
+      TextEditingController();
+
+  final emailController =
+      TextEditingController();
+
+  final roleController =
+      TextEditingController();
 
   bool fieldsInitialized = false;
 
@@ -21,9 +36,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
 
-    Future.microtask(() {
-      context.read<ProfileProvider>().loadProfile();
-    });
+    WidgetsBinding.instance
+        .addPostFrameCallback(
+      (_) {
+        if (!mounted) {
+          return;
+        }
+
+        context
+            .read<ProfileProvider>()
+            .loadProfile();
+      },
+    );
   }
 
   @override
@@ -31,47 +55,95 @@ class _ProfileScreenState extends State<ProfileScreen> {
     fullNameController.dispose();
     phoneController.dispose();
     addressController.dispose();
+    emailController.dispose();
+    roleController.dispose();
 
     super.dispose();
   }
 
-  void initializeFields(ProfileProvider provider) {
-    if (fieldsInitialized || provider.user == null) {
+  void initializeFields(
+    ProfileProvider provider,
+  ) {
+    if (
+      fieldsInitialized ||
+      provider.user == null
+    ) {
       return;
     }
 
-    fullNameController.text = provider.user!.fullName;
-    phoneController.text = provider.user!.phone ?? '';
-    addressController.text = provider.user!.address ?? '';
+    final user =
+        provider.user!;
+
+    fullNameController.text =
+        user.fullName;
+
+    phoneController.text =
+        user.phone ?? '';
+
+    addressController.text =
+        user.address ?? '';
+
+    emailController.text =
+        user.email;
+
+    roleController.text =
+        user.role;
 
     fieldsInitialized = true;
   }
 
   Future<void> saveProfile() async {
-    if (fullNameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+    final fullName =
+        fullNameController.text
+            .trim();
+
+    final phone =
+        phoneController.text
+            .trim();
+
+    final address =
+        addressController.text
+            .trim();
+
+    if (fullName.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         const SnackBar(
-          content: Text('Please enter your full name'),
+          content: Text(
+            'Please enter your full name',
+          ),
         ),
       );
 
       return;
     }
 
+    final profileProvider =
+        context.read<ProfileProvider>();
+
     try {
-      await context.read<ProfileProvider>().updateProfile(
-            fullName: fullNameController.text.trim(),
-            phone: phoneController.text.trim(),
-            address: addressController.text.trim(),
-          );
+      await profileProvider
+          .updateProfile(
+        fullName:
+            fullName,
+        phone:
+            phone,
+        address:
+            address,
+      );
 
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         const SnackBar(
-          content: Text('Profile updated successfully'),
+          content: Text(
+            'Profile updated successfully',
+          ),
+          backgroundColor:
+              Colors.green,
         ),
       );
     } catch (e) {
@@ -79,45 +151,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         SnackBar(
           content: Text(
-            e.toString().replaceFirst('Exception: ', ''),
+            e
+                .toString()
+                .replaceFirst(
+                  'Exception: ',
+                  '',
+                ),
           ),
+          backgroundColor:
+              Colors.red,
         ),
       );
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Profile'),
+        title: const Text(
+          'My Profile',
+        ),
       ),
-      body: Consumer<ProfileProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
+      body:
+          Consumer<ProfileProvider>(
+        builder: (
+          context,
+          provider,
+          child,
+        ) {
+          if (
+            provider.isLoading &&
+            provider.user == null
+          ) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child:
+                  CircularProgressIndicator(),
             );
           }
 
-          if (provider.errorMessage != null && provider.user == null) {
+          if (
+            provider.errorMessage !=
+                    null &&
+            provider.user == null
+          ) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding:
+                    const EdgeInsets.all(
+                  24,
+                ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment:
+                      MainAxisAlignment
+                          .center,
                   children: [
                     Text(
-                      provider.errorMessage!,
-                      textAlign: TextAlign.center,
+                      provider
+                          .errorMessage!,
+                      textAlign:
+                          TextAlign
+                              .center,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(
+                      height: 16,
+                    ),
                     ElevatedButton(
-                      onPressed: provider.loadProfile,
-                      child: const Text('Try Again'),
+                      onPressed:
+                          provider
+                              .loadProfile,
+                      child:
+                          const Text(
+                        'Try Again',
+                      ),
                     ),
                   ],
                 ),
@@ -125,103 +237,191 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           }
 
-          if (provider.user == null) {
+          if (
+            provider.user == null
+          ) {
             return const Center(
-              child: Text('Profile data not found'),
+              child: Text(
+                'Profile data not found',
+              ),
             );
           }
 
-          initializeFields(provider);
+          initializeFields(
+            provider,
+          );
 
-          final user = provider.user!;
+          final user =
+              provider.user!;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding:
+                const EdgeInsets.all(
+              20,
+            ),
             child: Column(
               children: [
                 CircleAvatar(
                   radius: 50,
-                  backgroundImage: user.profileImage != null &&
-                          user.profileImage!.isNotEmpty
-                      ? NetworkImage(user.profileImage!)
-                      : null,
-                  child: user.profileImage == null ||
-                          user.profileImage!.isEmpty
-                      ? const Icon(
-                          Icons.person,
-                          size: 55,
-                        )
-                      : null,
+                  backgroundImage:
+                      user.profileImage !=
+                                  null &&
+                              user.profileImage!
+                                  .isNotEmpty
+                          ? NetworkImage(
+                              user.profileImage!,
+                            )
+                          : null,
+                  child:
+                      user.profileImage ==
+                                  null ||
+                              user.profileImage!
+                                  .isEmpty
+                          ? const Icon(
+                              Icons.person,
+                              size: 55,
+                            )
+                          : null,
                 ),
-                const SizedBox(height: 20),
+
+                const SizedBox(
+                  height: 20,
+                ),
+
                 TextField(
-                  controller: fullNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
-                    prefixIcon: Icon(Icons.person_outline),
-                    border: OutlineInputBorder(),
+                  controller:
+                      fullNameController,
+                  decoration:
+                      const InputDecoration(
+                    labelText:
+                        'Full Name',
+                    prefixIcon:
+                        Icon(
+                      Icons
+                          .person_outline,
+                    ),
+                    border:
+                        OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 16),
+
+                const SizedBox(
+                  height: 16,
+                ),
+
                 TextField(
-                  controller: TextEditingController(
-                    text: user.email,
-                  ),
+                  controller:
+                      emailController,
                   readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(),
+                  decoration:
+                      const InputDecoration(
+                    labelText:
+                        'Email',
+                    prefixIcon:
+                        Icon(
+                      Icons
+                          .email_outlined,
+                    ),
+                    border:
+                        OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 16),
+
+                const SizedBox(
+                  height: 16,
+                ),
+
                 TextField(
-                  controller: phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone',
-                    prefixIcon: Icon(Icons.phone_outlined),
-                    border: OutlineInputBorder(),
+                  controller:
+                      phoneController,
+                  keyboardType:
+                      TextInputType.phone,
+                  decoration:
+                      const InputDecoration(
+                    labelText:
+                        'Phone',
+                    prefixIcon:
+                        Icon(
+                      Icons
+                          .phone_outlined,
+                    ),
+                    border:
+                        OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 16),
+
+                const SizedBox(
+                  height: 16,
+                ),
+
                 TextField(
-                  controller: addressController,
+                  controller:
+                      addressController,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Address',
-                    prefixIcon: Icon(Icons.location_on_outlined),
-                    border: OutlineInputBorder(),
+                  decoration:
+                      const InputDecoration(
+                    labelText:
+                        'Address',
+                    prefixIcon:
+                        Icon(
+                      Icons
+                          .location_on_outlined,
+                    ),
+                    border:
+                        OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 16),
+
+                const SizedBox(
+                  height: 16,
+                ),
+
                 TextField(
-                  controller: TextEditingController(
-                    text: user.role,
-                  ),
+                  controller:
+                      roleController,
                   readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Role',
-                    prefixIcon: Icon(Icons.badge_outlined),
-                    border: OutlineInputBorder(),
+                  decoration:
+                      const InputDecoration(
+                    labelText:
+                        'Role',
+                    prefixIcon:
+                        Icon(
+                      Icons
+                          .badge_outlined,
+                    ),
+                    border:
+                        OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 24),
+
+                const SizedBox(
+                  height: 24,
+                ),
+
                 SizedBox(
-                  width: double.infinity,
+                  width:
+                      double.infinity,
                   height: 50,
-                  child: ElevatedButton(
+                  child:
+                      ElevatedButton(
                     onPressed:
-                        provider.isSaving ? null : saveProfile,
-                    child: provider.isSaving
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text('Save Changes'),
+                        provider.isSaving
+                            ? null
+                            : saveProfile,
+                    child:
+                        provider.isSaving
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child:
+                                    CircularProgressIndicator(
+                                  strokeWidth:
+                                      2,
+                                ),
+                              )
+                            : const Text(
+                                'Save Changes',
+                              ),
                   ),
                 ),
               ],
