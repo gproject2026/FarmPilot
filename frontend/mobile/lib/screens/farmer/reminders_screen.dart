@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/reminder_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/crop_provider.dart';
 import '../../providers/reminder_provider.dart';
 
 class RemindersScreen extends StatefulWidget {
@@ -21,12 +22,12 @@ class _RemindersScreenState
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        _loadReminders();
+        _loadData();
       },
     );
   }
 
-  Future<void> _loadReminders() async {
+  Future<void> _loadData() async {
     final authProvider =
         context.read<AuthProvider>();
 
@@ -36,11 +37,16 @@ class _RemindersScreenState
       return;
     }
 
-    await context
-        .read<ReminderProvider>()
-        .fetchReminders(
-          token: token,
-        );
+    await Future.wait([
+      context
+          .read<ReminderProvider>()
+          .fetchReminders(
+            token: token,
+          ),
+      context
+          .read<CropProvider>()
+          .getMyCrops(token),
+    ]);
   }
 
   Future<void> _openAddReminderDialog() async {
@@ -195,7 +201,7 @@ class _RemindersScreenState
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            onPressed: _loadReminders,
+            onPressed: _loadData,
             icon: const Icon(
               Icons.refresh,
             ),
@@ -225,14 +231,14 @@ class _RemindersScreenState
           }
 
           if (reminderProvider
-              .errorMessage !=
-              null &&
+                      .errorMessage !=
+                  null &&
               reminderProvider
                   .reminders.isEmpty) {
             return _ErrorView(
               message: reminderProvider
                   .errorMessage!,
-              onRetry: _loadReminders,
+              onRetry: _loadData,
             );
           }
 
@@ -245,7 +251,7 @@ class _RemindersScreenState
           }
 
           return RefreshIndicator(
-            onRefresh: _loadReminders,
+            onRefresh: _loadData,
             child: ListView.builder(
               padding:
                   const EdgeInsets.all(16),
@@ -478,8 +484,11 @@ class _AddReminderDialog
 class _AddReminderDialogState
     extends State<_AddReminderDialog> {
   String _selectedType = 'IRRIGATION';
+  String? _selectedCropId;
+
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+
   bool _isSaving = false;
 
   Future<void> _selectDate() async {
@@ -553,6 +562,7 @@ class _AddReminderDialogState
         .read<ReminderProvider>()
         .createReminder(
           token: token,
+          cropId: _selectedCropId,
           type: _selectedType,
           reminderDate: reminderDate,
         );
@@ -585,6 +595,11 @@ class _AddReminderDialogState
 
   @override
   Widget build(BuildContext context) {
+    final cropProvider =
+        context.watch<CropProvider>();
+
+    final crops = cropProvider.crops;
+
     return AlertDialog(
       title: const Text(
         'Add Reminder',
@@ -616,14 +631,87 @@ class _AddReminderDialogState
                   child: Text('Other'),
                 ),
               ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedType = value;
-                  });
-                }
-              },
+              onChanged: _isSaving
+                  ? null
+                  : (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedType =
+                              value;
+                        });
+                      }
+                    },
             ),
+            const SizedBox(height: 16),
+
+            DropdownButtonFormField<String?>(
+              initialValue: _selectedCropId,
+              isExpanded: true,
+              decoration:
+                  const InputDecoration(
+                labelText:
+                    'Crop (Optional)',
+                prefixIcon:
+                    Icon(Icons.grass),
+                border:
+                    OutlineInputBorder(),
+              ),
+              items: [
+                const DropdownMenuItem<
+                    String?>(
+                  value: null,
+                  child: Text(
+                    'No specific crop',
+                  ),
+                ),
+                ...crops.map(
+                  (crop) {
+                    final cropId =
+                        crop['id']?.toString() ??
+                            '';
+
+                    final cropName =
+                        crop['cropName']
+                                ?.toString() ??
+                            'Unnamed Crop';
+
+                    return DropdownMenuItem<
+                        String?>(
+                      value: cropId,
+                      child: Text(
+                        cropName,
+                        overflow:
+                            TextOverflow.ellipsis,
+                      ),
+                    );
+                  },
+                ),
+              ],
+              onChanged: _isSaving
+                  ? null
+                  : (value) {
+                      setState(() {
+                        _selectedCropId =
+                            value;
+                      });
+                    },
+            ),
+
+            if (crops.isEmpty) ...[
+              const SizedBox(height: 8),
+              const Align(
+                alignment:
+                    Alignment.centerLeft,
+                child: Text(
+                  'No crops available. You can still create a general reminder.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            ],
+
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -636,7 +724,8 @@ class _AddReminderDialogState
                     ? 'Select Date'
                     : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
               ),
-              onTap: _selectDate,
+              onTap:
+                  _isSaving ? null : _selectDate,
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -650,7 +739,8 @@ class _AddReminderDialogState
                     : _selectedTime!
                         .format(context),
               ),
-              onTap: _selectTime,
+              onTap:
+                  _isSaving ? null : _selectTime,
             ),
           ],
         ),
