@@ -4,20 +4,33 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { OrderStatus } from '@prisma/client';
+
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 import { CreateReviewDto } from './dto/create-review.dto';
 
 @Injectable()
 export class ReviewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(
     createReviewDto: CreateReviewDto,
     customerId: string,
   ) {
     const product = await this.prisma.product.findUnique({
-      where: { id: createReviewDto.productId },
+      where: {
+        id: createReviewDto.productId,
+      },
+      select: {
+        id: true,
+        name: true,
+        farmerId: true,
+      },
     });
 
     if (!product) {
@@ -37,7 +50,28 @@ export class ReviewsService {
       );
     }
 
-    return this.prisma.review.create({
+    const completedOrder = await this.prisma.order.findFirst({
+      where: {
+        customerId,
+        status: OrderStatus.COMPLETED,
+        orderItems: {
+          some: {
+            productId: createReviewDto.productId,
+          },
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!completedOrder) {
+      throw new BadRequestException(
+        'You can only review products from completed orders',
+      );
+    }
+
+    const review = await this.prisma.review.create({
       data: {
         customerId,
         productId: createReviewDto.productId,
@@ -55,6 +89,15 @@ export class ReviewsService {
         product: true,
       },
     });
+
+    await this.notificationsService.create({
+      userId: product.farmerId,
+      title: 'New Review',
+      message: `Your product "${product.name}" received a new ${createReviewDto.rating}-star review.`,
+      type: 'REVIEW',
+    });
+
+    return review;
   }
 
   findByProduct(productId: string) {
@@ -71,12 +114,20 @@ export class ReviewsService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
-  async remove(reviewId: string, customerId: string) {
+  async remove(
+    reviewId: string,
+    customerId: string,
+  ) {
     const review = await this.prisma.review.findUnique({
-      where: { id: reviewId },
+      where: {
+        id: reviewId,
+      },
     });
 
     if (!review) {
@@ -90,7 +141,9 @@ export class ReviewsService {
     }
 
     return this.prisma.review.delete({
-      where: { id: reviewId },
+      where: {
+        id: reviewId,
+      },
     });
   }
 }
