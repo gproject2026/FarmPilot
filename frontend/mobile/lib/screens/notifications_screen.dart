@@ -18,6 +18,13 @@ class NotificationsScreen extends StatefulWidget {
       _NotificationsScreenState();
 }
 
+const Color _notifDarkGreen = Color(0xFF173F24);
+const Color _notifPrimaryGreen = Color(0xFF2F6B3D);
+const Color _notifLightGreen = Color(0xFFDDECB8);
+const Color _notifBackground = Color(0xFFF8FAF4);
+const Color _notifTextPrimary = Color(0xFF1D2C21);
+const Color _notifTextSecondary = Color(0xFF68756B);
+
 class _NotificationsScreenState
     extends State<NotificationsScreen> {
   @override
@@ -104,122 +111,507 @@ class _NotificationsScreenState
   @override
   Widget build(BuildContext context) {
     final notificationProvider =
-        Provider.of<NotificationProvider>(
-      context,
-    );
+        Provider.of<NotificationProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F4),
-      appBar: AppBar(
-        title: const Text(
-          'Notifications',
-        ),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        actions: [
-          if (notificationProvider.unreadCount > 0)
-            IconButton(
-              tooltip: 'Mark all as read',
-              onPressed:
-                  notificationProvider.isLoading
-                      ? null
-                      : _markAllAsRead,
-              icon: const Icon(
-                Icons.done_all,
-              ),
-            ),
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed:
-                notificationProvider.isLoading
-                    ? null
-                    : _loadNotifications,
-            icon: const Icon(
-              Icons.refresh,
+      backgroundColor: _notifBackground,
+      body: Stack(
+        children: [
+          const Positioned.fill(child: _NotificationsBackdrop()),
+          RefreshIndicator(
+            onRefresh: _loadNotifications,
+            color: _notifPrimaryGreen,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _NotificationsHeader(
+                    unreadCount: notificationProvider.unreadCount,
+                    isLoading: notificationProvider.isLoading,
+                    onBack: () => Navigator.pop(context),
+                    onMarkAllRead: _markAllAsRead,
+                    onRefresh: _loadNotifications,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(22, 24, 22, 18),
+                    child: _NotificationsIntro(
+                      total: notificationProvider.notifications.length,
+                      unread: notificationProvider.unreadCount,
+                    ),
+                  ),
+                ),
+                if (notificationProvider.isLoading &&
+                    notificationProvider.notifications.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: _notifPrimaryGreen,
+                      ),
+                    ),
+                  )
+                else if (notificationProvider.notifications.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _EmptyNotifications(),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(22, 0, 22, 42),
+                    sliver: SliverList.separated(
+                      itemCount: notificationProvider.notifications.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final notification = Map<String, dynamic>.from(
+                          notificationProvider.notifications[index],
+                        );
+                        return _NotificationCard(
+                          notification: notification,
+                        );
+                      },
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
       ),
-      body: notificationProvider.isLoading &&
-              notificationProvider.notifications.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : notificationProvider.notifications.isEmpty
-              ? RefreshIndicator(
-                  onRefresh: _loadNotifications,
-                  child: ListView(
-                    physics:
-                        const AlwaysScrollableScrollPhysics(),
-                    children: const [
-                      SizedBox(
-                        height: 180,
-                      ),
-                      Icon(
-                        Icons.notifications_none_outlined,
-                        size: 80,
-                        color: Colors.grey,
-                      ),
-                      SizedBox(
-                        height: 16,
-                      ),
-                      Center(
-                        child: Text(
-                          'No notifications yet',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 8,
-                      ),
-                      Center(
-                        child: Text(
-                          'Your notifications will appear here',
-                          style: TextStyle(
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadNotifications,
-                  child: ListView.separated(
-                    padding:
-                        const EdgeInsets.all(16),
-                    itemCount:
-                        notificationProvider
-                            .notifications.length,
-                    separatorBuilder: (
-                      context,
-                      index,
-                    ) {
-                      return const SizedBox(
-                        height: 10,
-                      );
-                    },
-                    itemBuilder: (
-                      context,
-                      index,
-                    ) {
-                      final notification =
-                          Map<String, dynamic>.from(
-                        notificationProvider
-                            .notifications[index],
-                      );
+    );
+  }
+}
 
-                      return _NotificationCard(
-                        notification:
-                            notification,
-                      );
-                    },
+
+class _NotificationsHeader extends StatelessWidget {
+  final int unreadCount;
+  final bool isLoading;
+  final VoidCallback onBack;
+  final Future<void> Function() onMarkAllRead;
+  final Future<void> Function() onRefresh;
+
+  const _NotificationsHeader({
+    required this.unreadCount,
+    required this.isLoading,
+    required this.onBack,
+    required this.onMarkAllRead,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF123A22),
+            Color(0xFF205A34),
+            Color(0xFF2E6F40),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: _notifDarkGreen.withValues(alpha: 0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            _NotifHeaderButton(
+              icon: Icons.arrow_back_rounded,
+              tooltip: 'Back',
+              onTap: onBack,
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: _notifLightGreen,
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: const Icon(
+                Icons.eco_rounded,
+                color: _notifDarkGreen,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'FarmPilot',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Notifications',
+                    style: TextStyle(
+                      color: Color(0xCCFFFFFF),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (unreadCount > 0) ...[
+              _NotifHeaderButton(
+                icon: Icons.done_all_rounded,
+                tooltip: 'Mark all as read',
+                onTap: isLoading ? null : onMarkAllRead,
+              ),
+              const SizedBox(width: 8),
+            ],
+            _NotifHeaderButton(
+              icon: Icons.refresh_rounded,
+              tooltip: 'Refresh',
+              onTap: isLoading ? null : onRefresh,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NotifHeaderButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  const _NotifHeaderButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.white.withValues(alpha: onTap == null ? 0.05 : 0.10),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Icon(
+              icon,
+              color: onTap == null ? Colors.white54 : Colors.white,
+              size: 21,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationsIntro extends StatelessWidget {
+  final int total;
+  final int unread;
+
+  const _NotificationsIntro({
+    required this.total,
+    required this.unread,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: AlignmentDirectional.centerStart,
+          end: AlignmentDirectional.centerEnd,
+          colors: [
+            Colors.white,
+            Color(0xFFFFFEFA),
+            Color(0xFFF5F9EE),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFDDE7D8)),
+        boxShadow: [
+          BoxShadow(
+            color: _notifDarkGreen.withValues(alpha: 0.045),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final info = const Row(
+            children: [
+              _IntroIcon(),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Notifications',
+                      style: TextStyle(
+                        color: _notifTextPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Stay updated with orders, diagnoses, reminders and farm activity.',
+                      style: TextStyle(
+                        color: _notifTextSecondary,
+                        fontSize: 13,
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            ],
+          );
+
+          final stats = Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _NotifStat(
+                icon: Icons.notifications_outlined,
+                label: '$total total',
+                background: const Color(0xFFEAF3DF),
+                foreground: _notifPrimaryGreen,
+              ),
+              _NotifStat(
+                icon: Icons.mark_email_unread_outlined,
+                label: '$unread unread',
+                background: const Color(0xFFFFF0DE),
+                foreground: const Color(0xFFB46A2C),
+              ),
+            ],
+          );
+
+          if (constraints.maxWidth < 650) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                info,
+                const SizedBox(height: 18),
+                stats,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(child: info),
+              const SizedBox(width: 18),
+              stats,
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _IntroIcon extends StatelessWidget {
+  const _IntroIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 54,
+      height: 54,
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF3DF),
+        borderRadius: BorderRadius.circular(17),
+      ),
+      child: const Icon(
+        Icons.notifications_active_outlined,
+        color: _notifPrimaryGreen,
+        size: 28,
+      ),
+    );
+  }
+}
+
+class _NotifStat extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color background;
+  final Color foreground;
+
+  const _NotifStat({
+    required this.icon,
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: foreground),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: foreground,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyNotifications extends StatelessWidget {
+  const _EmptyNotifications();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 470),
+          padding: const EdgeInsets.all(30),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: const Color(0xFFDDE6D8)),
+            boxShadow: [
+              BoxShadow(
+                color: _notifDarkGreen.withValues(alpha: 0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.notifications_none_rounded,
+                size: 72,
+                color: _notifPrimaryGreen,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'No notifications yet',
+                style: TextStyle(
+                  color: _notifTextPrimary,
+                  fontSize: 21,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Your latest FarmPilot updates will appear here.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _notifTextSecondary,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationsBackdrop extends StatelessWidget {
+  const _NotificationsBackdrop();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFF8FAF4),
+                  Color(0xFFFFFCF5),
+                  Color(0xFFF4F8ED),
+                ],
+                stops: [0.0, 0.50, 1.0],
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            end: -190,
+            top: 210,
+            child: Container(
+              width: 470,
+              height: 470,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFCFE6B4).withValues(alpha: 0.28),
+                    const Color(0xFFCFE6B4).withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            start: -190,
+            bottom: -220,
+            child: Container(
+              width: 520,
+              height: 520,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFE7DFAF).withValues(alpha: 0.22),
+                    const Color(0xFFE7DFAF).withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -272,22 +664,20 @@ class _NotificationCard
         normalizedType.contains('ORDER');
 
     return Card(
-      elevation: isRead ? 1 : 3,
-      color: isRead
-          ? Colors.white
-          : Colors.green.shade50,
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: isRead ? Colors.white : const Color(0xFFF4F9ED),
       shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(22),
         side: BorderSide(
           color: isRead
-              ? Colors.grey.shade200
-              : Colors.green.shade200,
+              ? const Color(0xFFDDE6D8)
+              : const Color(0xFFC7DDB8),
         ),
       ),
       child: InkWell(
         borderRadius:
-            BorderRadius.circular(16),
+            BorderRadius.circular(22),
         onTap: () async {
           final notificationProvider =
               Provider.of<NotificationProvider>(
@@ -399,15 +789,15 @@ class _NotificationCard
               CircleAvatar(
                 radius: 24,
                 backgroundColor: isRead
-                    ? Colors.grey.shade200
-                    : Colors.green.shade100,
+                    ? const Color(0xFFF0F2EF)
+                    : const Color(0xFFE0EECF),
                 child: Icon(
                   _getNotificationIcon(
                     type,
                   ),
                   color: isRead
-                      ? Colors.grey.shade600
-                      : Colors.green.shade700,
+                      ? _notifTextSecondary
+                      : _notifPrimaryGreen,
                 ),
               ),
               const SizedBox(
@@ -437,7 +827,7 @@ class _NotificationCard
                             height: 10,
                             decoration:
                                 const BoxDecoration(
-                              color: Colors.green,
+                              color: _notifPrimaryGreen,
                               shape:
                                   BoxShape.circle,
                             ),
@@ -454,7 +844,7 @@ class _NotificationCard
                         style: TextStyle(
                           fontSize: 14,
                           color:
-                              Colors.grey.shade700,
+                              _notifTextSecondary,
                           height: 1.4,
                         ),
                       ),
@@ -470,7 +860,7 @@ class _NotificationCard
                             Icons.open_in_new_outlined,
                             size: 16,
                             color:
-                                Colors.green.shade700,
+                                _notifPrimaryGreen,
                           ),
                           const SizedBox(
                             width: 5,
@@ -480,7 +870,7 @@ class _NotificationCard
                             style: TextStyle(
                               fontSize: 12,
                               color:
-                                  Colors.green.shade700,
+                                  _notifPrimaryGreen,
                               fontWeight:
                                   FontWeight.w600,
                             ),
@@ -499,7 +889,7 @@ class _NotificationCard
                             Icons.open_in_new_outlined,
                             size: 16,
                             color:
-                                Colors.green.shade700,
+                                _notifPrimaryGreen,
                           ),
                           const SizedBox(
                             width: 5,
@@ -509,7 +899,7 @@ class _NotificationCard
                             style: TextStyle(
                               fontSize: 12,
                               color:
-                                  Colors.green.shade700,
+                                  _notifPrimaryGreen,
                               fontWeight:
                                   FontWeight.w600,
                             ),
@@ -562,7 +952,7 @@ class _NotificationCard
                             style: TextStyle(
                               fontSize: 11,
                               color:
-                                  Colors.grey.shade600,
+                                  _notifTextSecondary,
                             ),
                           ),
                       ],
