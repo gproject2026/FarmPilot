@@ -25,6 +25,24 @@ class CustomerDashboardScreen extends StatefulWidget {
 
 class _CustomerDashboardScreenState
     extends State<CustomerDashboardScreen> {
+  static const Color _darkGreen =
+      Color(0xFF173F24);
+
+  static const Color _primaryGreen =
+      Color(0xFF2F6B3D);
+
+  static const Color _lightGreen =
+      Color(0xFFDDECB8);
+
+  static const Color _background =
+      Color(0xFFF8FAF4);
+
+  static const Color _textPrimary =
+      Color(0xFF1D2C21);
+
+  static const Color _textSecondary =
+      Color(0xFF68756B);
+
   @override
   void initState() {
     super.initState();
@@ -138,10 +156,10 @@ class _CustomerDashboardScreenState
     final l10n =
         AppLocalizations.of(context)!;
 
-    final userName = authProvider
-            .userData?['fullName']
-            ?.toString() ??
-        l10n.customer;
+    final userName =
+        authProvider.userData?['fullName']
+                ?.toString() ??
+            l10n.customer;
 
     final isArabic =
         localeProvider
@@ -150,338 +168,1200 @@ class _CustomerDashboardScreenState
 
     return Scaffold(
       backgroundColor:
-          const Color(
-        0xFFF5F7F4,
-      ),
-      appBar: AppBar(
-        title: Text(
-          l10n.customerDashboard,
-        ),
-        backgroundColor:
-            Colors.green,
-        foregroundColor:
-            Colors.white,
-        actions: [
-          PopupMenuButton<String>(
-            tooltip:
-                l10n.changeLanguage,
-            icon: const Icon(
-              Icons.language,
-            ),
-            onSelected:
-                _changeLanguage,
-            itemBuilder:
-                (context) {
-              return [
-                PopupMenuItem<String>(
-                  value: 'en',
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check,
-                        color:
-                            !isArabic
-                                ? Colors.green
-                                : Colors
-                                    .transparent,
-                      ),
-                      const SizedBox(
-                        width: 8,
-                      ),
-                      Text(
-                        l10n.english,
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  value: 'ar',
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check,
-                        color:
-                            isArabic
-                                ? Colors.green
-                                : Colors
-                                    .transparent,
-                      ),
-                      const SizedBox(
-                        width: 8,
-                      ),
-                      Text(
-                        l10n.arabic,
-                      ),
-                    ],
-                  ),
-                ),
-              ];
-            },
+          _background,
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: _CustomerBackdrop(),
           ),
-          Stack(
-            alignment:
-                Alignment.center,
-            children: [
-              IconButton(
-                tooltip:
-                    l10n.notifications,
-                onPressed:
-                    _openNotifications,
-                icon: const Icon(
-                  Icons
-                      .notifications_outlined,
+          RefreshIndicator(
+            onRefresh:
+                _loadNotifications,
+            color:
+                _primaryGreen,
+            child:
+                CustomScrollView(
+              physics:
+                  const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _buildHeader(
+                    l10n:
+                        l10n,
+                    isArabic:
+                        isArabic,
+                    notificationProvider:
+                        notificationProvider,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: LayoutBuilder(
+                    builder: (
+                      context,
+                      constraints,
+                    ) {
+                      final isWide =
+                          constraints.maxWidth >=
+                              1000;
+
+                      return Padding(
+                        padding:
+                            EdgeInsets.fromLTRB(
+                          isWide
+                              ? 42
+                              : 18,
+                          isWide
+                              ? 30
+                              : 20,
+                          isWide
+                              ? 42
+                              : 18,
+                          52,
+                        ),
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            _buildWelcomeCard(
+                              l10n:
+                                  l10n,
+                              userName:
+                                  userName,
+                            ),
+                            const SizedBox(
+                              height:
+                                  26,
+                            ),
+                            _buildMarketplaceCard(
+                              l10n:
+                                  l10n,
+                            ),
+                            const SizedBox(
+                              height:
+                                  34,
+                            ),
+                            _buildSectionTitle(
+                              l10n
+                                  .customerDashboard,
+                              l10n
+                                  .customerDashboardSubtitle,
+                            ),
+                            const SizedBox(
+                              height:
+                                  16,
+                            ),
+                            _buildActionGrid(
+                              isWide:
+                                  isWide,
+                              l10n:
+                                  l10n,
+                              notificationProvider:
+                                  notificationProvider,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader({
+    required AppLocalizations l10n,
+    required bool isArabic,
+    required NotificationProvider
+        notificationProvider,
+  }) {
+    return Container(
+      padding:
+          const EdgeInsets.fromLTRB(
+        24,
+        18,
+        24,
+        24,
+      ),
+      decoration:
+          BoxDecoration(
+        gradient:
+            const LinearGradient(
+          begin:
+              Alignment.topLeft,
+          end:
+              Alignment.bottomRight,
+          colors: [
+            Color(0xFF123A22),
+            Color(0xFF205A34),
+            Color(0xFF2E6F40),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                _darkGreen.withValues(
+              alpha:
+                  0.18,
+            ),
+            blurRadius:
+                24,
+            offset:
+                const Offset(
+              0,
+              8,
+            ),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom:
+            false,
+        child: Row(
+          children: [
+            Container(
+              width:
+                  46,
+              height:
+                  46,
+              decoration:
+                  BoxDecoration(
+                color:
+                    _lightGreen,
+                borderRadius:
+                    BorderRadius.circular(
+                  14,
                 ),
               ),
-              if (notificationProvider
-                      .unreadCount >
-                  0)
-                PositionedDirectional(
-                  top: 7,
-                  end: 6,
-                  child: Container(
-                    constraints:
-                        const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
+              child:
+                  const Icon(
+                Icons.eco_rounded,
+                color:
+                    _darkGreen,
+                size:
+                    25,
+              ),
+            ),
+            const SizedBox(
+              width:
+                  12,
+            ),
+            Expanded(
+              child: Text(
+                l10n.appName,
+                style:
+                    const TextStyle(
+                  color:
+                      Colors.white,
+                  fontSize:
+                      22,
+                  fontWeight:
+                      FontWeight.w800,
+                ),
+              ),
+            ),
+            _HeaderIconButton(
+              icon:
+                  Icons.language_rounded,
+              onTap: () {
+                _showLanguageMenu(
+                  isArabic:
+                      isArabic,
+                  l10n:
+                      l10n,
+                );
+              },
+            ),
+            const SizedBox(
+              width:
+                  10,
+            ),
+            Stack(
+              clipBehavior:
+                  Clip.none,
+              children: [
+                _HeaderIconButton(
+                  icon:
+                      Icons.notifications_none_rounded,
+                  onTap:
+                      _openNotifications,
+                ),
+                if (notificationProvider
+                        .unreadCount >
+                    0)
+                  Positioned(
+                    right:
+                        -4,
+                    top:
+                        -4,
+                    child:
+                        Container(
+                      constraints:
+                          const BoxConstraints(
+                        minWidth:
+                            18,
+                        minHeight:
+                            18,
+                      ),
+                      padding:
+                          const EdgeInsets.symmetric(
+                        horizontal:
+                            4,
+                      ),
+                      decoration:
+                          BoxDecoration(
+                        color:
+                            const Color(
+                          0xFFE35D5D,
+                        ),
+                        borderRadius:
+                            BorderRadius.circular(
+                          12,
+                        ),
+                        border:
+                            Border.all(
+                          color:
+                              Colors.white,
+                          width:
+                              1.5,
+                        ),
+                      ),
+                      alignment:
+                          Alignment.center,
+                      child:
+                          Text(
+                        notificationProvider
+                                    .unreadCount >
+                                99
+                            ? '99+'
+                            : notificationProvider
+                                .unreadCount
+                                .toString(),
+                        style:
+                            const TextStyle(
+                          color:
+                              Colors.white,
+                          fontSize:
+                              9,
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 5,
-                      vertical: 2,
-                    ),
-                    decoration:
-                        const BoxDecoration(
-                      color:
-                          Colors.red,
-                      shape:
-                          BoxShape.circle,
-                    ),
-                    child: Text(
-                      notificationProvider
-                                  .unreadCount >
-                              99
-                          ? '99+'
-                          : notificationProvider
-                              .unreadCount
-                              .toString(),
-                      textAlign:
-                          TextAlign.center,
+                  ),
+              ],
+            ),
+            const SizedBox(
+              width:
+                  10,
+            ),
+            _HeaderIconButton(
+              icon:
+                  Icons.logout_rounded,
+              onTap:
+                  _logout,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeCard({
+    required AppLocalizations l10n,
+    required String userName,
+  }) {
+    return Container(
+      width:
+          double.infinity,
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal:
+            28,
+        vertical:
+            28,
+      ),
+      decoration:
+          BoxDecoration(
+        gradient:
+            const LinearGradient(
+          begin:
+              AlignmentDirectional.centerStart,
+          end:
+              AlignmentDirectional.centerEnd,
+          colors: [
+            Color(0xFFFFFFFF),
+            Color(0xFFFFFEFA),
+            Color(0xFFF6F9F0),
+          ],
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          28,
+        ),
+        border:
+            Border.all(
+          color:
+              const Color(
+            0xFFDDE7D8,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                _darkGreen.withValues(
+              alpha:
+                  0.055,
+            ),
+            blurRadius:
+                24,
+            offset:
+                const Offset(
+              0,
+              8,
+            ),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width:
+                64,
+            height:
+                64,
+            decoration:
+                BoxDecoration(
+              color:
+                  const Color(
+                0xFFEAF3DF,
+              ),
+              borderRadius:
+                  BorderRadius.circular(
+                20,
+              ),
+            ),
+            child:
+                const Icon(
+              Icons
+                  .shopping_basket_outlined,
+              color:
+                  _primaryGreen,
+              size:
+                  32,
+            ),
+          ),
+          const SizedBox(
+            width:
+                24,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.welcomeCustomer(
+                    userName,
+                  ),
+                  style:
+                      const TextStyle(
+                    color:
+                        _textPrimary,
+                    fontSize:
+                        30,
+                    fontWeight:
+                        FontWeight.w800,
+                    letterSpacing:
+                        -0.7,
+                  ),
+                ),
+                const SizedBox(
+                  height:
+                      8,
+                ),
+                Text(
+                  l10n
+                      .customerDashboardSubtitle,
+                  style:
+                      const TextStyle(
+                    color:
+                        _textSecondary,
+                    fontSize:
+                        15,
+                    height:
+                        1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMarketplaceCard({
+    required AppLocalizations l10n,
+  }) {
+    return Material(
+      color:
+          Colors.transparent,
+      borderRadius:
+          BorderRadius.circular(
+        26,
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const CustomerProductsScreen(),
+            ),
+          );
+        },
+        borderRadius:
+            BorderRadius.circular(
+          26,
+        ),
+        child: Container(
+          width:
+              double.infinity,
+          padding:
+              const EdgeInsets.all(
+            24,
+          ),
+          decoration:
+              BoxDecoration(
+            gradient:
+                const LinearGradient(
+              begin:
+                  Alignment.topLeft,
+              end:
+                  Alignment.bottomRight,
+              colors: [
+                Color(0xFF245D35),
+                Color(0xFF3A7A49),
+              ],
+            ),
+            borderRadius:
+                BorderRadius.circular(
+              26,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    _primaryGreen.withValues(
+                  alpha:
+                      0.18,
+                ),
+                blurRadius:
+                    24,
+                offset:
+                    const Offset(
+                  0,
+                  10,
+                ),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width:
+                    62,
+                height:
+                    62,
+                decoration:
+                    BoxDecoration(
+                  color:
+                      Colors.white.withValues(
+                    alpha:
+                        0.12,
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(
+                    18,
+                  ),
+                ),
+                child:
+                    const Icon(
+                  Icons
+                      .storefront_outlined,
+                  color:
+                      Colors.white,
+                  size:
+                      30,
+                ),
+              ),
+              const SizedBox(
+                width:
+                    18,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.browseMarketplace,
                       style:
                           const TextStyle(
                         color:
                             Colors.white,
-                        fontSize: 10,
+                        fontSize:
+                            20,
                         fontWeight:
-                            FontWeight.bold,
+                            FontWeight.w800,
                       ),
                     ),
-                  ),
+                    const SizedBox(
+                      height:
+                          5,
+                    ),
+                    Text(
+                      l10n.marketplaceSubtitle,
+                      style:
+                          TextStyle(
+                        color:
+                            Colors.white.withValues(
+                          alpha:
+                              0.82,
+                        ),
+                        fontSize:
+                            13,
+                        height:
+                            1.45,
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              Icon(
+                Directionality.of(context) ==
+                        TextDirection.rtl
+                    ? Icons
+                        .chevron_left_rounded
+                    : Icons
+                        .chevron_right_rounded,
+                color:
+                    Colors.white,
+                size:
+                    28,
+              ),
             ],
           ),
-          IconButton(
-            onPressed:
-                _logout,
-            icon: const Icon(
-              Icons.logout,
-            ),
-            tooltip:
-                l10n.logout,
-          ),
-        ],
+        ),
       ),
-      body: RefreshIndicator(
-        onRefresh:
-            _loadNotifications,
-        child:
-            SingleChildScrollView(
-          physics:
-              const AlwaysScrollableScrollPhysics(),
+    );
+  }
+
+  Widget _buildActionGrid({
+    required bool isWide,
+    required AppLocalizations l10n,
+    required NotificationProvider
+        notificationProvider,
+  }) {
+    final actions = [
+      _CustomerActionInfo(
+        title:
+            l10n.myOrders,
+        subtitle:
+            l10n.myOrdersSubtitle,
+        icon:
+            Icons.shopping_bag_outlined,
+        iconBackground:
+            const Color(
+          0xFFFFEFE0,
+        ),
+        iconColor:
+            const Color(
+          0xFFB46A2C,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const CustomerOrdersScreen(),
+            ),
+          );
+        },
+      ),
+      _CustomerActionInfo(
+        title:
+            l10n.marketplace,
+        subtitle:
+            l10n.marketplaceSubtitle,
+        icon:
+            Icons.storefront_outlined,
+        iconBackground:
+            const Color(
+          0xFFE9F3E8,
+        ),
+        iconColor:
+            const Color(
+          0xFF3D7A47,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const CustomerProductsScreen(),
+            ),
+          );
+        },
+      ),
+      _CustomerActionInfo(
+        title:
+            l10n.myFavorites,
+        subtitle:
+            l10n.myFavoritesSubtitle,
+        icon:
+            Icons.favorite_outline_rounded,
+        iconBackground:
+            const Color(
+          0xFFF8E8EC,
+        ),
+        iconColor:
+            const Color(
+          0xFFB15B72,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const CustomerFavoritesScreen(),
+            ),
+          );
+        },
+      ),
+      _CustomerActionInfo(
+        title:
+            l10n.shoppingCart,
+        subtitle:
+            l10n.shoppingCartSubtitle,
+        icon:
+            Icons.shopping_cart_outlined,
+        iconBackground:
+            const Color(
+          0xFFF2F1D8,
+        ),
+        iconColor:
+            const Color(
+          0xFF7A7B35,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const CustomerCartScreen(),
+            ),
+          );
+        },
+      ),
+      _CustomerActionInfo(
+        title:
+            l10n.notifications,
+        subtitle:
+            notificationProvider.unreadCount >
+                    0
+                ? l10n.unreadNotifications(
+                    notificationProvider
+                        .unreadCount,
+                  )
+                : l10n
+                    .latestNotifications,
+        icon:
+            Icons.notifications_outlined,
+        iconBackground:
+            const Color(
+          0xFFE8EEF7,
+        ),
+        iconColor:
+            const Color(
+          0xFF52709C,
+        ),
+        onTap:
+            _openNotifications,
+      ),
+      _CustomerActionInfo(
+        title:
+            l10n.myProfile,
+        subtitle:
+            l10n.myProfileSubtitle,
+        icon:
+            Icons.person_outline_rounded,
+        iconBackground:
+            const Color(
+          0xFFEDE8F3,
+        ),
+        iconColor:
+            const Color(
+          0xFF785A8E,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const ProfileScreen(),
+            ),
+          );
+        },
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (
+        context,
+        constraints,
+      ) {
+        final width =
+            constraints.maxWidth;
+
+        final columns =
+            isWide
+                ? 3
+                : width >= 650
+                    ? 2
+                    : 1;
+
+        const spacing =
+            14.0;
+
+        final cardWidth =
+            (width -
+                    spacing *
+                        (columns - 1)) /
+                columns;
+
+        return Wrap(
+          spacing:
+              spacing,
+          runSpacing:
+              spacing,
+          children:
+              actions.map(
+            (action) {
+              return SizedBox(
+                width:
+                    cardWidth,
+                child:
+                    _CustomerActionCard(
+                  action:
+                      action,
+                ),
+              );
+            },
+          ).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildSectionTitle(
+    String title,
+    String subtitle,
+  ) {
+    return Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize:
+              MainAxisSize.min,
+          children: [
+            Container(
+              width:
+                  7,
+              height:
+                  28,
+              decoration:
+                  BoxDecoration(
+                gradient:
+                    const LinearGradient(
+                  begin:
+                      Alignment.topCenter,
+                  end:
+                      Alignment.bottomCenter,
+                  colors: [
+                    Color(
+                      0xFF4D8A4B,
+                    ),
+                    Color(
+                      0xFF9FC65B,
+                    ),
+                  ],
+                ),
+                borderRadius:
+                    BorderRadius.circular(
+                  10,
+                ),
+              ),
+            ),
+            const SizedBox(
+              width:
+                  10,
+            ),
+            Text(
+              title,
+              style:
+                  const TextStyle(
+                color:
+                    _textPrimary,
+                fontSize:
+                    23,
+                fontWeight:
+                    FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(
+          height:
+              6,
+        ),
+        Padding(
+          padding:
+              const EdgeInsetsDirectional.only(
+            start:
+                17,
+          ),
+          child: Text(
+            subtitle,
+            style:
+                const TextStyle(
+              color:
+                  _textSecondary,
+              fontSize:
+                  14,
+              height:
+                  1.4,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showLanguageMenu({
+    required bool isArabic,
+    required AppLocalizations l10n,
+  }) {
+    showModalBottomSheet<void>(
+      context:
+          context,
+      showDragHandle:
+          true,
+      builder:
+          (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding:
+                const EdgeInsets.all(
+              20,
+            ),
+            child: Column(
+              mainAxisSize:
+                  MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading:
+                      Icon(
+                    Icons.check,
+                    color:
+                        !isArabic
+                            ? _primaryGreen
+                            : Colors
+                                .transparent,
+                  ),
+                  title:
+                      Text(
+                    l10n.english,
+                  ),
+                  onTap: () {
+                    Navigator.pop(
+                      sheetContext,
+                    );
+
+                    _changeLanguage(
+                      'en',
+                    );
+                  },
+                ),
+                ListTile(
+                  leading:
+                      Icon(
+                    Icons.check,
+                    color:
+                        isArabic
+                            ? _primaryGreen
+                            : Colors
+                                .transparent,
+                  ),
+                  title:
+                      Text(
+                    l10n.arabic,
+                  ),
+                  onTap: () {
+                    Navigator.pop(
+                      sheetContext,
+                    );
+
+                    _changeLanguage(
+                      'ar',
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HeaderIconButton
+    extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _HeaderIconButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Material(
+      color:
+          Colors.white.withValues(
+        alpha:
+            0.10,
+      ),
+      borderRadius:
+          BorderRadius.circular(
+        14,
+      ),
+      child: InkWell(
+        onTap:
+            onTap,
+        borderRadius:
+            BorderRadius.circular(
+          14,
+        ),
+        child: SizedBox(
+          width:
+              44,
+          height:
+              44,
+          child:
+              Icon(
+            icon,
+            color:
+                Colors.white,
+            size:
+                22,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomerActionInfo {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color iconBackground;
+  final Color iconColor;
+  final VoidCallback onTap;
+
+  const _CustomerActionInfo({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.iconBackground,
+    required this.iconColor,
+    required this.onTap,
+  });
+}
+
+class _CustomerActionCard
+    extends StatelessWidget {
+  final _CustomerActionInfo action;
+
+  const _CustomerActionCard({
+    required this.action,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Material(
+      color:
+          Colors.transparent,
+      borderRadius:
+          BorderRadius.circular(
+        20,
+      ),
+      child: InkWell(
+        onTap:
+            action.onTap,
+        borderRadius:
+            BorderRadius.circular(
+          20,
+        ),
+        child: Container(
           padding:
               const EdgeInsets.all(
             20,
           ),
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment
-                    .stretch,
+          decoration:
+              BoxDecoration(
+            gradient:
+                const LinearGradient(
+              begin:
+                  Alignment.topLeft,
+              end:
+                  Alignment.bottomRight,
+              colors: [
+                Color(
+                  0xFFFFFFFF,
+                ),
+                Color(
+                  0xFFFFFEFA,
+                ),
+              ],
+            ),
+            borderRadius:
+                BorderRadius.circular(
+              20,
+            ),
+            border:
+                Border.all(
+              color:
+                  const Color(
+                0xFFDDE6D8,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    const Color(
+                  0xFF173F24,
+                ).withValues(
+                  alpha:
+                      0.05,
+                ),
+                blurRadius:
+                    18,
+                offset:
+                    const Offset(
+                  0,
+                  7,
+                ),
+              ),
+            ],
+          ),
+          child: Row(
             children: [
-              Text(
-                l10n.welcomeCustomer(
-                  userName,
-                ),
-                textAlign:
-                    TextAlign.center,
-                style:
-                    const TextStyle(
-                  fontSize: 28,
-                  fontWeight:
-                      FontWeight.bold,
-                ),
-              ),
-              const SizedBox(
-                height: 12,
-              ),
-              Text(
-                l10n
-                    .customerDashboardSubtitle,
-                textAlign:
-                    TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  color:
-                      Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              SizedBox(
+              Container(
                 width:
-                    double.infinity,
-                height: 52,
+                    52,
+                height:
+                    52,
+                decoration:
+                    BoxDecoration(
+                  color:
+                      action
+                          .iconBackground,
+                  borderRadius:
+                      BorderRadius.circular(
+                    16,
+                  ),
+                ),
                 child:
-                    ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            const CustomerProductsScreen(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons
-                        .storefront_outlined,
-                  ),
-                  label: Text(
-                    l10n
-                        .browseMarketplace,
-                  ),
+                    Icon(
+                  action.icon,
+                  color:
+                      action
+                          .iconColor,
+                  size:
+                      26,
                 ),
               ),
               const SizedBox(
-                height: 24,
+                width:
+                    14,
               ),
-              _DashboardCard(
-                title:
-                    l10n.myOrders,
-                subtitle:
-                    l10n.myOrdersSubtitle,
-                icon: Icons
-                    .shopping_bag_outlined,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const CustomerOrdersScreen(),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      action.title,
+                      style:
+                          const TextStyle(
+                        color:
+                            Color(
+                          0xFF1D2C21,
+                        ),
+                        fontSize:
+                            16,
+                        fontWeight:
+                            FontWeight.w700,
+                      ),
                     ),
-                  );
-                },
-              ),
-              const SizedBox(
-                height: 12,
-              ),
-              _DashboardCard(
-                title:
-                    l10n.marketplace,
-                subtitle:
-                    l10n.marketplaceSubtitle,
-                icon: Icons
-                    .storefront_outlined,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const CustomerProductsScreen(),
+                    const SizedBox(
+                      height:
+                          4,
                     ),
-                  );
-                },
-              ),
-              const SizedBox(
-                height: 12,
-              ),
-              _DashboardCard(
-                title:
-                    l10n.myFavorites,
-                subtitle:
-                    l10n.myFavoritesSubtitle,
-                icon:
-                    Icons.favorite_outline,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const CustomerFavoritesScreen(),
+                    Text(
+                      action.subtitle,
+                      style:
+                          const TextStyle(
+                        color:
+                            Color(
+                          0xFF68756B,
+                        ),
+                        fontSize:
+                            12,
+                        height:
+                            1.4,
+                      ),
                     ),
-                  );
-                },
+                  ],
+                ),
               ),
-              const SizedBox(
-                height: 12,
-              ),
-              _DashboardCard(
-                title:
-                    l10n.notifications,
-                subtitle:
-                    notificationProvider
-                                .unreadCount >
-                            0
-                        ? l10n
-                            .unreadNotifications(
-                            notificationProvider
-                                .unreadCount,
-                          )
-                        : l10n
-                            .latestNotifications,
-                icon: Icons
-                    .notifications_outlined,
-                onTap:
-                    _openNotifications,
-              ),
-              const SizedBox(
-                height: 12,
-              ),
-              _DashboardCard(
-                title:
-                    l10n.shoppingCart,
-                subtitle:
-                    l10n.shoppingCartSubtitle,
-                icon: Icons
-                    .shopping_cart_outlined,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const CustomerCartScreen(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(
-                height: 12,
-              ),
-              _DashboardCard(
-                title:
-                    l10n.myProfile,
-                subtitle:
-                    l10n.myProfileSubtitle,
-                icon:
-                    Icons.person_outline,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const ProfileScreen(),
-                    ),
-                  );
-                },
+              Icon(
+                Directionality.of(
+                          context,
+                        ) ==
+                        TextDirection.rtl
+                    ? Icons
+                        .chevron_left_rounded
+                    : Icons
+                        .chevron_right_rounded,
+                color:
+                    const Color(
+                  0xFF94A096,
+                ),
+                size:
+                    22,
               ),
             ],
           ),
@@ -491,72 +1371,136 @@ class _CustomerDashboardScreenState
   }
 }
 
-class _DashboardCard
+class _CustomerBackdrop
     extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _DashboardCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onTap,
-  });
+  const _CustomerBackdrop();
 
   @override
   Widget build(
     BuildContext context,
   ) {
-    return Card(
-      elevation: 1,
-      shape:
-          RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(
-          16,
-        ),
-      ),
-      child: ListTile(
-        onTap:
-            onTap,
-        contentPadding:
-            const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 10,
-        ),
-        leading: CircleAvatar(
-          backgroundColor:
-              Colors.green.shade100,
-          child: Icon(
-            icon,
-            color:
-                Colors.green.shade700,
+    return IgnorePointer(
+      child: Stack(
+        fit:
+            StackFit.expand,
+        children: [
+          const DecoratedBox(
+            decoration:
+                BoxDecoration(
+              gradient:
+                  LinearGradient(
+                begin:
+                    Alignment.topCenter,
+                end:
+                    Alignment.bottomCenter,
+                colors: [
+                  Color(
+                    0xFFF8FAF4,
+                  ),
+                  Color(
+                    0xFFFFFCF5,
+                  ),
+                  Color(
+                    0xFFF4F8ED,
+                  ),
+                ],
+                stops: [
+                  0.0,
+                  0.48,
+                  1.0,
+                ],
+              ),
+            ),
           ),
-        ),
-        title: Text(
-          title,
-          style:
-              const TextStyle(
-            fontSize: 17,
-            fontWeight:
-                FontWeight.bold,
+          PositionedDirectional(
+            end:
+                -180,
+            top:
+                180,
+            child: Container(
+              width:
+                  460,
+              height:
+                  460,
+              decoration:
+                  BoxDecoration(
+                shape:
+                    BoxShape.circle,
+                gradient:
+                    RadialGradient(
+                  colors: [
+                    const Color(
+                      0xFFCFE6B4,
+                    ).withValues(
+                      alpha:
+                          0.30,
+                    ),
+                    const Color(
+                      0xFFCFE6B4,
+                    ).withValues(
+                      alpha:
+                          0.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        subtitle: Padding(
-          padding:
-              const EdgeInsets.only(
-            top: 4,
+          PositionedDirectional(
+            start:
+                -190,
+            bottom:
+                -210,
+            child: Container(
+              width:
+                  520,
+              height:
+                  520,
+              decoration:
+                  BoxDecoration(
+                shape:
+                    BoxShape.circle,
+                gradient:
+                    RadialGradient(
+                  colors: [
+                    const Color(
+                      0xFFE7DFAF,
+                    ).withValues(
+                      alpha:
+                          0.24,
+                    ),
+                    const Color(
+                      0xFFE7DFAF,
+                    ).withValues(
+                      alpha:
+                          0.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          child: Text(
-            subtitle,
+          PositionedDirectional(
+            start:
+                -45,
+            bottom:
+                -28,
+            child: Opacity(
+              opacity:
+                  0.03,
+              child: Icon(
+                Icons
+                    .shopping_basket_rounded,
+                size:
+                    270,
+                color:
+                    const Color(
+                  0xFF2F6B3D,
+                ),
+              ),
+            ),
           ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 18,
-        ),
+        ],
       ),
     );
   }
