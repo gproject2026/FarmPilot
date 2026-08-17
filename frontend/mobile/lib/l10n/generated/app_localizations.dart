@@ -763,6 +763,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hidden'**
   String get hidden;
+
+  /// No description provided for @loginBrandTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR FARM.\nSMARTER.'**
+  String get loginBrandTitle;
+
+  /// No description provided for @loginBrandDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage crops, diagnose plant health, organize farm tasks and sell products directly through one smart platform.'**
+  String get loginBrandDescription;
+
+  /// No description provided for @smartCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Crops'**
+  String get smartCrops;
+
+  /// No description provided for @aiDiagnosis.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Diagnosis'**
+  String get aiDiagnosis;
+
+  /// No description provided for @secureAccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure access for farmers, customers and administrators.'**
+  String get secureAccessMessage;
+
+  /// No description provided for @mobileBrandDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart farming and direct marketplace in one platform.'**
+  String get mobileBrandDescription;
+
+  /// No description provided for @quickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get quickActions;
+
+  /// No description provided for @quickActionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Access the tools you use most'**
+  String get quickActionsSubtitle;
+
+  /// No description provided for @farmManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Farm Management'**
+  String get farmManagement;
+
+  /// No description provided for @farmManagementSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you need to manage your farm'**
+  String get farmManagementSubtitle;
+
+  /// No description provided for @farmerWelcomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Here is what is happening on your farm today.'**
+  String get farmerWelcomeSubtitle;
+
+  /// No description provided for @manageListings.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage listings'**
+  String get manageListings;
+
+  /// No description provided for @manageCustomerOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage customer orders'**
+  String get manageCustomerOrders;
+
+  /// No description provided for @trackYourCrops.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your crops'**
+  String get trackYourCrops;
+
+  /// No description provided for @aiPoweredDiagnosis.
+  ///
+  /// In en, this message translates to:
+  /// **'AI-powered diagnosis'**
+  String get aiPoweredDiagnosis;
+
+  /// No description provided for @reviewPreviousPlantAnalyses.
+  ///
+  /// In en, this message translates to:
+  /// **'Review previous plant analyses'**
+  String get reviewPreviousPlantAnalyses;
+
+  /// No description provided for @stayOnTopFarmTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay on top of farm tasks'**
+  String get stayOnTopFarmTasks;
+
+  /// No description provided for @viewLatestUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'View your latest updates'**
+  String get viewLatestUpdates;
+
+  /// No description provided for @manageAccountDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage account details'**
+  String get manageAccountDetails;
 }
 
 class _AppLocalizationsDelegate

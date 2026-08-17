@@ -352,4 +352,63 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hidden => 'مخفي';
+
+  @override
+  String get loginBrandTitle => 'مزرعتك.\nأذكى.';
+
+  @override
+  String get loginBrandDescription =>
+      'أدر محاصيلك، وشخّص صحة النباتات، ونظّم المهام الزراعية، وبِع منتجاتك مباشرة من خلال منصة ذكية واحدة.';
+
+  @override
+  String get smartCrops => 'محاصيل ذكية';
+
+  @override
+  String get aiDiagnosis => 'التشخيص بالذكاء الاصطناعي';
+
+  @override
+  String get secureAccessMessage => 'دخول آمن للمزارعين والعملاء والمسؤولين.';
+
+  @override
+  String get mobileBrandDescription =>
+      'الزراعة الذكية والسوق المباشر في منصة واحدة.';
+
+  @override
+  String get quickActions => 'الإجراءات السريعة';
+
+  @override
+  String get quickActionsSubtitle => 'الوصول إلى الأدوات الأكثر استخدامًا';
+
+  @override
+  String get farmManagement => 'إدارة المزرعة';
+
+  @override
+  String get farmManagementSubtitle => 'كل ما تحتاجه لإدارة مزرعتك';
+
+  @override
+  String get farmerWelcomeSubtitle => 'إليك ما يحدث في مزرعتك اليوم.';
+
+  @override
+  String get manageListings => 'إدارة المنتجات';
+
+  @override
+  String get manageCustomerOrders => 'إدارة طلبات العملاء';
+
+  @override
+  String get trackYourCrops => 'متابعة محاصيلك';
+
+  @override
+  String get aiPoweredDiagnosis => 'تشخيص مدعوم بالذكاء الاصطناعي';
+
+  @override
+  String get reviewPreviousPlantAnalyses => 'مراجعة تشخيصات النباتات السابقة';
+
+  @override
+  String get stayOnTopFarmTasks => 'تابع مهام مزرعتك باستمرار';
+
+  @override
+  String get viewLatestUpdates => 'عرض آخر التحديثات';
+
+  @override
+  String get manageAccountDetails => 'إدارة بيانات الحساب';
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import 'core/theme/app_theme.dart';
+
 import 'l10n/generated/app_localizations.dart';
 
 import 'providers/auth_provider.dart';
@@ -28,13 +30,16 @@ void main() {
   );
 }
 
-class FarmPilotApp extends StatelessWidget {
+class FarmPilotApp
+    extends StatelessWidget {
   const FarmPilotApp({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -98,7 +103,8 @@ class FarmPilotApp extends StatelessWidget {
               LocaleProvider(),
         ),
       ],
-      child: Consumer<LocaleProvider>(
+      child:
+          Consumer<LocaleProvider>(
         builder: (
           context,
           localeProvider,
@@ -108,8 +114,7 @@ class FarmPilotApp extends StatelessWidget {
             debugShowCheckedModeBanner:
                 false,
 
-            title:
-                'FarmPilot',
+            title: 'FarmPilot',
 
             locale:
                 localeProvider.locale,
@@ -118,8 +123,10 @@ class FarmPilotApp extends StatelessWidget {
                 AppLocalizations
                     .supportedLocales,
 
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
+            localizationsDelegates:
+                const [
+              AppLocalizations
+                  .delegate,
               GlobalMaterialLocalizations
                   .delegate,
               GlobalWidgetsLocalizations
@@ -128,10 +135,8 @@ class FarmPilotApp extends StatelessWidget {
                   .delegate,
             ],
 
-            theme: ThemeData(
-              primarySwatch:
-                  Colors.green,
-            ),
+            theme:
+                AppTheme.lightTheme,
 
             home:
                 const LoginScreen(),

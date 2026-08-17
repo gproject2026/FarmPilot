@@ -354,4 +354,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hidden => 'Hidden';
+
+  @override
+  String get loginBrandTitle => 'YOUR FARM.\nSMARTER.';
+
+  @override
+  String get loginBrandDescription =>
+      'Manage crops, diagnose plant health, organize farm tasks and sell products directly through one smart platform.';
+
+  @override
+  String get smartCrops => 'Smart Crops';
+
+  @override
+  String get aiDiagnosis => 'AI Diagnosis';
+
+  @override
+  String get secureAccessMessage =>
+      'Secure access for farmers, customers and administrators.';
+
+  @override
+  String get mobileBrandDescription =>
+      'Smart farming and direct marketplace in one platform.';
+
+  @override
+  String get quickActions => 'Quick Actions';
+
+  @override
+  String get quickActionsSubtitle => 'Access the tools you use most';
+
+  @override
+  String get farmManagement => 'Farm Management';
+
+  @override
+  String get farmManagementSubtitle =>
+      'Everything you need to manage your farm';
+
+  @override
+  String get farmerWelcomeSubtitle =>
+      'Here is what is happening on your farm today.';
+
+  @override
+  String get manageListings => 'Manage listings';
+
+  @override
+  String get manageCustomerOrders => 'Manage customer orders';
+
+  @override
+  String get trackYourCrops => 'Track your crops';
+
+  @override
+  String get aiPoweredDiagnosis => 'AI-powered diagnosis';
+
+  @override
+  String get reviewPreviousPlantAnalyses => 'Review previous plant analyses';
+
+  @override
+  String get stayOnTopFarmTasks => 'Stay on top of farm tasks';
+
+  @override
+  String get viewLatestUpdates => 'View your latest updates';
+
+  @override
+  String get manageAccountDetails => 'Manage account details';
 }
