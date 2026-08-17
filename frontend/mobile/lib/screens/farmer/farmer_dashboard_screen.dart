@@ -38,14 +38,7 @@ class _FarmerDashboardScreenState
 
   static const Color _background =
       Color(0xFFF8FAF4);
-
-  static const Color _warmCream =
-      Color(0xFFFFFCF5);
-
-  static const Color _softMint =
-      Color(0xFFEAF4E3);
-
-  static const Color _textPrimary =
+static const Color _textPrimary =
       Color(0xFF1D2C21);
 
   static const Color _textSecondary =
