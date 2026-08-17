@@ -4,6 +4,13 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/review_provider.dart';
 
+const Color _detailsDarkGreen = Color(0xFF173F24);
+const Color _detailsPrimaryGreen = Color(0xFF2F6B3D);
+const Color _detailsLightGreen = Color(0xFFDDECB8);
+const Color _detailsBackground = Color(0xFFF8FAF4);
+const Color _detailsTextPrimary = Color(0xFF1D2C21);
+const Color _detailsTextSecondary = Color(0xFF68756B);
+
 class CustomerProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
 
@@ -159,7 +166,8 @@ class _CustomerProductDetailsScreenState
                     content: Text(
                       'Review submitted successfully',
                     ),
-                    backgroundColor: Colors.green,
+                    backgroundColor:
+                        _detailsPrimaryGreen,
                   ),
                 );
             }
@@ -167,8 +175,28 @@ class _CustomerProductDetailsScreenState
             return PopScope(
               canPop: !isSubmitting,
               child: AlertDialog(
-                title: const Text(
-                  'Write a Review',
+                backgroundColor:
+                    const Color(0xFFFFFEFA),
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(
+                    24,
+                  ),
+                ),
+                title: const Row(
+                  children: [
+                    Icon(
+                      Icons.rate_review_outlined,
+                      color:
+                          _detailsPrimaryGreen,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      'Write a Review',
+                    ),
+                  ],
                 ),
                 content: SingleChildScrollView(
                   child: Column(
@@ -181,7 +209,9 @@ class _CustomerProductDetailsScreenState
                         'Rating',
                         style: TextStyle(
                           fontWeight:
-                              FontWeight.bold,
+                              FontWeight.w700,
+                          color:
+                              _detailsTextPrimary,
                         ),
                       ),
                       const SizedBox(
@@ -210,10 +240,10 @@ class _CustomerProductDetailsScreenState
                                         },
                               icon: Icon(
                                 star <= selectedRating
-                                    ? Icons.star
-                                    : Icons.star_border,
+                                    ? Icons.star_rounded
+                                    : Icons.star_border_rounded,
                                 color: Colors.amber,
-                                size: 32,
+                                size: 34,
                               ),
                             );
                           },
@@ -229,13 +259,35 @@ class _CustomerProductDetailsScreenState
                             !isSubmitting,
                         maxLines: 4,
                         decoration:
-                            const InputDecoration(
+                            InputDecoration(
                           labelText:
                               'Comment (optional)',
                           hintText:
                               'Share your experience...',
+                          filled: true,
+                          fillColor:
+                              Colors.white,
                           border:
-                              OutlineInputBorder(),
+                              OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(
+                              16,
+                            ),
+                          ),
+                          enabledBorder:
+                              OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(
+                              16,
+                            ),
+                            borderSide:
+                                const BorderSide(
+                              color:
+                                  Color(
+                                0xFFDDE6D8,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       if (dialogError != null) ...[
@@ -263,7 +315,8 @@ class _CustomerProductDetailsScreenState
                                   dialogContext,
                                 ).pop();
                               },
-                    child: const Text(
+                    child:
+                        const Text(
                       'Cancel',
                     ),
                   ),
@@ -272,6 +325,21 @@ class _CustomerProductDetailsScreenState
                         isSubmitting
                             ? null
                             : submitReview,
+                    style:
+                        ElevatedButton.styleFrom(
+                      backgroundColor:
+                          _detailsPrimaryGreen,
+                      foregroundColor:
+                          Colors.white,
+                      elevation: 0,
+                      shape:
+                          RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(
+                          12,
+                        ),
+                      ),
+                    ),
                     child: isSubmitting
                         ? const SizedBox(
                             width: 20,
@@ -279,6 +347,8 @@ class _CustomerProductDetailsScreenState
                             child:
                                 CircularProgressIndicator(
                               strokeWidth: 2,
+                              color:
+                                  Colors.white,
                             ),
                           )
                         : const Text(
@@ -297,7 +367,9 @@ class _CustomerProductDetailsScreenState
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     final product = widget.product;
 
     final name =
@@ -322,14 +394,14 @@ class _CustomerProductDetailsScreenState
           product['quantity']?.toString() ??
               '0',
         ) ??
-        0;
+            0;
 
     final price =
         double.tryParse(
           product['price']?.toString() ??
               '0',
         ) ??
-        0.0;
+            0.0;
 
     final categoryName =
         product['category'] is Map
@@ -347,206 +419,645 @@ class _CustomerProductDetailsScreenState
 
     final isAvailable =
         quantity > 0 &&
-        status == 'AVAILABLE';
+            status == 'AVAILABLE';
 
     return Scaffold(
       backgroundColor:
-          const Color(0xFFF5F7F4),
-      appBar: AppBar(
-        title: Text(
-          name,
-        ),
-        backgroundColor:
-            Colors.green,
-        foregroundColor:
-            Colors.white,
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadReviews,
-        child: ListView(
-          padding:
-              const EdgeInsets.all(16),
-          children: [
-            _buildProductImage(
-              imageUrl,
-            ),
-            const SizedBox(
-              height: 18,
-            ),
-            Text(
-              name,
-              style:
-                  const TextStyle(
-                fontSize: 24,
-                fontWeight:
-                    FontWeight.bold,
-              ),
-            ),
-            if (categoryName
-                .isNotEmpty) ...[
-              const SizedBox(
-                height: 6,
-              ),
-              Text(
-                categoryName,
-                style: TextStyle(
-                  fontSize: 14,
-                  color:
-                      Colors.green.shade700,
-                  fontWeight:
-                      FontWeight.w600,
+          _detailsBackground,
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child:
+                _ProductDetailsBackdrop(),
+          ),
+          RefreshIndicator(
+            onRefresh:
+                _loadReviews,
+            color:
+                _detailsPrimaryGreen,
+            child:
+                CustomScrollView(
+              physics:
+                  const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _buildHeader(
+                    name,
+                  ),
                 ),
-              ),
-            ],
-            const SizedBox(
-              height: 12,
-            ),
-            Text(
-              '${price.toStringAsFixed(2)} ₪'
-              '${unit.isEmpty ? '' : ' / $unit'}',
-              style:
-                  const TextStyle(
-                color: Colors.green,
-                fontSize: 22,
-                fontWeight:
-                    FontWeight.bold,
-              ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Row(
-              children: [
-                Icon(
-                  isAvailable
-                      ? Icons
-                          .check_circle_outline
-                      : Icons
-                          .cancel_outlined,
-                  color: isAvailable
-                      ? Colors.green
-                      : Colors.red,
-                  size: 20,
-                ),
-                const SizedBox(
-                  width: 6,
-                ),
-                Text(
-                  isAvailable
-                      ? 'Available: $quantity'
-                      : 'Out of stock',
-                  style: TextStyle(
-                    color: isAvailable
-                        ? Colors
-                            .grey.shade700
-                        : Colors.red,
-                    fontWeight:
-                        FontWeight.w600,
+                SliverToBoxAdapter(
+                  child: LayoutBuilder(
+                    builder: (
+                      context,
+                      constraints,
+                    ) {
+                      final isWide =
+                          constraints.maxWidth >=
+                              900;
+
+                      return Padding(
+                        padding:
+                            EdgeInsets.fromLTRB(
+                          isWide
+                              ? 42
+                              : 18,
+                          isWide
+                              ? 30
+                              : 20,
+                          isWide
+                              ? 42
+                              : 18,
+                          50,
+                        ),
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            isWide
+                                ? Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex: 11,
+                                        child:
+                                            _buildProductImageCard(
+                                          imageUrl,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 24,
+                                      ),
+                                      Expanded(
+                                        flex: 9,
+                                        child:
+                                            _buildProductInfoCard(
+                                          name:
+                                              name,
+                                          categoryName:
+                                              categoryName,
+                                          farmerName:
+                                              farmerName,
+                                          price:
+                                              price,
+                                          unit:
+                                              unit,
+                                          quantity:
+                                              quantity,
+                                          isAvailable:
+                                              isAvailable,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Column(
+                                    children: [
+                                      _buildProductImageCard(
+                                        imageUrl,
+                                      ),
+                                      const SizedBox(
+                                        height: 18,
+                                      ),
+                                      _buildProductInfoCard(
+                                        name:
+                                            name,
+                                        categoryName:
+                                            categoryName,
+                                        farmerName:
+                                            farmerName,
+                                        price:
+                                            price,
+                                        unit:
+                                            unit,
+                                        quantity:
+                                            quantity,
+                                        isAvailable:
+                                            isAvailable,
+                                      ),
+                                    ],
+                                  ),
+                            if (description
+                                .isNotEmpty) ...[
+                              const SizedBox(
+                                height: 24,
+                              ),
+                              _buildDescriptionCard(
+                                description,
+                              ),
+                            ],
+                            const SizedBox(
+                              height: 28,
+                            ),
+                            _buildReviewsSection(),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
             ),
-            if (farmerName
-                .isNotEmpty) ...[
-              const SizedBox(
-                height: 12,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(
+    String productName,
+  ) {
+    return Container(
+      padding:
+          const EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        18,
+      ),
+      decoration:
+          BoxDecoration(
+        gradient:
+            const LinearGradient(
+          begin:
+              Alignment.topLeft,
+          end:
+              Alignment.bottomRight,
+          colors: [
+            Color(0xFF123A22),
+            Color(0xFF205A34),
+            Color(0xFF2E6F40),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                _detailsDarkGreen.withValues(
+              alpha: 0.18,
+            ),
+            blurRadius: 24,
+            offset:
+                const Offset(
+              0,
+              8,
+            ),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom:
+            false,
+        child: Row(
+          children: [
+            Material(
+              color:
+                  Colors.white.withValues(
+                alpha: 0.10,
               ),
-              Row(
-                children: [
+              borderRadius:
+                  BorderRadius.circular(
+                14,
+              ),
+              child: InkWell(
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                  );
+                },
+                borderRadius:
+                    BorderRadius.circular(
+                  14,
+                ),
+                child:
+                    const SizedBox(
+                  width: 44,
+                  height: 44,
+                  child:
+                      Icon(
+                    Icons.arrow_back_rounded,
+                    color:
+                        Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(
+              width: 12,
+            ),
+            Container(
+              width: 44,
+              height: 44,
+              decoration:
+                  BoxDecoration(
+                color:
+                    _detailsLightGreen,
+                borderRadius:
+                    BorderRadius.circular(
+                  13,
+                ),
+              ),
+              child:
                   const Icon(
-                    Icons.person_outline,
-                    size: 20,
+                Icons.eco_rounded,
+                color:
+                    _detailsDarkGreen,
+                size: 24,
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'FarmPilot',
+                    style:
+                        TextStyle(
+                      color:
+                          Colors.white,
+                      fontSize: 18,
+                      fontWeight:
+                          FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(
-                    width: 6,
+                    height: 2,
                   ),
-                  Expanded(
-                    child: Text(
-                      'Farmer: $farmerName',
+                  Text(
+                    productName,
+                    maxLines: 1,
+                    overflow:
+                        TextOverflow.ellipsis,
+                    style:
+                        TextStyle(
+                      color:
+                          Colors.white.withValues(
+                        alpha: 0.78,
+                      ),
+                      fontSize: 12,
                     ),
                   ),
                 ],
               ),
-            ],
-            if (description
-                .isNotEmpty) ...[
-              const SizedBox(
-                height: 18,
-              ),
-              const Text(
-                'Description',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight:
-                      FontWeight.bold,
-                ),
-              ),
-              const SizedBox(
-                height: 6,
-              ),
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.5,
-                  color:
-                      Colors.grey.shade800,
-                ),
-              ),
-            ],
-            const SizedBox(
-              height: 24,
             ),
-            const Divider(),
-            const SizedBox(
-              height: 12,
-            ),
-            _buildReviewsSection(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProductImage(
+  Widget _buildProductImageCard(
     String? imageUrl,
   ) {
-    return ClipRRect(
-      borderRadius:
-          BorderRadius.circular(18),
-      child: Container(
-        height: 260,
-        width: double.infinity,
-        color: Colors.green.shade50,
-        child: imageUrl != null &&
-                imageUrl.trim().isNotEmpty
-            ? Image.network(
-                _buildImageUrl(
-                  imageUrl,
+    return Container(
+      width:
+          double.infinity,
+      decoration:
+          BoxDecoration(
+        color:
+            Colors.white,
+        borderRadius:
+            BorderRadius.circular(
+          26,
+        ),
+        border:
+            Border.all(
+          color:
+              const Color(
+            0xFFDDE6D8,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                _detailsDarkGreen.withValues(
+              alpha:
+                  0.055,
+            ),
+            blurRadius:
+                22,
+            offset:
+                const Offset(
+              0,
+              8,
+            ),
+          ),
+        ],
+      ),
+      clipBehavior:
+          Clip.antiAlias,
+      child: AspectRatio(
+        aspectRatio:
+            16 / 9,
+        child: Container(
+          color:
+              const Color(
+            0xFFF0F5EB,
+          ),
+          child: imageUrl != null &&
+                  imageUrl.trim().isNotEmpty
+              ? Image.network(
+                  _buildImageUrl(
+                    imageUrl,
+                  ),
+                  fit:
+                      BoxFit.cover,
+                  errorBuilder: (
+                    context,
+                    error,
+                    stackTrace,
+                  ) {
+                    return const Center(
+                      child:
+                          Icon(
+                        Icons.image_not_supported_outlined,
+                        size: 70,
+                        color:
+                            Color(
+                          0xFF9AA59B,
+                        ),
+                      ),
+                    );
+                  },
+                )
+              : const Center(
+                  child:
+                      Icon(
+                    Icons.eco_outlined,
+                    size: 80,
+                    color:
+                        _detailsPrimaryGreen,
+                  ),
                 ),
-                fit: BoxFit.cover,
-                errorBuilder: (
-                  context,
-                  error,
-                  stackTrace,
-                ) {
-                  return const Center(
-                    child: Icon(
-                      Icons
-                          .image_not_supported_outlined,
-                      size: 70,
-                      color: Colors.grey,
-                    ),
-                  );
-                },
-              )
-            : const Center(
-                child: Icon(
-                  Icons.eco_outlined,
-                  size: 80,
-                  color: Colors.green,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductInfoCard({
+    required String name,
+    required String categoryName,
+    required String farmerName,
+    required double price,
+    required String unit,
+    required int quantity,
+    required bool isAvailable,
+  }) {
+    return Container(
+      width:
+          double.infinity,
+      padding:
+          const EdgeInsets.all(
+        24,
+      ),
+      decoration:
+          BoxDecoration(
+        gradient:
+            const LinearGradient(
+          begin:
+              Alignment.topLeft,
+          end:
+              Alignment.bottomRight,
+          colors: [
+            Color(0xFFFFFFFF),
+            Color(0xFFFFFEFA),
+          ],
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          26,
+        ),
+        border:
+            Border.all(
+          color:
+              const Color(
+            0xFFDDE6D8,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                _detailsDarkGreen.withValues(
+              alpha:
+                  0.05,
+            ),
+            blurRadius:
+                20,
+            offset:
+                const Offset(
+              0,
+              7,
+            ),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          if (categoryName
+              .isNotEmpty)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(
+                horizontal: 11,
+                vertical: 6,
+              ),
+              decoration:
+                  BoxDecoration(
+                color:
+                    const Color(
+                  0xFFEAF3DF,
+                ),
+                borderRadius:
+                    BorderRadius.circular(
+                  20,
                 ),
               ),
+              child:
+                  Text(
+                categoryName,
+                style:
+                    const TextStyle(
+                  color:
+                      _detailsPrimaryGreen,
+                  fontSize: 12,
+                  fontWeight:
+                      FontWeight.w700,
+                ),
+              ),
+            ),
+          if (categoryName
+              .isNotEmpty)
+            const SizedBox(
+              height: 14,
+            ),
+          Text(
+            name,
+            style:
+                const TextStyle(
+              color:
+                  _detailsTextPrimary,
+              fontSize: 28,
+              fontWeight:
+                  FontWeight.w800,
+              letterSpacing: -0.6,
+            ),
+          ),
+          const SizedBox(
+            height: 14,
+          ),
+          Text(
+            '${price.toStringAsFixed(2)} ₪'
+            '${unit.isEmpty ? '' : ' / $unit'}',
+            style:
+                const TextStyle(
+              color:
+                  _detailsPrimaryGreen,
+              fontSize: 24,
+              fontWeight:
+                  FontWeight.w800,
+            ),
+          ),
+          const SizedBox(
+            height: 18,
+          ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _InfoPill(
+                icon:
+                    isAvailable
+                        ? Icons.check_circle_outline_rounded
+                        : Icons.cancel_outlined,
+                label:
+                    isAvailable
+                        ? 'Available: $quantity'
+                        : 'Out of stock',
+                background:
+                    isAvailable
+                        ? const Color(
+                            0xFFEAF3DF,
+                          )
+                        : const Color(
+                            0xFFFCE7E7,
+                          ),
+                foreground:
+                    isAvailable
+                        ? _detailsPrimaryGreen
+                        : const Color(
+                            0xFFB44F4F,
+                          ),
+              ),
+              if (farmerName
+                  .isNotEmpty)
+                _InfoPill(
+                  icon:
+                      Icons.person_outline_rounded,
+                  label:
+                      'Farmer: $farmerName',
+                  background:
+                      const Color(
+                    0xFFF1F3EF,
+                  ),
+                  foreground:
+                      const Color(
+                    0xFF5F6B61,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDescriptionCard(
+    String description,
+  ) {
+    return Container(
+      width:
+          double.infinity,
+      padding:
+          const EdgeInsets.all(
+        22,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            Colors.white,
+        borderRadius:
+            BorderRadius.circular(
+          22,
+        ),
+        border:
+            Border.all(
+          color:
+              const Color(
+            0xFFDDE6D8,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                _detailsDarkGreen.withValues(
+              alpha:
+                  0.04,
+            ),
+            blurRadius: 16,
+            offset:
+                const Offset(
+              0,
+              6,
+            ),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.description_outlined,
+                color:
+                    _detailsPrimaryGreen,
+                size: 22,
+              ),
+              SizedBox(
+                width: 9,
+              ),
+              Text(
+                'Description',
+                style:
+                    TextStyle(
+                  color:
+                      _detailsTextPrimary,
+                  fontSize: 18,
+                  fontWeight:
+                      FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 12,
+          ),
+          Text(
+            description,
+            style:
+                const TextStyle(
+              color:
+                  _detailsTextSecondary,
+              fontSize: 14,
+              height: 1.55,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -558,105 +1069,224 @@ class _CustomerProductDetailsScreenState
         reviewProvider,
         child,
       ) {
-        return Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Reviews',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed:
-                      reviewProvider
-                              .isSubmitting
-                          ? null
-                          : _showAddReviewDialog,
-                  icon: const Icon(
-                    Icons.rate_review_outlined,
-                    size: 18,
-                  ),
-                  label: const Text(
-                    'Add Review',
-                  ),
-                ),
+        return Container(
+          width:
+              double.infinity,
+          padding:
+              const EdgeInsets.all(
+            22,
+          ),
+          decoration:
+              BoxDecoration(
+            gradient:
+                const LinearGradient(
+              begin:
+                  Alignment.topLeft,
+              end:
+                  Alignment.bottomRight,
+              colors: [
+                Color(0xFFFFFFFF),
+                Color(0xFFFFFEFA),
               ],
             ),
-            const SizedBox(
-              height: 12,
+            borderRadius:
+                BorderRadius.circular(
+              24,
             ),
-            if (reviewProvider
-                .reviews.isNotEmpty)
-              Row(
+            border:
+                Border.all(
+              color:
+                  const Color(
+                0xFFDDE6D8,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    _detailsDarkGreen.withValues(
+                  alpha:
+                      0.045,
+                ),
+                blurRadius: 18,
+                offset:
+                    const Offset(
+                  0,
+                  7,
+                ),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                alignment:
+                    WrapAlignment.spaceBetween,
+                crossAxisAlignment:
+                    WrapCrossAlignment.center,
+                spacing: 14,
+                runSpacing: 12,
                 children: [
-                  const Icon(
-                    Icons.star,
-                    color: Colors.amber,
+                  const Row(
+                    mainAxisSize:
+                        MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.star_rounded,
+                        color:
+                            Colors.amber,
+                        size: 25,
+                      ),
+                      SizedBox(
+                        width: 9,
+                      ),
+                      Text(
+                        'Reviews',
+                        style:
+                            TextStyle(
+                          color:
+                              _detailsTextPrimary,
+                          fontSize: 22,
+                          fontWeight:
+                              FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(
-                    width: 6,
-                  ),
-                  Text(
-                    reviewProvider
-                        .averageRating
-                        .toStringAsFixed(1),
+                  ElevatedButton.icon(
+                    onPressed:
+                        reviewProvider.isSubmitting
+                            ? null
+                            : _showAddReviewDialog,
                     style:
-                        const TextStyle(
-                      fontSize: 18,
-                      fontWeight:
-                          FontWeight.bold,
+                        ElevatedButton.styleFrom(
+                      backgroundColor:
+                          _detailsPrimaryGreen,
+                      foregroundColor:
+                          Colors.white,
+                      elevation: 0,
+                      padding:
+                          const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 13,
+                      ),
+                      shape:
+                          RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(
+                          14,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(
-                    width: 6,
-                  ),
-                  Text(
-                    '(${reviewProvider.reviews.length} '
-                    '${reviewProvider.reviews.length == 1 ? 'review' : 'reviews'})',
-                    style: TextStyle(
-                      color:
-                          Colors.grey.shade700,
+                    icon:
+                        const Icon(
+                      Icons.rate_review_outlined,
+                      size: 18,
+                    ),
+                    label:
+                        const Text(
+                      'Write a Review',
                     ),
                   ),
                 ],
               ),
-            const SizedBox(
-              height: 14,
-            ),
-            if (reviewProvider.isLoading)
-              const Center(
-                child:
-                    CircularProgressIndicator(),
-              )
-            else if (_reviewsLoadFailed)
-              _buildReviewError()
-            else if (reviewProvider
-                .reviews.isEmpty)
-              _buildEmptyReviews()
-            else
-              ...reviewProvider.reviews.map(
-                (review) {
-                  if (review is! Map) {
-                    return const SizedBox
-                        .shrink();
-                  }
-
-                  return _buildReviewCard(
-                    Map<String, dynamic>.from(
-                      review,
+              if (reviewProvider.reviews.isNotEmpty) ...[
+                const SizedBox(
+                  height: 16,
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 11,
+                  ),
+                  decoration:
+                      BoxDecoration(
+                    color:
+                        const Color(
+                      0xFFFFF8DF,
                     ),
-                  );
-                },
+                    borderRadius:
+                        BorderRadius.circular(
+                      16,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize:
+                        MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.star_rounded,
+                        color:
+                            Colors.amber,
+                      ),
+                      const SizedBox(
+                        width: 6,
+                      ),
+                      Text(
+                        reviewProvider.averageRating
+                            .toStringAsFixed(
+                          1,
+                        ),
+                        style:
+                            const TextStyle(
+                          color:
+                              _detailsTextPrimary,
+                          fontSize: 18,
+                          fontWeight:
+                              FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 7,
+                      ),
+                      Text(
+                        '(${reviewProvider.reviews.length} '
+                        '${reviewProvider.reviews.length == 1 ? 'review' : 'reviews'})',
+                        style:
+                            const TextStyle(
+                          color:
+                              _detailsTextSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(
+                height: 18,
               ),
-          ],
+              if (reviewProvider.isLoading)
+                const Center(
+                  child:
+                      CircularProgressIndicator(
+                    color:
+                        _detailsPrimaryGreen,
+                  ),
+                )
+              else if (_reviewsLoadFailed)
+                _buildReviewError()
+              else if (reviewProvider.reviews.isEmpty)
+                _buildEmptyReviews()
+              else
+                ...reviewProvider.reviews.map(
+                  (review) {
+                    if (review is! Map) {
+                      return const SizedBox
+                          .shrink();
+                    }
+
+                    return _buildReviewCard(
+                      Map<String, dynamic>.from(
+                        review,
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
         );
       },
     );
@@ -664,19 +1294,31 @@ class _CustomerProductDetailsScreenState
 
   Widget _buildReviewError() {
     return Container(
-      width: double.infinity,
+      width:
+          double.infinity,
       padding:
-          const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
+          const EdgeInsets.all(
+        18,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            const Color(
+          0xFFFCE7E7,
+        ),
         borderRadius:
-            BorderRadius.circular(12),
+            BorderRadius.circular(
+          16,
+        ),
       ),
       child: Column(
         children: [
           const Icon(
-            Icons.error_outline,
-            color: Colors.red,
+            Icons.error_outline_rounded,
+            color:
+                Color(
+              0xFFB44F4F,
+            ),
           ),
           const SizedBox(
             height: 8,
@@ -691,8 +1333,10 @@ class _CustomerProductDetailsScreenState
             height: 8,
           ),
           TextButton(
-            onPressed: _loadReviews,
-            child: const Text(
+            onPressed:
+                _loadReviews,
+            child:
+                const Text(
               'Try Again',
             ),
           ),
@@ -703,33 +1347,47 @@ class _CustomerProductDetailsScreenState
 
   Widget _buildEmptyReviews() {
     return Container(
-      width: double.infinity,
+      width:
+          double.infinity,
       padding:
           const EdgeInsets.symmetric(
-        vertical: 28,
+        vertical: 30,
         horizontal: 16,
       ),
-      decoration: BoxDecoration(
-        color: Colors.white,
+      decoration:
+          BoxDecoration(
+        color:
+            const Color(
+          0xFFF7F9F4,
+        ),
         borderRadius:
-            BorderRadius.circular(14),
+            BorderRadius.circular(
+          18,
+        ),
       ),
-      child: const Column(
+      child:
+          const Column(
         children: [
           Icon(
             Icons.rate_review_outlined,
-            size: 45,
-            color: Colors.grey,
+            size: 46,
+            color:
+                Color(
+              0xFF99A39A,
+            ),
           ),
           SizedBox(
             height: 10,
           ),
           Text(
             'No reviews yet',
-            style: TextStyle(
+            style:
+                TextStyle(
+              color:
+                  _detailsTextPrimary,
               fontSize: 16,
               fontWeight:
-                  FontWeight.bold,
+                  FontWeight.w800,
             ),
           ),
           SizedBox(
@@ -739,6 +1397,11 @@ class _CustomerProductDetailsScreenState
             'Be the first customer to review this product.',
             textAlign:
                 TextAlign.center,
+            style:
+                TextStyle(
+              color:
+                  _detailsTextSecondary,
+            ),
           ),
         ],
       ),
@@ -753,7 +1416,7 @@ class _CustomerProductDetailsScreenState
           review['rating']?.toString() ??
               '0',
         ) ??
-        0;
+            0;
 
     final comment =
         review['comment']?.toString() ??
@@ -772,112 +1435,127 @@ class _CustomerProductDetailsScreenState
     final createdAt =
         review['createdAt']?.toString();
 
-    return Card(
+    return Container(
       margin:
           const EdgeInsets.only(
         bottom: 12,
       ),
-      elevation: 1,
-      child: Padding(
-        padding:
-            const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor:
-                      Colors.green.shade100,
-                  child: Text(
-                    customerName
-                            .trim()
-                            .isNotEmpty
-                        ? customerName
-                            .trim()[0]
-                            .toUpperCase()
-                        : 'C',
-                    style:
-                        const TextStyle(
-                      color: Colors.green,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+      padding:
+          const EdgeInsets.all(
+        16,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            Colors.white,
+        borderRadius:
+            BorderRadius.circular(
+          18,
+        ),
+        border:
+            Border.all(
+          color:
+              const Color(
+            0xFFE1E8DD,
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                backgroundColor:
+                    const Color(
+                  0xFFEAF3DF,
+                ),
+                child:
+                    Text(
+                  customerName.trim().isNotEmpty
+                      ? customerName
+                          .trim()[0]
+                          .toUpperCase()
+                      : 'C',
+                  style:
+                      const TextStyle(
+                    color:
+                        _detailsPrimaryGreen,
+                    fontWeight:
+                        FontWeight.bold,
                   ),
                 ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
-                    children: [
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      customerName,
+                      style:
+                          const TextStyle(
+                        color:
+                            _detailsTextPrimary,
+                        fontWeight:
+                            FontWeight.w700,
+                      ),
+                    ),
+                    if (createdAt != null)
                       Text(
-                        customerName,
+                        _formatDate(
+                          createdAt,
+                        ),
                         style:
                             const TextStyle(
-                          fontWeight:
-                              FontWeight
-                                  .bold,
+                          fontSize: 11,
+                          color:
+                              _detailsTextSecondary,
                         ),
                       ),
-                      if (createdAt !=
-                          null)
-                        Text(
-                          _formatDate(
-                            createdAt,
-                          ),
-                          style:
-                              TextStyle(
-                            fontSize: 11,
-                            color: Colors
-                                .grey
-                                .shade600,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Row(
-              children:
-                  List.generate(
-                5,
-                (index) {
-                  return Icon(
-                    index < rating
-                        ? Icons.star
-                        : Icons
-                            .star_border,
-                    color: Colors.amber,
-                    size: 20,
-                  );
-                },
-              ),
-            ),
-            if (comment
-                .trim()
-                .isNotEmpty) ...[
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                comment,
-                style:
-                    const TextStyle(
-                  height: 1.4,
+                  ],
                 ),
               ),
             ],
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Row(
+            children:
+                List.generate(
+              5,
+              (index) {
+                return Icon(
+                  index < rating
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded,
+                  color:
+                      Colors.amber,
+                  size: 20,
+                );
+              },
+            ),
+          ),
+          if (comment.trim().isNotEmpty) ...[
+            const SizedBox(
+              height: 10,
+            ),
+            Text(
+              comment,
+              style:
+                  const TextStyle(
+                color:
+                    _detailsTextPrimary,
+                height: 1.4,
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -886,7 +1564,9 @@ class _CustomerProductDetailsScreenState
     String value,
   ) {
     final date =
-        DateTime.tryParse(value);
+        DateTime.tryParse(
+      value,
+    );
 
     if (date == null) {
       return '';
@@ -953,5 +1633,171 @@ class _CustomerProductDetailsScreenState
             : '/$trimmedUrl';
 
     return '${AppConstants.baseUrl}$normalizedPath';
+  }
+}
+
+class _InfoPill
+    extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color background;
+  final Color foreground;
+
+  const _InfoPill({
+    required this.icon,
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 11,
+        vertical: 8,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            background,
+        borderRadius:
+            BorderRadius.circular(
+          18,
+        ),
+      ),
+      child: Row(
+        mainAxisSize:
+            MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 17,
+            color:
+                foreground,
+          ),
+          const SizedBox(
+            width: 6,
+          ),
+          Text(
+            label,
+            style:
+                TextStyle(
+              color:
+                  foreground,
+              fontSize: 12,
+              fontWeight:
+                  FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductDetailsBackdrop
+    extends StatelessWidget {
+  const _ProductDetailsBackdrop();
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return IgnorePointer(
+      child: Stack(
+        fit:
+            StackFit.expand,
+        children: [
+          const DecoratedBox(
+            decoration:
+                BoxDecoration(
+              gradient:
+                  LinearGradient(
+                begin:
+                    Alignment.topCenter,
+                end:
+                    Alignment.bottomCenter,
+                colors: [
+                  Color(
+                    0xFFF8FAF4,
+                  ),
+                  Color(
+                    0xFFFFFCF5,
+                  ),
+                  Color(
+                    0xFFF4F8ED,
+                  ),
+                ],
+                stops: [
+                  0.0,
+                  0.50,
+                  1.0,
+                ],
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            end: -180,
+            top: 200,
+            child: Container(
+              width: 460,
+              height: 460,
+              decoration:
+                  BoxDecoration(
+                shape:
+                    BoxShape.circle,
+                gradient:
+                    RadialGradient(
+                  colors: [
+                    const Color(
+                      0xFFCFE6B4,
+                    ).withValues(
+                      alpha: 0.28,
+                    ),
+                    const Color(
+                      0xFFCFE6B4,
+                    ).withValues(
+                      alpha: 0.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            start: -190,
+            bottom: -220,
+            child: Container(
+              width: 520,
+              height: 520,
+              decoration:
+                  BoxDecoration(
+                shape:
+                    BoxShape.circle,
+                gradient:
+                    RadialGradient(
+                  colors: [
+                    const Color(
+                      0xFFE7DFAF,
+                    ).withValues(
+                      alpha: 0.22,
+                    ),
+                    const Color(
+                      0xFFE7DFAF,
+                    ).withValues(
+                      alpha: 0.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
