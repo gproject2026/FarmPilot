@@ -162,7 +162,7 @@ class _NotificationsScreenState
                     padding: const EdgeInsets.fromLTRB(22, 0, 22, 42),
                     sliver: SliverList.separated(
                       itemCount: notificationProvider.notifications.length,
-                      separatorBuilder: (_, __) =>
+separatorBuilder: (_, _) =>  
                           const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final notification = Map<String, dynamic>.from(
