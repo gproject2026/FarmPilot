@@ -942,346 +942,670 @@ class _AddProductScreenState
       currentImageUrl,
     );
 
+    final pageTitle =
+        widget.isEditing
+            ? l10n.editProduct
+            : l10n.addProduct;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.isEditing
-              ? l10n.editProduct
-              : l10n.addProduct,
+      backgroundColor:
+          const Color(0xFFF8FAF4),
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child:
+                _AddProductBackdrop(),
+          ),
+          Column(
+            children: [
+              _AddProductTopBar(
+                title: pageTitle,
+                onBack: () =>
+                    Navigator.pop(
+                  context,
+                ),
+              ),
+              Expanded(
+                child:
+                    SingleChildScrollView(
+                  padding:
+                      const EdgeInsets
+                          .fromLTRB(
+                    24,
+                    26,
+                    24,
+                    42,
+                  ),
+                  child: Center(
+                    child:
+                        ConstrainedBox(
+                      constraints:
+                          const BoxConstraints(
+                        maxWidth: 1120,
+                      ),
+                      child: Column(
+                        children: [
+                          _AddProductHero(
+                            title: pageTitle,
+                            isEditing:
+                                widget
+                                    .isEditing,
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          Container(
+                            width:
+                                double.infinity,
+                            padding:
+                                const EdgeInsets
+                                    .all(
+                              24,
+                            ),
+                            decoration:
+                                _addProductCardDecoration(
+                              24,
+                            ),
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment
+                                      .start,
+                              children: [
+                                const _ProductSectionTitle(
+                                  icon: Icons
+                                      .inventory_2_outlined,
+                                  title:
+                                      'Product Information',
+                                  subtitle:
+                                      'Add the core product details customers will see in the marketplace.',
+                                ),
+                                const SizedBox(
+                                  height: 24,
+                                ),
+                                if (categoryProvider
+                                    .isLoading)
+                                  const Center(
+                                    child:
+                                        Padding(
+                                      padding:
+                                          EdgeInsets
+                                              .all(
+                                        12,
+                                      ),
+                                      child:
+                                          CircularProgressIndicator(
+                                        color:
+                                            _addProductPrimary,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  DropdownButtonFormField<
+                                      String>(
+                                    initialValue:
+                                        categoryProvider
+                                            .selectedCategoryId,
+                                    decoration:
+                                        _fieldDecoration(
+                                      label:
+                                          l10n.category,
+                                      icon: Icons
+                                          .category_outlined,
+                                    ),
+                                    items:
+                                        categoryProvider
+                                            .categories
+                                            .map(
+                                      (
+                                        category,
+                                      ) {
+                                        final categoryName =
+                                            _getCategoryName(
+                                          category,
+                                          context,
+                                        );
+
+                                        return DropdownMenuItem<
+                                            String>(
+                                          value: category[
+                                                  'id']
+                                              .toString(),
+                                          child: Text(
+                                            categoryName,
+                                            overflow:
+                                                TextOverflow
+                                                    .ellipsis,
+                                          ),
+                                        );
+                                      },
+                                    ).toList(),
+                                    onChanged:
+                                        categoryProvider
+                                            .selectCategory,
+                                  ),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                TextField(
+                                  controller:
+                                      nameController,
+                                  decoration:
+                                      _fieldDecoration(
+                                    label:
+                                        l10n.productName,
+                                    icon: Icons
+                                        .inventory_2_outlined,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 12,
+                                ),
+                                SizedBox(
+                                  width:
+                                      double.infinity,
+                                  height: 50,
+                                  child:
+                                      OutlinedButton
+                                          .icon(
+                                    onPressed:
+                                        productProvider
+                                                .isLoading
+                                            ? null
+                                            : _generateMarketingContent,
+                                    style:
+                                        OutlinedButton
+                                            .styleFrom(
+                                      foregroundColor:
+                                          _addProductPrimary,
+                                      side:
+                                          const BorderSide(
+                                        color:
+                                            _addProductPrimary,
+                                      ),
+                                      shape:
+                                          RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius
+                                                .circular(
+                                          14,
+                                        ),
+                                      ),
+                                    ),
+                                    icon:
+                                        const Icon(
+                                      Icons
+                                          .auto_awesome,
+                                    ),
+                                    label: Text(
+                                      l10n
+                                          .generateMarketingContent,
+                                      style:
+                                          const TextStyle(
+                                        fontWeight:
+                                            FontWeight
+                                                .w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                TextField(
+                                  controller:
+                                      descriptionController,
+                                  maxLines: 4,
+                                  decoration:
+                                      _fieldDecoration(
+                                    label:
+                                        l10n.description,
+                                    icon: Icons
+                                        .notes_outlined,
+                                    alignLabelWithHint:
+                                        true,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                LayoutBuilder(
+                                  builder: (
+                                    context,
+                                    constraints,
+                                  ) {
+                                    final narrow =
+                                        constraints
+                                                .maxWidth <
+                                            720;
+
+                                    final priceField =
+                                        TextField(
+                                      controller:
+                                          priceController,
+                                      keyboardType:
+                                          const TextInputType
+                                              .numberWithOptions(
+                                        decimal:
+                                            true,
+                                      ),
+                                      decoration:
+                                          _fieldDecoration(
+                                        label:
+                                            l10n.price,
+                                        icon: Icons
+                                            .payments_outlined,
+                                      ),
+                                    );
+
+                                    final quantityField =
+                                        TextField(
+                                      controller:
+                                          quantityController,
+                                      keyboardType:
+                                          TextInputType
+                                              .number,
+                                      decoration:
+                                          _fieldDecoration(
+                                        label: l10n
+                                            .quantity,
+                                        icon: Icons
+                                            .inventory_outlined,
+                                      ),
+                                    );
+
+                                    final unitField =
+                                        TextField(
+                                      controller:
+                                          unitController,
+                                      decoration:
+                                          _fieldDecoration(
+                                        label:
+                                            l10n.unit,
+                                        hint: 'kg',
+                                        icon: Icons
+                                            .scale_outlined,
+                                      ),
+                                    );
+
+                                    if (narrow) {
+                                      return Column(
+                                        children: [
+                                          priceField,
+                                          const SizedBox(
+                                            height:
+                                                16,
+                                          ),
+                                          quantityField,
+                                          const SizedBox(
+                                            height:
+                                                16,
+                                          ),
+                                          unitField,
+                                        ],
+                                      );
+                                    }
+
+                                    return Row(
+                                      children: [
+                                        Expanded(
+                                          child:
+                                              priceField,
+                                        ),
+                                        const SizedBox(
+                                          width:
+                                              16,
+                                        ),
+                                        Expanded(
+                                          child:
+                                              quantityField,
+                                        ),
+                                        const SizedBox(
+                                          width:
+                                              16,
+                                        ),
+                                        Expanded(
+                                          child:
+                                              unitField,
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                                const SizedBox(
+                                  height: 24,
+                                ),
+                                const _ProductSectionTitle(
+                                  icon: Icons
+                                      .image_outlined,
+                                  title:
+                                      'Product Image',
+                                  subtitle:
+                                      'Choose a clear product photo for the marketplace listing.',
+                                ),
+                                const SizedBox(
+                                  height: 18,
+                                ),
+                                if (selectedImageBytes !=
+                                    null)
+                                  _ImagePreviewCard(
+                                    onRemove:
+                                        _removeSelectedImage,
+                                    child:
+                                        Image.memory(
+                                      selectedImageBytes!,
+                                      fit:
+                                          BoxFit.cover,
+                                      width:
+                                          double.infinity,
+                                      height:
+                                          double.infinity,
+                                    ),
+                                  )
+                                else if (oldImageUrl !=
+                                    null)
+                                  _ImagePreviewCard(
+                                    child:
+                                        Image.network(
+                                      oldImageUrl,
+                                      fit:
+                                          BoxFit.cover,
+                                      width:
+                                          double.infinity,
+                                      height:
+                                          double.infinity,
+                                      errorBuilder: (
+                                        context,
+                                        error,
+                                        stackTrace,
+                                      ) {
+                                        return const Center(
+                                          child:
+                                              Icon(
+                                            Icons
+                                                .broken_image_outlined,
+                                            size:
+                                                60,
+                                            color:
+                                                _addProductMuted,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                if (selectedImageBytes !=
+                                        null ||
+                                    oldImageUrl !=
+                                        null)
+                                  const SizedBox(
+                                    height: 14,
+                                  ),
+                                SizedBox(
+                                  width:
+                                      double.infinity,
+                                  height: 50,
+                                  child:
+                                      OutlinedButton
+                                          .icon(
+                                    onPressed:
+                                        productProvider
+                                                .isLoading
+                                            ? null
+                                            : _pickImage,
+                                    style:
+                                        OutlinedButton
+                                            .styleFrom(
+                                      foregroundColor:
+                                          _addProductPrimary,
+                                      side:
+                                          const BorderSide(
+                                        color:
+                                            Color(
+                                          0xFFC7D8C1,
+                                        ),
+                                      ),
+                                      shape:
+                                          RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius
+                                                .circular(
+                                          14,
+                                        ),
+                                      ),
+                                    ),
+                                    icon:
+                                        const Icon(
+                                      Icons
+                                          .add_photo_alternate_outlined,
+                                    ),
+                                    label: Text(
+                                      selectedImageBytes ==
+                                              null
+                                          ? l10n
+                                              .chooseProductImage
+                                          : l10n
+                                              .changeProductImage,
+                                      style:
+                                          const TextStyle(
+                                        fontWeight:
+                                            FontWeight
+                                                .w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 26,
+                                ),
+                                SizedBox(
+                                  width:
+                                      double.infinity,
+                                  height: 54,
+                                  child:
+                                      ElevatedButton
+                                          .icon(
+                                    onPressed:
+                                        productProvider
+                                                .isLoading
+                                            ? null
+                                            : _saveProduct,
+                                    style:
+                                        ElevatedButton
+                                            .styleFrom(
+                                      backgroundColor:
+                                          _addProductPrimary,
+                                      foregroundColor:
+                                          Colors.white,
+                                      disabledBackgroundColor:
+                                          const Color(
+                                        0xFF9FB5A4,
+                                      ),
+                                      elevation:
+                                          0,
+                                      shape:
+                                          RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius
+                                                .circular(
+                                          15,
+                                        ),
+                                      ),
+                                    ),
+                                    icon:
+                                        productProvider
+                                                .isLoading
+                                            ? const SizedBox(
+                                                width:
+                                                    20,
+                                                height:
+                                                    20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth:
+                                                      2,
+                                                  color:
+                                                      Colors.white,
+                                                ),
+                                              )
+                                            : Icon(
+                                                widget
+                                                        .isEditing
+                                                    ? Icons
+                                                        .save_outlined
+                                                    : Icons
+                                                        .add_rounded,
+                                              ),
+                                    label:
+                                        productProvider
+                                                .isLoading
+                                            ? const Text(
+                                                'Saving...',
+                                                style:
+                                                    TextStyle(
+                                                  fontWeight:
+                                                      FontWeight.w700,
+                                                ),
+                                              )
+                                            : Text(
+                                                widget
+                                                        .isEditing
+                                                    ? l10n
+                                                        .saveChanges
+                                                    : l10n
+                                                        .addProduct,
+                                                style:
+                                                    const TextStyle(
+                                                  fontWeight:
+                                                      FontWeight.w700,
+                                                  fontSize:
+                                                      15,
+                                                ),
+                                              ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+const _addProductDark =
+    Color(0xFF173F24);
+const _addProductPrimary =
+    Color(0xFF2F743F);
+const _addProductLight =
+    Color(0xFFEAF3DF);
+const _addProductText =
+    Color(0xFF1D2C21);
+const _addProductMuted =
+    Color(0xFF6C786E);
+
+class _AddProductTopBar
+    extends StatelessWidget {
+  final String title;
+  final VoidCallback onBack;
+
+  const _AddProductTopBar({
+    required this.title,
+    required this.onBack,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      decoration:
+          const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF123A22),
+            Color(0xFF205A34),
+            Color(0xFF2E6F40),
+          ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding:
-            const EdgeInsets.all(
-          20,
-        ),
-        child: Column(
+      padding:
+          const EdgeInsets.fromLTRB(
+        18,
+        12,
+        18,
+        14,
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
           children: [
-            categoryProvider.isLoading
-                ? const CircularProgressIndicator()
-                : DropdownButtonFormField<
-                    String>(
-                    initialValue:
-                        categoryProvider
-                            .selectedCategoryId,
-                    decoration:
-                        InputDecoration(
-                      labelText:
-                          l10n.category,
-                      border:
-                          const OutlineInputBorder(),
-                    ),
-                    items:
-                        categoryProvider
-                            .categories
-                            .map(
-                      (
-                        category,
-                      ) {
-                        final categoryName =
-                            _getCategoryName(
-                          category,
-                          context,
-                        );
-
-                        return DropdownMenuItem<
-                            String>(
-                          value:
-                              category['id']
-                                  .toString(),
-                          child: Text(
-                            categoryName,
-                          ),
-                        );
-                      },
-                    ).toList(),
-                    onChanged:
-                        categoryProvider
-                            .selectCategory,
-                  ),
-
-            const SizedBox(
-              height: 16,
+            _AddProductHeaderButton(
+              icon: Icons
+                  .arrow_back_rounded,
+              tooltip: 'Back',
+              onTap: onBack,
             ),
-
-            TextField(
-              controller:
-                  nameController,
+            const SizedBox(
+              width: 12,
+            ),
+            Container(
+              width: 44,
+              height: 44,
               decoration:
-                  InputDecoration(
-                labelText:
-                    l10n.productName,
-                border:
-                    const OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(
-              height: 12,
-            ),
-
-            SizedBox(
-              width:
-                  double.infinity,
-              child:
-                  OutlinedButton.icon(
-                onPressed:
-                    productProvider
-                            .isLoading
-                        ? null
-                        : _generateMarketingContent,
-                icon: const Icon(
-                  Icons.auto_awesome,
+                  BoxDecoration(
+                color: const Color(
+                  0xFFDDECB8,
                 ),
-                label: Text(
-                  l10n
-                      .generateMarketingContent,
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                  13,
                 ),
               ),
-            ),
-
-            const SizedBox(
-              height: 16,
-            ),
-
-            TextField(
-              controller:
-                  descriptionController,
-              maxLines: 3,
-              decoration:
-                  InputDecoration(
-                labelText:
-                    l10n.description,
-                border:
-                    const OutlineInputBorder(),
+              child: const Icon(
+                Icons.eco_rounded,
+                color:
+                    _addProductDark,
               ),
             ),
-
             const SizedBox(
-              height: 16,
+              width: 10,
             ),
-
-            TextField(
-              controller:
-                  priceController,
-              keyboardType:
-                  const TextInputType
-                      .numberWithOptions(
-                decimal: true,
-              ),
-              decoration:
-                  InputDecoration(
-                labelText:
-                    l10n.price,
-                border:
-                    const OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(
-              height: 16,
-            ),
-
-            TextField(
-              controller:
-                  quantityController,
-              keyboardType:
-                  TextInputType.number,
-              decoration:
-                  InputDecoration(
-                labelText:
-                    l10n.quantity,
-                border:
-                    const OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(
-              height: 16,
-            ),
-
-            TextField(
-              controller:
-                  unitController,
-              decoration:
-                  InputDecoration(
-                labelText:
-                    l10n.unit,
-                hintText: 'kg',
-                border:
-                    const OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(
-              height: 20,
-            ),
-
-            if (selectedImageBytes !=
-                null)
-              Stack(
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
                 children: [
-                  Container(
-                    width:
-                        double.infinity,
-                    height: 260,
-                    padding:
-                        const EdgeInsets.all(
-                      8,
-                    ),
-                    decoration:
-                        BoxDecoration(
-                      border:
-                          Border.all(
-                        color:
-                            Colors.grey,
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(
-                        12,
-                      ),
-                    ),
-                    child:
-                        ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(
-                        8,
-                      ),
-                      child:
-                          Image.memory(
-                        selectedImageBytes!,
-                        fit:
-                            BoxFit.contain,
-                      ),
+                  const Text(
+                    'FarmPilot',
+                    style: TextStyle(
+                      color:
+                          Colors.white,
+                      fontSize: 19,
+                      fontWeight:
+                          FontWeight
+                              .w800,
                     ),
                   ),
-                  PositionedDirectional(
-                    top: 8,
-                    end: 8,
-                    child:
-                        IconButton.filled(
-                      onPressed:
-                          _removeSelectedImage,
-                      icon:
-                          const Icon(
-                        Icons.close,
+                  Text(
+                    title,
+                    style:
+                        const TextStyle(
+                      color: Color(
+                        0xCCFFFFFF,
                       ),
+                      fontSize: 12,
                     ),
                   ),
                 ],
-              )
-            else if (oldImageUrl !=
-                null)
-              Container(
-                width:
-                    double.infinity,
-                height: 260,
-                padding:
-                    const EdgeInsets.all(
-                  8,
-                ),
-                decoration:
-                    BoxDecoration(
-                  border: Border.all(
-                    color:
-                        Colors.grey,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    12,
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(
-                    8,
-                  ),
-                  child: Image.network(
-                    oldImageUrl,
-                    fit:
-                        BoxFit.contain,
-                    errorBuilder: (
-                      context,
-                      error,
-                      stackTrace,
-                    ) {
-                      return const Center(
-                        child: Icon(
-                          Icons
-                              .broken_image_outlined,
-                          size: 60,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-
-            if (selectedImageBytes !=
-                    null ||
-                oldImageUrl != null)
-              const SizedBox(
-                height: 12,
-              ),
-
-            SizedBox(
-              width:
-                  double.infinity,
-              child:
-                  OutlinedButton.icon(
-                onPressed:
-                    productProvider
-                            .isLoading
-                        ? null
-                        : _pickImage,
-                icon: const Icon(
-                  Icons
-                      .add_photo_alternate,
-                ),
-                label: Text(
-                  selectedImageBytes ==
-                          null
-                      ? l10n
-                          .chooseProductImage
-                      : l10n
-                          .changeProductImage,
-                ),
-              ),
-            ),
-
-            const SizedBox(
-              height: 24,
-            ),
-
-            SizedBox(
-              width:
-                  double.infinity,
-              child: ElevatedButton(
-                onPressed:
-                    productProvider
-                            .isLoading
-                        ? null
-                        : _saveProduct,
-                child:
-                    productProvider
-                            .isLoading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child:
-                                CircularProgressIndicator(
-                              strokeWidth:
-                                  2,
-                            ),
-                          )
-                        : Text(
-                            widget
-                                    .isEditing
-                                ? l10n
-                                    .saveChanges
-                                : l10n
-                                    .addProduct,
-                          ),
               ),
             ),
           ],
@@ -1289,4 +1613,518 @@ class _AddProductScreenState
       ),
     );
   }
+}
+
+class _AddProductHeaderButton
+    extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _AddProductHeaderButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color:
+            Colors.white.withValues(
+          alpha: 0.10,
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          14,
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius:
+              BorderRadius.circular(
+            14,
+          ),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Icon(
+              icon,
+              color:
+                  Colors.white,
+              size: 21,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AddProductHero
+    extends StatelessWidget {
+  final String title;
+  final bool isEditing;
+
+  const _AddProductHero({
+    required this.title,
+    required this.isEditing,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding:
+          const EdgeInsets.all(
+        24,
+      ),
+      decoration:
+          _addProductCardDecoration(
+        24,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration:
+                BoxDecoration(
+              color:
+                  _addProductLight,
+              borderRadius:
+                  BorderRadius
+                      .circular(
+                18,
+              ),
+            ),
+            child: const Icon(
+              Icons
+                  .inventory_2_outlined,
+              size: 31,
+              color:
+                  _addProductPrimary,
+            ),
+          ),
+          const SizedBox(
+            width: 16,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+              children: [
+                Text(
+                  title,
+                  style:
+                      const TextStyle(
+                    color:
+                        _addProductText,
+                    fontSize: 24,
+                    fontWeight:
+                        FontWeight
+                            .w800,
+                  ),
+                ),
+                const SizedBox(
+                  height: 4,
+                ),
+                Text(
+                  isEditing
+                      ? 'Update product details, image and marketplace information.'
+                      : 'Create a marketplace listing and use AI to help prepare the marketing content.',
+                  style:
+                      const TextStyle(
+                    color:
+                        _addProductMuted,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductSectionTitle
+    extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _ProductSectionTitle({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Row(
+      children: [
+        Container(
+          width: 43,
+          height: 43,
+          decoration:
+              BoxDecoration(
+            color:
+                _addProductLight,
+            borderRadius:
+                BorderRadius.circular(
+              13,
+            ),
+          ),
+          child: Icon(
+            icon,
+            color:
+                _addProductPrimary,
+            size: 22,
+          ),
+        ),
+        const SizedBox(
+          width: 12,
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment
+                    .start,
+            children: [
+              Text(
+                title,
+                style:
+                    const TextStyle(
+                  color:
+                      _addProductText,
+                  fontSize: 18,
+                  fontWeight:
+                      FontWeight
+                          .w800,
+                ),
+              ),
+              const SizedBox(
+                height: 2,
+              ),
+              Text(
+                subtitle,
+                style:
+                    const TextStyle(
+                  color:
+                      _addProductMuted,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ImagePreviewCard
+    extends StatelessWidget {
+  final Widget child;
+  final VoidCallback? onRemove;
+
+  const _ImagePreviewCard({
+    required this.child,
+    this.onRemove,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      width: double.infinity,
+      height: 300,
+      decoration:
+          BoxDecoration(
+        color:
+            const Color(
+          0xFFF2F6EE,
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          18,
+        ),
+        border: Border.all(
+          color:
+              const Color(
+            0xFFD8E2D4,
+          ),
+        ),
+      ),
+      clipBehavior:
+          Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          child,
+          if (onRemove != null)
+            PositionedDirectional(
+              top: 12,
+              end: 12,
+              child: Material(
+                color:
+                    const Color(
+                  0xD9FFFFFF,
+                ),
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                  12,
+                ),
+                child: IconButton(
+                  tooltip:
+                      'Remove image',
+                  onPressed:
+                      onRemove,
+                  color:
+                      const Color(
+                    0xFFC65353,
+                  ),
+                  icon:
+                      const Icon(
+                    Icons
+                        .close_rounded,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+InputDecoration _fieldDecoration({
+  required String label,
+  required IconData icon,
+  String? hint,
+  bool alignLabelWithHint = false,
+}) {
+  return InputDecoration(
+    labelText: label,
+    hintText: hint,
+    alignLabelWithHint:
+        alignLabelWithHint,
+    labelStyle:
+        const TextStyle(
+      color:
+          _addProductMuted,
+    ),
+    hintStyle:
+        const TextStyle(
+      color:
+          Color(0xFF9AA59B),
+    ),
+    prefixIcon: Icon(
+      icon,
+      color:
+          _addProductPrimary,
+      size: 21,
+    ),
+    filled: true,
+    fillColor:
+        const Color(
+      0xFFFCFDFB,
+    ),
+    contentPadding:
+        const EdgeInsets
+            .symmetric(
+      horizontal: 16,
+      vertical: 17,
+    ),
+    border:
+        OutlineInputBorder(
+      borderRadius:
+          BorderRadius.circular(
+        15,
+      ),
+      borderSide:
+          const BorderSide(
+        color:
+            Color(
+          0xFFD8E2D4,
+        ),
+      ),
+    ),
+    enabledBorder:
+        OutlineInputBorder(
+      borderRadius:
+          BorderRadius.circular(
+        15,
+      ),
+      borderSide:
+          const BorderSide(
+        color:
+            Color(
+          0xFFD8E2D4,
+        ),
+      ),
+    ),
+    focusedBorder:
+        OutlineInputBorder(
+      borderRadius:
+          BorderRadius.circular(
+        15,
+      ),
+      borderSide:
+          const BorderSide(
+        color:
+            _addProductPrimary,
+        width: 1.5,
+      ),
+    ),
+  );
+}
+
+class _AddProductBackdrop
+    extends StatelessWidget {
+  const _AddProductBackdrop();
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return IgnorePointer(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const DecoratedBox(
+            decoration:
+                BoxDecoration(
+              gradient:
+                  LinearGradient(
+                begin: Alignment
+                    .topCenter,
+                end: Alignment
+                    .bottomCenter,
+                colors: [
+                  Color(
+                    0xFFF8FAF4,
+                  ),
+                  Color(
+                    0xFFFFFCF5,
+                  ),
+                  Color(
+                    0xFFF3F8EC,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            end: -180,
+            top: 180,
+            child:
+                _AddProductGlow(
+              size: 450,
+              color:
+                  const Color(
+                0xFFCFE6B4,
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            start: -190,
+            bottom: -220,
+            child:
+                _AddProductGlow(
+              size: 520,
+              color:
+                  const Color(
+                0xFFE7DFAF,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AddProductGlow
+    extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _AddProductGlow({
+    required this.size,
+    required this.color,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      width: size,
+      height: size,
+      decoration:
+          BoxDecoration(
+        shape:
+            BoxShape.circle,
+        gradient:
+            RadialGradient(
+          colors: [
+            color.withValues(
+              alpha: 0.25,
+            ),
+            color.withValues(
+              alpha: 0,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+BoxDecoration
+    _addProductCardDecoration(
+  double radius,
+) {
+  return BoxDecoration(
+    color: Colors.white,
+    borderRadius:
+        BorderRadius.circular(
+      radius,
+    ),
+    border: Border.all(
+      color:
+          const Color(
+        0xFFDCE5D8,
+      ),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color:
+            _addProductDark
+                .withValues(
+          alpha: 0.05,
+        ),
+        blurRadius: 20,
+        offset:
+            const Offset(
+          0,
+          7,
+        ),
+      ),
+    ],
+  );
 }
