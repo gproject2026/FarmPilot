@@ -125,18 +125,13 @@ class CropService {
       },
       body: jsonEncode({
         'cropName': cropName,
-        if (cropType != null)
-          'cropType': cropType,
-        if (plantingDate != null)
-          'plantingDate': plantingDate,
-        if (irrigationSchedule != null)
-          'irrigationSchedule':
-              irrigationSchedule,
-        if (fertilizationSchedule != null)
-          'fertilizationSchedule':
-              fertilizationSchedule,
-        if (notes != null)
-          'notes': notes,
+        'cropType': ?cropType,
+        'plantingDate': ?plantingDate,
+        'irrigationSchedule':
+            ?irrigationSchedule,
+        'fertilizationSchedule':
+            ?fertilizationSchedule,
+        'notes': ?notes,
       }),
     );
 

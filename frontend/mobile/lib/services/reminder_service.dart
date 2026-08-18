@@ -17,7 +17,9 @@ class ReminderService {
     );
 
     if (response.statusCode == 200) {
-      final decodedBody = jsonDecode(response.body);
+      final decodedBody = jsonDecode(
+        response.body,
+      );
 
       if (decodedBody is! List) {
         throw Exception(
@@ -88,12 +90,12 @@ class ReminderService {
     bool? status,
   }) async {
     final body = <String, dynamic>{
-      if (cropId != null) 'cropId': cropId,
-      if (type != null) 'type': type,
+      'cropId': ?cropId,
+      'type': ?type,
       if (reminderDate != null)
         'reminderDate':
             reminderDate.toUtc().toIso8601String(),
-      if (status != null) 'status': status,
+      'status': ?status,
     };
 
     final response = await http.patch(
@@ -142,7 +144,9 @@ class ReminderService {
     }
   }
 
-  Map<String, String> _headers(String token) {
+  Map<String, String> _headers(
+    String token,
+  ) {
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -154,10 +158,14 @@ class ReminderService {
     String fallbackMessage,
   ) {
     try {
-      final decodedBody = jsonDecode(responseBody);
+      final decodedBody = jsonDecode(
+        responseBody,
+      );
 
-      if (decodedBody is Map<String, dynamic>) {
-        final message = decodedBody['message'];
+      if (decodedBody
+          is Map<String, dynamic>) {
+        final message =
+            decodedBody['message'];
 
         if (message is String) {
           return message;
