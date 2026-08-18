@@ -88,13 +88,59 @@ class _AdminOrdersScreenState
         0xFFF5F7F4,
       ),
       appBar: AppBar(
-        title: const Text(
-          'Manage Orders',
+        toolbarHeight: 72,
+        titleSpacing: 12,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF123A22),
+                Color(0xFF205A34),
+                Color(0xFF2E6F40),
+              ],
+            ),
+          ),
         ),
-        backgroundColor:
-            Colors.green,
-        foregroundColor:
-            Colors.white,
+        title: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xFFDDECB8),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.eco_rounded,
+                color: Color(0xFF173F24),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'FarmPilot',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  'Manage Orders',
+                  style: TextStyle(
+                    color: Color(0xCCFFFFFF),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             tooltip: 'Refresh',
@@ -138,7 +184,7 @@ class _AdminOrdersScreenState
         horizontal: 16,
         vertical: 12,
       ),
-      color: Colors.white,
+      color: Colors.transparent,
       child: SingleChildScrollView(
         scrollDirection:
             Axis.horizontal,
@@ -157,10 +203,24 @@ class _AdminOrdersScreenState
                 ),
                 child: ChoiceChip(
                   label: Text(
-                    status,
+                    status == 'ALL' ? 'ALL ORDERS' : status,
                   ),
-                  selected:
-                      selected,
+                  selected: selected,
+                  selectedColor: const Color(0xFF2F743F),
+                  backgroundColor: Colors.white,
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : const Color(0xFF1D2C21),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                  side: BorderSide(
+                    color: selected
+                        ? const Color(0xFF2F743F)
+                        : const Color(0xFFD8E2D4),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   onSelected: (_) {
                     setState(() {
                       _selectedStatus =
@@ -184,8 +244,9 @@ class _AdminOrdersScreenState
         orderProvider
             .adminOrders.isEmpty) {
       return const Center(
-        child:
-            CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: Color(0xFF2F743F),
+        ),
       );
     }
 
@@ -210,7 +271,7 @@ class _AdminOrdersScreenState
             const Icon(
               Icons.error_outline,
               size: 80,
-              color: Colors.red,
+              color: Color(0xFFC65353),
             ),
             const SizedBox(
               height: 16,
@@ -270,7 +331,7 @@ class _AdminOrdersScreenState
               Icons
                   .shopping_cart_outlined,
               size: 80,
-              color: Colors.grey,
+              color: Color(0xFF6C786E),
             ),
             const SizedBox(
               height: 16,
@@ -300,10 +361,7 @@ class _AdminOrdersScreenState
       child: ListView.builder(
         physics:
             const AlwaysScrollableScrollPhysics(),
-        padding:
-            const EdgeInsets.all(
-          16,
-        ),
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
         itemCount:
             orders.length,
         itemBuilder: (
@@ -330,16 +388,13 @@ class _AdminOrdersScreenState
     );
 
     return Card(
-      elevation: 2,
-      margin:
-          const EdgeInsets.only(
-        bottom: 14,
-      ),
-      shape:
-          RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(
-          16,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 14),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(
+          color: Color(0xFFDCE5D8),
         ),
       ),
       child: ExpansionTile(
@@ -377,8 +432,8 @@ class _AdminOrdersScreenState
                   .customer.fullName,
           style:
               const TextStyle(
-            fontWeight:
-                FontWeight.bold,
+            fontWeight: FontWeight.w800,
+            color:  Color(0xFF1D2C21),
           ),
         ),
         subtitle: Padding(
@@ -535,8 +590,7 @@ class _AdminOrdersScreenState
           12,
         ),
         border: Border.all(
-          color:
-              Colors.grey.shade200,
+          color: const Color(0xFFE3E9DF),
         ),
       ),
       child: Column(
@@ -598,8 +652,7 @@ class _AdminOrdersScreenState
       children: [
         Icon(
           icon,
-          color:
-              Colors.green,
+          color: const Color(0xFF2F743F),
           size: 20,
         ),
         const SizedBox(
@@ -638,8 +691,7 @@ class _AdminOrdersScreenState
           Icon(
             icon,
             size: 18,
-            color:
-                Colors.grey.shade700,
+            color: const Color(0xFF6C786E),
           ),
           const SizedBox(
             width: 8,
@@ -662,15 +714,15 @@ class _AdminOrdersScreenState
             .trim()
             .toUpperCase()) {
       case 'PENDING':
-        return Colors.orange;
+        return const Color(0xFFC8792C);
       case 'CONFIRMED':
-        return Colors.blue;
+        return const Color(0xFF4C78A8);
       case 'COMPLETED':
-        return Colors.green;
+        return const Color(0xFF3F8A50);
       case 'CANCELLED':
-        return Colors.red;
+        return const Color(0xFFC65353);
       default:
-        return Colors.grey;
+        return const Color(0xFF6C786E);
     }
   }
 

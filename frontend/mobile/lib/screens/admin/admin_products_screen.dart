@@ -18,12 +18,7 @@ class _AdminProductsScreenState
     extends State<AdminProductsScreen> {
   String _selectedStatus = 'ALL';
 
-  final List<String> _statuses = const [
-    'ALL',
-    'AVAILABLE',
-    'OUT_OF_STOCK',
-    'HIDDEN',
-  ];
+  
 
   @override
   void initState() {
@@ -196,7 +191,7 @@ class _AdminProductsScreenState
                   style:
                       ElevatedButton.styleFrom(
                     backgroundColor:
-                        Colors.green,
+                        const Color(0xFF2F743F),
                     foregroundColor:
                         Colors.white,
                   ),
@@ -241,10 +236,14 @@ class _AdminProductsScreenState
           content: Text(
             newStatus == 'HIDDEN'
                 ? 'Product hidden successfully'
-                : newStatus ==
-                        'AVAILABLE'
+                : newStatus == 'AVAILABLE'
                     ? 'Product is now available'
                     : 'Product marked as out of stock',
+          ),
+          backgroundColor: const Color(0xFF2F743F),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
       );
@@ -303,239 +302,866 @@ class _AdminProductsScreenState
       context,
     );
 
+    final allProducts =
+        productProvider.adminProducts;
+
     final filteredProducts =
         _filteredProducts(
-      productProvider.adminProducts,
+      allProducts,
     );
+
+    int countByStatus(
+      String status,
+    ) {
+      return allProducts.where(
+        (rawProduct) {
+          if (rawProduct is! Map) {
+            return false;
+          }
+
+          return rawProduct['status']
+                  ?.toString()
+                  .toUpperCase() ==
+              status;
+        },
+      ).length;
+    }
 
     return Scaffold(
       backgroundColor:
-          const Color(
-        0xFFF5F7F4,
-      ),
-      appBar: AppBar(
-        title: const Text(
-          'Manage Products',
-        ),
-        backgroundColor:
-            Colors.green,
-        foregroundColor:
-            Colors.white,
-        actions: [
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed:
-                productProvider.isLoading
-                    ? null
-                    : _loadProducts,
-            icon: const Icon(
-              Icons.refresh,
-            ),
-          ),
-        ],
-      ),
-      body: Column(
+          const Color(0xFFF8FAF4),
+      body: Stack(
         children: [
-          Container(
-            width: double.infinity,
-            color: Colors.white,
-            padding:
-                const EdgeInsets.fromLTRB(
-              16,
-              14,
-              16,
-              14,
-            ),
-            child: SingleChildScrollView(
-              scrollDirection:
-                  Axis.horizontal,
-              child: Row(
-                children:
-                    _statuses.map(
-                  (status) {
-                    final selected =
-                        _selectedStatus ==
-                            status;
-
-                    return Padding(
-                      padding:
-                          const EdgeInsets.only(
-                        right: 8,
-                      ),
-                      child: ChoiceChip(
-                        label: Text(
-                          status ==
-                                  'OUT_OF_STOCK'
-                              ? 'OUT OF STOCK'
-                              : status,
-                        ),
-                        selected:
-                            selected,
-                        onSelected: (_) {
-                          setState(
-                            () {
-                              _selectedStatus =
-                                  status;
-                            },
-                          );
-                        },
-                        selectedColor:
-                            Colors.green
-                                .shade100,
-                        labelStyle:
-                            TextStyle(
-                          color: selected
-                              ? Colors.green
-                                  .shade800
-                              : Colors.black87,
-                          fontWeight:
-                              selected
-                                  ? FontWeight
-                                      .bold
-                                  : FontWeight
-                                      .normal,
-                        ),
-                      ),
-                    );
-                  },
-                ).toList(),
-              ),
-            ),
-          ),
-          Expanded(
+          const Positioned.fill(
             child:
-                productProvider.isLoading &&
-                        productProvider
-                            .adminProducts
-                            .isEmpty
-                    ? const Center(
-                        child:
-                            CircularProgressIndicator(),
-                      )
-                    : productProvider
-                                .errorMessage !=
-                            null &&
-                        productProvider
-                            .adminProducts
-                            .isEmpty
-                    ? _buildError(
-                        productProvider,
-                      )
-                    : filteredProducts
-                            .isEmpty
-                        ? _buildEmpty()
-                        : RefreshIndicator(
-                            onRefresh:
-                                _loadProducts,
+                _AdminProductsBackdrop(),
+          ),
+          Column(
+            children: [
+              _AdminProductsTopBar(
+                onBack: () =>
+                    Navigator.pop(context),
+                onRefresh:
+                    productProvider.isLoading
+                        ? null
+                        : _loadProducts,
+              ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh:
+                      _loadProducts,
+                  color:
+                      _adminProductsPrimary,
+                  child:
+                      CustomScrollView(
+                    physics:
+                        const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Center(
+                          child:
+                              ConstrainedBox(
+                            constraints:
+                                const BoxConstraints(
+                              maxWidth:
+                                  1320,
+                            ),
                             child:
-                                ListView.builder(
+                                Padding(
                               padding:
-                                  const EdgeInsets.all(
+                                  const EdgeInsets
+                                      .fromLTRB(
+                                24,
+                                26,
+                                24,
                                 16,
                               ),
-                              itemCount:
-                                  filteredProducts
-                                      .length,
-                              itemBuilder: (
-                                context,
-                                index,
-                              ) {
-                                final product =
-                                    Map<String,
-                                        dynamic>.from(
-                                  filteredProducts[
-                                      index],
-                                );
-
-                                return _buildProductCard(
-                                  product,
-                                );
-                              },
+                              child:
+                                  _AdminProductsHero(
+                                totalCount:
+                                    allProducts
+                                        .length,
+                                availableCount:
+                                    countByStatus(
+                                  'AVAILABLE',
+                                ),
+                                outOfStockCount:
+                                    countByStatus(
+                                  'OUT_OF_STOCK',
+                                ),
+                                hiddenCount:
+                                    countByStatus(
+                                  'HIDDEN',
+                                ),
+                              ),
                             ),
                           ),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: Center(
+                          child:
+                              ConstrainedBox(
+                            constraints:
+                                const BoxConstraints(
+                              maxWidth:
+                                  1320,
+                            ),
+                            child:
+                                Padding(
+                              padding:
+                                  const EdgeInsets
+                                      .fromLTRB(
+                                24,
+                                0,
+                                24,
+                                18,
+                              ),
+                              child:
+                                  _AdminProductsFilter(
+                                selectedStatus:
+                                    _selectedStatus,
+                                onSelected:
+                                    (status) {
+                                  setState(
+                                    () {
+                                      _selectedStatus =
+                                          status;
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (productProvider
+                              .isLoading &&
+                          allProducts.isEmpty)
+                        const SliverFillRemaining(
+                          hasScrollBody:
+                              false,
+                          child: Center(
+                            child:
+                                CircularProgressIndicator(
+                              color:
+                                  _adminProductsPrimary,
+                            ),
+                          ),
+                        )
+                      else if (productProvider
+                                  .errorMessage !=
+                              null &&
+                          allProducts.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody:
+                              false,
+                          child:
+                              _AdminProductsErrorState(
+                            message:
+                                productProvider
+                                        .errorMessage ??
+                                    'Failed to load products',
+                            onRetry:
+                                _loadProducts,
+                          ),
+                        )
+                      else if (filteredProducts
+                          .isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody:
+                              false,
+                          child:
+                              _AdminProductsEmptyState(
+                            selectedStatus:
+                                _selectedStatus,
+                          ),
+                        )
+                      else
+                        SliverPadding(
+                          padding:
+                              const EdgeInsets
+                                  .fromLTRB(
+                            24,
+                            0,
+                            24,
+                            42,
+                          ),
+                          sliver:
+                              SliverLayoutBuilder(
+                            builder: (
+                              context,
+                              constraints,
+                            ) {
+                              final width =
+                                  constraints
+                                      .crossAxisExtent;
+
+                              final crossAxisCount =
+                                  width >= 1180
+                                      ? 3
+                                      : width >= 760
+                                          ? 2
+                                          : 1;
+
+                              return SliverGrid(
+                                delegate:
+                                    SliverChildBuilderDelegate(
+                                  (
+                                    context,
+                                    index,
+                                  ) {
+                                    final product =
+                                        Map<String,
+                                                dynamic>.from(
+                                      filteredProducts[
+                                          index] as Map,
+                                    );
+
+                                    return _AdminProductCard(
+                                      product:
+                                          product,
+                                      imageUrl:
+                                          _getImageUrl(
+                                        product[
+                                            'imageUrl'],
+                                      ),
+                                      statusColor:
+                                          _statusColor,
+                                      statusLabel:
+                                          _statusLabel,
+                                      onChangeStatus:
+                                          ({
+                                        required String
+                                            productId,
+                                        required String
+                                            productName,
+                                        required String
+                                            currentStatus,
+                                      }) {
+                                        _changeStatus(
+                                          productId:
+                                              productId,
+                                          productName:
+                                              productName,
+                                          currentStatus:
+                                              currentStatus,
+                                        );
+                                      },
+                                    );
+                                  },
+                                  childCount:
+                                      filteredProducts
+                                          .length,
+                                ),
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount:
+                                      crossAxisCount,
+                                  crossAxisSpacing:
+                                      16,
+                                  mainAxisSpacing:
+                                      16,
+                                  mainAxisExtent:
+                                      485,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
+          if (productProvider.isLoading &&
+              allProducts.isNotEmpty)
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child:
+                  LinearProgressIndicator(
+                color:
+                    _adminProductsPrimary,
+              ),
+            ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildError(
-    ProductProvider productProvider,
+const _adminProductsDark =
+    Color(0xFF173F24);
+const _adminProductsPrimary =
+    Color(0xFF2F743F);
+const _adminProductsLight =
+    Color(0xFFEAF3DF);
+const _adminProductsText =
+    Color(0xFF1D2C21);
+const _adminProductsMuted =
+    Color(0xFF6C786E);
+
+class _AdminProductsTopBar
+    extends StatelessWidget {
+  final VoidCallback onBack;
+  final Future<void> Function()?
+      onRefresh;
+
+  const _AdminProductsTopBar({
+    required this.onBack,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
   ) {
-    return Center(
-      child: Padding(
-        padding:
-            const EdgeInsets.all(
-          24,
+    return Container(
+      decoration:
+          const BoxDecoration(
+        gradient:
+            LinearGradient(
+          colors: [
+            Color(
+              0xFF123A22,
+            ),
+            Color(
+              0xFF205A34,
+            ),
+            Color(
+              0xFF2E6F40,
+            ),
+          ],
         ),
-        child: Column(
-          mainAxisSize:
-              MainAxisSize.min,
+      ),
+      padding:
+          const EdgeInsets
+              .fromLTRB(
+        18,
+        12,
+        18,
+        14,
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 55,
-              color: Colors.red,
+            _AdminProductsHeaderButton(
+              icon: Icons
+                  .arrow_back_rounded,
+              tooltip:
+                  'Back',
+              onTap:
+                  onBack,
             ),
             const SizedBox(
-              height: 12,
+              width: 12,
             ),
-            Text(
-              productProvider
-                      .errorMessage ??
-                  'Failed to load products',
-              textAlign:
-                  TextAlign.center,
+            Container(
+              width: 44,
+              height: 44,
+              decoration:
+                  BoxDecoration(
+                color:
+                    const Color(
+                  0xFFDDECB8,
+                ),
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                  13,
+                ),
+              ),
+              child:
+                  const Icon(
+                Icons.eco_rounded,
+                color:
+                    _adminProductsDark,
+              ),
             ),
             const SizedBox(
-              height: 16,
+              width: 10,
             ),
-            ElevatedButton.icon(
-              onPressed:
-                  _loadProducts,
-              icon: const Icon(
-                Icons.refresh,
+            const Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
+                children: [
+                  Text(
+                    'FarmPilot',
+                    style:
+                        TextStyle(
+                      color:
+                          Colors.white,
+                      fontSize:
+                          19,
+                      fontWeight:
+                          FontWeight
+                              .w800,
+                    ),
+                  ),
+                  Text(
+                    'Manage Products',
+                    style:
+                        TextStyle(
+                      color:
+                          Color(
+                        0xCCFFFFFF,
+                      ),
+                      fontSize:
+                          12,
+                    ),
+                  ),
+                ],
               ),
-              label: const Text(
-                'Try Again',
-              ),
+            ),
+            _AdminProductsHeaderButton(
+              icon: Icons
+                  .refresh_rounded,
+              tooltip:
+                  'Refresh',
+              onTap:
+                  onRefresh,
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildEmpty() {
-    return Center(
-      child: Column(
-        mainAxisSize:
-            MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.inventory_2_outlined,
-            size: 65,
-            color:
-                Colors.grey.shade500,
+class _AdminProductsHeaderButton
+    extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  const _AdminProductsHeaderButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color:
+            Colors.white
+                .withValues(
+          alpha:
+              onTap == null
+                  ? 0.05
+                  : 0.10,
+        ),
+        borderRadius:
+            BorderRadius
+                .circular(
+          14,
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius:
+              BorderRadius
+                  .circular(
+            14,
           ),
-          const SizedBox(
-            height: 12,
-          ),
-          const Text(
-            'No Products Found',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight:
-                  FontWeight.w600,
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Icon(
+              icon,
+              size: 21,
+              color:
+                  onTap == null
+                      ? Colors
+                          .white54
+                      : Colors
+                          .white,
             ),
           ),
-        ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildProductCard(
-    Map<String, dynamic> product,
+class _AdminProductsHero
+    extends StatelessWidget {
+  final int totalCount;
+  final int availableCount;
+  final int outOfStockCount;
+  final int hiddenCount;
+
+  const _AdminProductsHero({
+    required this.totalCount,
+    required this.availableCount,
+    required this.outOfStockCount,
+    required this.hiddenCount,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      width:
+          double.infinity,
+      padding:
+          const EdgeInsets
+              .all(
+        24,
+      ),
+      decoration:
+          _adminProductsCardDecoration(
+        24,
+      ),
+      child: LayoutBuilder(
+        builder: (
+          context,
+          constraints,
+        ) {
+          final heading =
+              Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration:
+                    BoxDecoration(
+                  color:
+                      _adminProductsLight,
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    18,
+                  ),
+                ),
+                child:
+                    const Icon(
+                  Icons
+                      .inventory_2_outlined,
+                  color:
+                      _adminProductsPrimary,
+                  size:
+                      30,
+                ),
+              ),
+              const SizedBox(
+                width: 16,
+              ),
+              const Expanded(
+                child:
+                    Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
+                  children: [
+                    Text(
+                      'Manage Products',
+                      style:
+                          TextStyle(
+                        color:
+                            _adminProductsText,
+                        fontSize:
+                            24,
+                        fontWeight:
+                            FontWeight
+                                .w800,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 4,
+                    ),
+                    Text(
+                      'Review marketplace products and control their visibility and availability.',
+                      style:
+                          TextStyle(
+                        color:
+                            _adminProductsMuted,
+                        fontSize:
+                            13,
+                        height:
+                            1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+
+          final stats =
+              Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _AdminProductsStatChip(
+                label:
+                    'Total',
+                value:
+                    totalCount,
+              ),
+              _AdminProductsStatChip(
+                label:
+                    'Available',
+                value:
+                    availableCount,
+              ),
+              _AdminProductsStatChip(
+                label:
+                    'Out of Stock',
+                value:
+                    outOfStockCount,
+              ),
+              _AdminProductsStatChip(
+                label:
+                    'Hidden',
+                value:
+                    hiddenCount,
+              ),
+            ],
+          );
+
+          if (constraints
+                  .maxWidth <
+              820) {
+            return Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+              children: [
+                heading,
+                const SizedBox(
+                  height: 18,
+                ),
+                stats,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(
+                child:
+                    heading,
+              ),
+              const SizedBox(
+                width: 18,
+              ),
+              stats,
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AdminProductsStatChip
+    extends StatelessWidget {
+  final String label;
+  final int value;
+
+  const _AdminProductsStatChip({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      padding:
+          const EdgeInsets
+              .symmetric(
+        horizontal:
+            12,
+        vertical:
+            9,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            const Color(
+          0xFFF1F6E9,
+        ),
+        borderRadius:
+            BorderRadius
+                .circular(
+          14,
+        ),
+      ),
+      child: Text(
+        '$label $value',
+        style:
+            const TextStyle(
+          color:
+              _adminProductsPrimary,
+          fontSize:
+              11,
+          fontWeight:
+              FontWeight
+                  .w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminProductsFilter
+    extends StatelessWidget {
+  final String selectedStatus;
+  final ValueChanged<String>
+      onSelected;
+
+  const _AdminProductsFilter({
+    required this.selectedStatus,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    const statuses = [
+      'ALL',
+      'AVAILABLE',
+      'OUT_OF_STOCK',
+      'HIDDEN',
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection:
+          Axis.horizontal,
+      child: Row(
+        children:
+            statuses.map(
+          (status) {
+            final selected =
+                selectedStatus ==
+                    status;
+
+            final label =
+                status ==
+                        'ALL'
+                    ? 'All Products'
+                    : status ==
+                            'OUT_OF_STOCK'
+                        ? 'Out of Stock'
+                        : _adminProductsTitleCase(
+                            status,
+                          );
+
+            return Padding(
+              padding:
+                  const EdgeInsets
+                      .only(
+                right: 8,
+              ),
+              child:
+                  ChoiceChip(
+                label:
+                    Text(
+                  label,
+                ),
+                selected:
+                    selected,
+                onSelected:
+                    (_) {
+                  onSelected(
+                    status,
+                  );
+                },
+                selectedColor:
+                    _adminProductsPrimary,
+                backgroundColor:
+                    Colors.white,
+                labelStyle:
+                    TextStyle(
+                  color:
+                      selected
+                          ? Colors
+                              .white
+                          : _adminProductsText,
+                  fontWeight:
+                      FontWeight
+                          .w700,
+                  fontSize:
+                      12,
+                ),
+                side:
+                    BorderSide(
+                  color:
+                      selected
+                          ? _adminProductsPrimary
+                          : const Color(
+                              0xFFD8E2D4,
+                            ),
+                ),
+                padding:
+                    const EdgeInsets
+                        .symmetric(
+                  horizontal:
+                      12,
+                  vertical:
+                      9,
+                ),
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    20,
+                  ),
+                ),
+              ),
+            );
+          },
+        ).toList(),
+      ),
+    );
+  }
+}
+
+typedef _ChangeProductStatus =
+    void Function({
+  required String productId,
+  required String productName,
+  required String currentStatus,
+});
+
+class _AdminProductCard
+    extends StatelessWidget {
+  final Map<String, dynamic>
+      product;
+  final String? imageUrl;
+  final Color Function(String)
+      statusColor;
+  final String Function(String)
+      statusLabel;
+  final _ChangeProductStatus
+      onChangeStatus;
+
+  const _AdminProductCard({
+    required this.product,
+    required this.imageUrl,
+    required this.statusColor,
+    required this.statusLabel,
+    required this.onChangeStatus,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
   ) {
     final productId =
         product['id']
@@ -553,24 +1179,27 @@ class _AdminProductsScreenState
                 .toUpperCase() ??
             'UNKNOWN';
 
-    final imageUrl =
-        _getImageUrl(
-      product['imageUrl'],
-    );
-
     final farmer =
-        product['farmer'] is Map
-            ? Map<String, dynamic>.from(
-                product['farmer'],
+        product['farmer']
+                is Map
+            ? Map<String,
+                dynamic>.from(
+                product[
+                    'farmer'],
               )
-            : <String, dynamic>{};
+            : <String,
+                dynamic>{};
 
     final category =
-        product['category'] is Map
-            ? Map<String, dynamic>.from(
-                product['category'],
+        product['category']
+                is Map
+            ? Map<String,
+                dynamic>.from(
+                product[
+                    'category'],
               )
-            : <String, dynamic>{};
+            : <String,
+                dynamic>{};
 
     final farmerName =
         farmer['fullName']
@@ -587,189 +1216,210 @@ class _AdminProductsScreenState
                 ?.toString() ??
             'No Category';
 
-    return Card(
-      margin:
-          const EdgeInsets.only(
-        bottom: 14,
+    final color =
+        statusColor(
+      status,
+    );
+
+    return Container(
+      padding:
+          const EdgeInsets
+              .all(
+        18,
       ),
-      elevation: 2,
-      shape:
-          RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(
-          14,
-        ),
+      decoration:
+          _adminProductsCardDecoration(
+        22,
       ),
-      child: Padding(
-        padding:
-            const EdgeInsets.all(
-          14,
-        ),
-        child: Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 90,
-              height: 90,
-              padding:
-                  const EdgeInsets.all(
-                4,
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment
+                .start,
+        children: [
+          Container(
+            width:
+                double.infinity,
+            height:
+                150,
+            decoration:
+                BoxDecoration(
+              color:
+                  const Color(
+                0xFFF3F6F1,
               ),
-              decoration:
-                  BoxDecoration(
+              borderRadius:
+                  BorderRadius
+                      .circular(
+                16,
+              ),
+              border:
+                  Border.all(
                 color:
-                    Colors.grey.shade100,
-                borderRadius:
-                    BorderRadius.circular(
-                  10,
-                ),
-                border: Border.all(
-                  color:
-                      Colors.grey.shade300,
+                    const Color(
+                  0xFFE1E8DD,
                 ),
               ),
-              child: ClipRRect(
-                borderRadius:
-                    BorderRadius.circular(
-                  7,
-                ),
-                child: imageUrl == null
-                    ? const Center(
-                        child: Icon(
-                          Icons
-                              .inventory_2_outlined,
-                          size: 36,
-                        ),
+            ),
+            clipBehavior:
+                Clip.antiAlias,
+            child:
+                imageUrl ==
+                        null
+                    ? const Icon(
+                        Icons
+                            .inventory_2_outlined,
+                        size:
+                            48,
+                        color:
+                            _adminProductsMuted,
                       )
                     : Image.network(
-                        imageUrl,
-                        fit: BoxFit.contain,
-                        errorBuilder: (
+                        imageUrl!,
+                        fit:
+                            BoxFit.contain,
+                        errorBuilder:
+                            (
                           context,
                           error,
                           stackTrace,
                         ) {
                           return const Center(
-                            child: Icon(
+                            child:
+                                Icon(
                               Icons
                                   .broken_image_outlined,
-                              size: 36,
+                              size:
+                                  48,
+                              color:
+                                  _adminProductsMuted,
                             ),
                           );
                         },
                       ),
+          ),
+          const SizedBox(
+            height: 14,
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  productName,
+                  maxLines: 1,
+                  overflow:
+                      TextOverflow
+                          .ellipsis,
+                  style:
+                      const TextStyle(
+                    color:
+                        _adminProductsText,
+                    fontSize:
+                        17,
+                    fontWeight:
+                        FontWeight
+                            .w800,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(
-              width: 14,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    productName,
-                    style:
-                        const TextStyle(
-                      fontSize: 17,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 7,
-                  ),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    children: [
-                      Container(
-                        padding:
-                            const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 4,
-                        ),
-                        decoration:
-                            BoxDecoration(
-                          color:
-                              _statusColor(
-                            status,
-                          ).withValues(
-                            alpha: 0.12,
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(
-                            20,
-                          ),
-                        ),
-                        child: Text(
-                          _statusLabel(
-                            status,
-                          ),
-                          style:
-                              TextStyle(
-                            color:
-                                _statusColor(
-                              status,
-                            ),
-                            fontSize: 12,
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  Text(
-                    'Price: ${product['price']}',
-                  ),
-                  Text(
-                    'Quantity: ${product['quantity']} ${product['unit'] ?? ''}',
-                  ),
-                  Text(
-                    'Category: $categoryName',
-                  ),
-                  const SizedBox(
-                    height: 7,
-                  ),
-                  Text(
-                    'Farmer: $farmerName',
-                    style:
-                        const TextStyle(
-                      fontWeight:
-                          FontWeight.w600,
-                    ),
-                  ),
-                  if (farmerEmail
-                      .isNotEmpty)
-                    Text(
-                      farmerEmail,
-                      style:
-                          TextStyle(
-                        color: Colors
-                            .grey.shade700,
-                        fontSize: 13,
-                      ),
-                    ),
-                ],
+              const SizedBox(
+                width: 8,
               ),
+              Container(
+                padding:
+                    const EdgeInsets
+                        .symmetric(
+                  horizontal:
+                      10,
+                  vertical:
+                      6,
+                ),
+                decoration:
+                    BoxDecoration(
+                  color:
+                      color.withValues(
+                    alpha:
+                        0.10,
+                  ),
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    18,
+                  ),
+                ),
+                child: Text(
+                  statusLabel(
+                    status,
+                  ),
+                  style:
+                      TextStyle(
+                    color:
+                        color,
+                    fontSize:
+                        10,
+                    fontWeight:
+                        FontWeight
+                            .w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 12,
+          ),
+          _AdminProductInfoRow(
+            icon: Icons
+                .payments_outlined,
+            label:
+                'Price',
+            value:
+                '${product['price'] ?? '-'} ₪',
+          ),
+          _AdminProductInfoRow(
+            icon: Icons
+                .inventory_outlined,
+            label:
+                'Quantity',
+            value:
+                '${product['quantity'] ?? '-'} ${product['unit'] ?? ''}',
+          ),
+          _AdminProductInfoRow(
+            icon: Icons
+                .category_outlined,
+            label:
+                'Category',
+            value:
+                categoryName,
+          ),
+          _AdminProductInfoRow(
+            icon: Icons
+                .agriculture_outlined,
+            label:
+                'Farmer',
+            value:
+                farmerName,
+          ),
+          if (farmerEmail
+              .isNotEmpty)
+            _AdminProductInfoRow(
+              icon: Icons
+                  .email_outlined,
+              label:
+                  'Email',
+              value:
+                  farmerEmail,
             ),
-            const SizedBox(
-              width: 6,
-            ),
-            IconButton(
-              tooltip:
-                  'Change Status',
+          const Spacer(),
+          SizedBox(
+            width:
+                double.infinity,
+            child:
+                ElevatedButton.icon(
               onPressed:
                   productId.isEmpty
                       ? null
                       : () {
-                          _changeStatus(
+                          onChangeStatus(
                             productId:
                                 productId,
                             productName:
@@ -778,11 +1428,217 @@ class _AdminProductsScreenState
                                 status,
                           );
                         },
-              icon: const Icon(
+              style:
+                  ElevatedButton
+                      .styleFrom(
+                backgroundColor:
+                    _adminProductsPrimary,
+                foregroundColor:
+                    Colors.white,
+                disabledBackgroundColor:
+                    const Color(
+                  0xFF9FB5A4,
+                ),
+                disabledForegroundColor:
+                    Colors.white70,
+                elevation:
+                    0,
+                padding:
+                    const EdgeInsets
+                        .symmetric(
+                  vertical:
+                      13,
+                ),
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    13,
+                  ),
+                ),
+              ),
+              icon:
+                  const Icon(
                 Icons
                     .edit_note_outlined,
-                color: Colors.green,
-                size: 28,
+              ),
+              label:
+                  const Text(
+                'Change Status',
+                style:
+                    TextStyle(
+                  fontWeight:
+                      FontWeight
+                          .w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminProductInfoRow
+    extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _AdminProductInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Padding(
+      padding:
+          const EdgeInsets
+              .only(
+        bottom: 8,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration:
+                BoxDecoration(
+              color:
+                  _adminProductsLight,
+              borderRadius:
+                  BorderRadius
+                      .circular(
+                9,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 15,
+              color:
+                  _adminProductsPrimary,
+            ),
+          ),
+          const SizedBox(
+            width: 8,
+          ),
+          SizedBox(
+            width: 65,
+            child: Text(
+              label,
+              style:
+                  const TextStyle(
+                color:
+                    _adminProductsMuted,
+                fontSize:
+                    11,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow:
+                  TextOverflow
+                      .ellipsis,
+              style:
+                  const TextStyle(
+                color:
+                    _adminProductsText,
+                fontSize:
+                    11,
+                fontWeight:
+                    FontWeight
+                        .w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminProductsEmptyState
+    extends StatelessWidget {
+  final String selectedStatus;
+
+  const _AdminProductsEmptyState({
+    required this.selectedStatus,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    final text =
+        selectedStatus == 'ALL'
+            ? 'No Products Found'
+            : 'No ${selectedStatus == 'OUT_OF_STOCK' ? 'Out of Stock' : _adminProductsTitleCase(selectedStatus)} Products Found';
+
+    return Center(
+      child: Container(
+        constraints:
+            const BoxConstraints(
+          maxWidth: 460,
+        ),
+        margin:
+            const EdgeInsets.all(
+          24,
+        ),
+        padding:
+            const EdgeInsets.all(
+          30,
+        ),
+        decoration:
+            _adminProductsCardDecoration(
+          24,
+        ),
+        child: Column(
+          mainAxisSize:
+              MainAxisSize.min,
+          children: [
+            Container(
+              width: 82,
+              height: 82,
+              decoration:
+                  const BoxDecoration(
+                color:
+                    _adminProductsLight,
+                shape:
+                    BoxShape.circle,
+              ),
+              child:
+                  const Icon(
+                Icons
+                    .inventory_2_outlined,
+                size: 38,
+                color:
+                    _adminProductsPrimary,
+              ),
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            Text(
+              text,
+              textAlign:
+                  TextAlign.center,
+              style:
+                  const TextStyle(
+                color:
+                    _adminProductsText,
+                fontSize: 19,
+                fontWeight:
+                    FontWeight
+                        .w800,
               ),
             ),
           ],
@@ -790,4 +1646,250 @@ class _AdminProductsScreenState
       ),
     );
   }
+}
+
+class _AdminProductsErrorState
+    extends StatelessWidget {
+  final String message;
+  final Future<void> Function()
+      onRetry;
+
+  const _AdminProductsErrorState({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Center(
+      child: Container(
+        constraints:
+            const BoxConstraints(
+          maxWidth: 440,
+        ),
+        margin:
+            const EdgeInsets.all(
+          24,
+        ),
+        padding:
+            const EdgeInsets.all(
+          28,
+        ),
+        decoration:
+            _adminProductsCardDecoration(
+          24,
+        ),
+        child: Column(
+          mainAxisSize:
+              MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons
+                  .error_outline_rounded,
+              size: 56,
+              color:
+                  Color(
+                0xFFC65353,
+              ),
+            ),
+            const SizedBox(
+              height: 14,
+            ),
+            Text(
+              message,
+              textAlign:
+                  TextAlign.center,
+              style:
+                  const TextStyle(
+                color:
+                    _adminProductsText,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(
+              height: 18,
+            ),
+            ElevatedButton.icon(
+              onPressed:
+                  onRetry,
+              style:
+                  ElevatedButton
+                      .styleFrom(
+                backgroundColor:
+                    _adminProductsPrimary,
+                foregroundColor:
+                    Colors.white,
+                elevation: 0,
+              ),
+              icon:
+                  const Icon(
+                Icons
+                    .refresh_rounded,
+              ),
+              label:
+                  const Text(
+                'Try Again',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminProductsBackdrop
+    extends StatelessWidget {
+  const _AdminProductsBackdrop();
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return IgnorePointer(
+      child: Stack(
+        fit:
+            StackFit.expand,
+        children: [
+          const DecoratedBox(
+            decoration:
+                BoxDecoration(
+              gradient:
+                  LinearGradient(
+                begin:
+                    Alignment
+                        .topCenter,
+                end:
+                    Alignment
+                        .bottomCenter,
+                colors: [
+                  Color(
+                    0xFFF8FAF4,
+                  ),
+                  Color(
+                    0xFFFFFCF5,
+                  ),
+                  Color(
+                    0xFFF3F8EC,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            end: -180,
+            top: 190,
+            child:
+                _AdminProductsGlow(
+              size: 450,
+              color:
+                  const Color(
+                0xFFCFE6B4,
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            start: -190,
+            bottom: -220,
+            child:
+                _AdminProductsGlow(
+              size: 520,
+              color:
+                  const Color(
+                0xFFE7DFAF,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminProductsGlow
+    extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _AdminProductsGlow({
+    required this.size,
+    required this.color,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      width: size,
+      height: size,
+      decoration:
+          BoxDecoration(
+        shape:
+            BoxShape.circle,
+        gradient:
+            RadialGradient(
+          colors: [
+            color.withValues(
+              alpha: 0.25,
+            ),
+            color.withValues(
+              alpha: 0,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+BoxDecoration
+    _adminProductsCardDecoration(
+  double radius,
+) {
+  return BoxDecoration(
+    color:
+        Colors.white,
+    borderRadius:
+        BorderRadius.circular(
+      radius,
+    ),
+    border:
+        Border.all(
+      color:
+          const Color(
+        0xFFDCE5D8,
+      ),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color:
+            _adminProductsDark
+                .withValues(
+          alpha: 0.05,
+        ),
+        blurRadius: 20,
+        offset:
+            const Offset(
+          0,
+          7,
+        ),
+      ),
+    ],
+  );
+}
+
+String _adminProductsTitleCase(
+  String value,
+) {
+  if (value.isEmpty) {
+    return value;
+  }
+
+  final lower =
+      value.toLowerCase();
+
+  return '${lower[0].toUpperCase()}${lower.substring(1)}';
 }

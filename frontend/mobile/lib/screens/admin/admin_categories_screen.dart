@@ -262,7 +262,7 @@ class _AdminCategoriesScreenState
               style:
                   ElevatedButton.styleFrom(
                 backgroundColor:
-                    Colors.green,
+                    const Color(0xFF2F743F),
                 foregroundColor:
                     Colors.white,
               ),
@@ -360,7 +360,7 @@ class _AdminCategoriesScreenState
                 : 'Category added successfully',
           ),
           backgroundColor:
-              Colors.green,
+              const Color(0xFF2F743F),
         ),
       );
 
@@ -476,7 +476,7 @@ class _AdminCategoriesScreenState
             'Category deleted successfully',
           ),
           backgroundColor:
-              Colors.green,
+               Color(0xFF2F743F),
         ),
       );
 
@@ -523,203 +523,729 @@ class _AdminCategoriesScreenState
       context,
     );
 
+    final categories =
+        provider.categories;
+
+    final totalProducts =
+        categories.fold<int>(
+      0,
+      (
+        total,
+        rawCategory,
+      ) {
+        if (rawCategory is! Map) {
+          return total;
+        }
+
+        final category =
+            Map<String, dynamic>.from(
+          rawCategory,
+        );
+
+        return total +
+            _productCount(
+              category,
+            );
+      },
+    );
+
     return Scaffold(
       backgroundColor:
           const Color(
-        0xFFF5F7F4,
+        0xFFF8FAF4,
       ),
-      appBar: AppBar(
-        title: const Text(
-          'Manage Categories',
-        ),
-        backgroundColor:
-            Colors.green,
-        foregroundColor:
-            Colors.white,
-        actions: [
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed:
-                provider.isLoading
-                    ? null
-                    : _loadCategories,
-            icon: const Icon(
-              Icons.refresh,
-            ),
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child:
+                _AdminCategoriesBackdrop(),
           ),
-        ],
-      ),
-      floatingActionButton:
-          FloatingActionButton.extended(
-        onPressed:
-            provider.isLoading
-                ? null
-                : () {
-                    _openCategoryDialog();
-                  },
-        icon: const Icon(
-          Icons.add,
-        ),
-        label: const Text(
-          'Add Category',
-        ),
-      ),
-      body:
-          provider.isLoading &&
-                  provider
-                      .categories.isEmpty
-              ? const Center(
+          Column(
+            children: [
+              _AdminCategoriesTopBar(
+                onBack: () =>
+                    Navigator.pop(
+                  context,
+                ),
+                onRefresh:
+                    provider.isLoading
+                        ? null
+                        : _loadCategories,
+              ),
+              Expanded(
+                child:
+                    RefreshIndicator(
+                  onRefresh:
+                      _loadCategories,
+                  color:
+                      _adminCategoriesPrimary,
                   child:
-                      CircularProgressIndicator(),
-                )
-              : provider.errorMessage !=
-                          null &&
-                      provider
-                          .categories.isEmpty
-                  ? _buildError(
-                      provider,
-                    )
-                  : provider
-                          .categories.isEmpty
-                      ? _buildEmpty()
-                      : RefreshIndicator(
-                          onRefresh:
-                              _loadCategories,
+                      CustomScrollView(
+                    physics:
+                        const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Center(
                           child:
-                              ListView.builder(
-                            physics:
-                                const AlwaysScrollableScrollPhysics(),
-                            padding:
-                                const EdgeInsets.fromLTRB(
-                              16,
-                              16,
-                              16,
-                              100,
+                              ConstrainedBox(
+                            constraints:
+                                const BoxConstraints(
+                              maxWidth:
+                                  1320,
                             ),
-                            itemCount:
-                                provider
-                                    .categories
-                                    .length,
-                            itemBuilder: (
+                            child:
+                                Padding(
+                              padding:
+                                  const EdgeInsets
+                                      .fromLTRB(
+                                24,
+                                26,
+                                24,
+                                18,
+                              ),
+                              child:
+                                  _AdminCategoriesHero(
+                                totalCategories:
+                                    categories
+                                        .length,
+                                totalProducts:
+                                    totalProducts,
+                                isLoading:
+                                    provider
+                                        .isLoading,
+                                onAddCategory:
+                                    provider
+                                            .isLoading
+                                        ? null
+                                        : () {
+                                            _openCategoryDialog();
+                                          },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (provider.isLoading &&
+                          categories.isEmpty)
+                        const SliverFillRemaining(
+                          hasScrollBody:
+                              false,
+                          child: Center(
+                            child:
+                                CircularProgressIndicator(
+                              color:
+                                  _adminCategoriesPrimary,
+                            ),
+                          ),
+                        )
+                      else if (provider.errorMessage !=
+                              null &&
+                          categories.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody:
+                              false,
+                          child:
+                              _AdminCategoriesErrorState(
+                            message:
+                                provider.errorMessage ??
+                                    'Failed to load categories',
+                            onRetry:
+                                _loadCategories,
+                          ),
+                        )
+                      else if (categories.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody:
+                              false,
+                          child:
+                              _AdminCategoriesEmptyState(
+                            onAddCategory: () {
+                              _openCategoryDialog();
+                            },
+                          ),
+                        )
+                      else
+                        SliverPadding(
+                          padding:
+                              const EdgeInsets
+                                  .fromLTRB(
+                            24,
+                            0,
+                            24,
+                            42,
+                          ),
+                          sliver:
+                              SliverLayoutBuilder(
+                            builder: (
                               context,
-                              index,
+                              constraints,
                             ) {
-                              final category =
-                                  Map<String,
-                                      dynamic>.from(
-                                provider
-                                    .categories[
-                                        index],
-                              );
+                              final width =
+                                  constraints
+                                      .crossAxisExtent;
 
-                              return _categoryCard(
-                                category,
+                              final crossAxisCount =
+                                  width >= 1180
+                                      ? 3
+                                      : width >= 760
+                                          ? 2
+                                          : 1;
+
+                              return SliverGrid(
+                                delegate:
+                                    SliverChildBuilderDelegate(
+                                  (
+                                    context,
+                                    index,
+                                  ) {
+                                    final category =
+                                        Map<String,
+                                                dynamic>.from(
+                                      categories[index]
+                                          as Map,
+                                    );
+
+                                    return _AdminCategoryCard(
+                                      category:
+                                          category,
+                                      productCount:
+                                          _productCount(
+                                        category,
+                                      ),
+                                      onEdit: () {
+                                        _openCategoryDialog(
+                                          category:
+                                              category,
+                                        );
+                                      },
+                                      onDelete: () {
+                                        _deleteCategory(
+                                          category,
+                                        );
+                                      },
+                                    );
+                                  },
+                                  childCount:
+                                      categories
+                                          .length,
+                                ),
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount:
+                                      crossAxisCount,
+                                  crossAxisSpacing:
+                                      16,
+                                  mainAxisSpacing:
+                                      16,
+                                  mainAxisExtent:
+                                      320,
+                                ),
                               );
                             },
                           ),
                         ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (provider.isLoading &&
+              categories.isNotEmpty)
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child:
+                  LinearProgressIndicator(
+                color:
+                    _adminCategoriesPrimary,
+              ),
+            ),
+        ],
+      ),
     );
   }
+}
 
-  Widget _buildError(
-    CategoryProvider provider,
+const _adminCategoriesDark =
+    Color(0xFF173F24);
+const _adminCategoriesPrimary =
+    Color(0xFF2F743F);
+const _adminCategoriesLight =
+    Color(0xFFEAF3DF);
+const _adminCategoriesText =
+    Color(0xFF1D2C21);
+const _adminCategoriesMuted =
+    Color(0xFF6C786E);
+
+class _AdminCategoriesTopBar
+    extends StatelessWidget {
+  final VoidCallback onBack;
+  final Future<void> Function()?
+      onRefresh;
+
+  const _AdminCategoriesTopBar({
+    required this.onBack,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
   ) {
-    return RefreshIndicator(
-      onRefresh: _loadCategories,
-      child: ListView(
-        physics:
-            const AlwaysScrollableScrollPhysics(),
-        padding:
-            const EdgeInsets.all(
-          24,
-        ),
-        children: [
-          const SizedBox(
-            height: 150,
-          ),
-          const Icon(
-            Icons.error_outline,
-            size: 75,
-            color: Colors.red,
-          ),
-          const SizedBox(
-            height: 16,
-          ),
-          Text(
-            provider.errorMessage ??
-                'Failed to load categories',
-            textAlign:
-                TextAlign.center,
-            style:
-                const TextStyle(
-              fontSize: 17,
-              fontWeight:
-                  FontWeight.w600,
+    return Container(
+      decoration:
+          const BoxDecoration(
+        gradient:
+            LinearGradient(
+          colors: [
+            Color(
+              0xFF123A22,
             ),
-          ),
-          const SizedBox(
-            height: 18,
-          ),
-          Center(
-            child:
-                ElevatedButton.icon(
-              onPressed:
-                  _loadCategories,
-              icon:
+            Color(
+              0xFF205A34,
+            ),
+            Color(
+              0xFF2E6F40,
+            ),
+          ],
+        ),
+      ),
+      padding:
+          const EdgeInsets
+              .fromLTRB(
+        18,
+        12,
+        18,
+        14,
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            _AdminCategoriesHeaderButton(
+              icon: Icons
+                  .arrow_back_rounded,
+              tooltip:
+                  'Back',
+              onTap:
+                  onBack,
+            ),
+            const SizedBox(
+              width: 12,
+            ),
+            Container(
+              width: 44,
+              height: 44,
+              decoration:
+                  BoxDecoration(
+                color:
+                    const Color(
+                  0xFFDDECB8,
+                ),
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                  13,
+                ),
+              ),
+              child:
                   const Icon(
-                Icons.refresh,
-              ),
-              label:
-                  const Text(
-                'Try Again',
+                Icons.eco_rounded,
+                color:
+                    _adminCategoriesDark,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmpty() {
-    return RefreshIndicator(
-      onRefresh: _loadCategories,
-      child: ListView(
-        physics:
-            const AlwaysScrollableScrollPhysics(),
-        padding:
-            const EdgeInsets.all(
-          24,
+            const SizedBox(
+              width: 10,
+            ),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
+                children: [
+                  Text(
+                    'FarmPilot',
+                    style:
+                        TextStyle(
+                      color:
+                          Colors.white,
+                      fontSize:
+                          19,
+                      fontWeight:
+                          FontWeight
+                              .w800,
+                    ),
+                  ),
+                  Text(
+                    'Manage Categories',
+                    style:
+                        TextStyle(
+                      color:
+                          Color(
+                        0xCCFFFFFF,
+                      ),
+                      fontSize:
+                          12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _AdminCategoriesHeaderButton(
+              icon: Icons
+                  .refresh_rounded,
+              tooltip:
+                  'Refresh',
+              onTap:
+                  onRefresh,
+            ),
+          ],
         ),
-        children: const [
-          SizedBox(
-            height: 150,
-          ),
-          Icon(
-            Icons.category_outlined,
-            size: 75,
-            color: Colors.grey,
-          ),
-          SizedBox(
-            height: 16,
-          ),
-          Center(
-            child: Text(
-              'No Categories Found',
-              style:
-                  TextStyle(
-                fontSize: 18,
-                fontWeight:
-                    FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
+}
 
-  Widget _categoryCard(
-    Map<String, dynamic> category,
+class _AdminCategoriesHeaderButton
+    extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  const _AdminCategoriesHeaderButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color:
+            Colors.white.withValues(
+          alpha:
+              onTap == null
+                  ? 0.05
+                  : 0.10,
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          14,
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius:
+              BorderRadius.circular(
+            14,
+          ),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Icon(
+              icon,
+              size: 21,
+              color:
+                  onTap == null
+                      ? Colors.white54
+                      : Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminCategoriesHero
+    extends StatelessWidget {
+  final int totalCategories;
+  final int totalProducts;
+  final bool isLoading;
+  final VoidCallback? onAddCategory;
+
+  const _AdminCategoriesHero({
+    required this.totalCategories,
+    required this.totalProducts,
+    required this.isLoading,
+    required this.onAddCategory,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      width:
+          double.infinity,
+      padding:
+          const EdgeInsets.all(
+        24,
+      ),
+      decoration:
+          _adminCategoriesCardDecoration(
+        24,
+      ),
+      child: LayoutBuilder(
+        builder: (
+          context,
+          constraints,
+        ) {
+          final heading =
+              Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration:
+                    BoxDecoration(
+                  color:
+                      _adminCategoriesLight,
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    18,
+                  ),
+                ),
+                child:
+                    const Icon(
+                  Icons
+                      .category_outlined,
+                  color:
+                      _adminCategoriesPrimary,
+                  size: 30,
+                ),
+              ),
+              const SizedBox(
+                width: 16,
+              ),
+              const Expanded(
+                child:
+                    Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
+                  children: [
+                    Text(
+                      'Manage Categories',
+                      style:
+                          TextStyle(
+                        color:
+                            _adminCategoriesText,
+                        fontSize: 24,
+                        fontWeight:
+                            FontWeight
+                                .w800,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 4,
+                    ),
+                    Text(
+                      'Organize marketplace categories in English and Arabic.',
+                      style:
+                          TextStyle(
+                        color:
+                            _adminCategoriesMuted,
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+
+          final actions =
+              Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            crossAxisAlignment:
+                WrapCrossAlignment
+                    .center,
+            children: [
+              _AdminCategoryStatChip(
+                label:
+                    'Categories',
+                value:
+                    totalCategories,
+              ),
+              _AdminCategoryStatChip(
+                label:
+                    'Products',
+                value:
+                    totalProducts,
+              ),
+              ElevatedButton.icon(
+                onPressed:
+                    onAddCategory,
+                style:
+                    ElevatedButton
+                        .styleFrom(
+                  backgroundColor:
+                      _adminCategoriesPrimary,
+                  foregroundColor:
+                      Colors.white,
+                  disabledBackgroundColor:
+                      const Color(
+                    0xFF9FB5A4,
+                  ),
+                  elevation: 0,
+                  padding:
+                      const EdgeInsets
+                          .symmetric(
+                    horizontal:
+                        18,
+                    vertical:
+                        15,
+                  ),
+                  shape:
+                      RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius
+                            .circular(
+                      14,
+                    ),
+                  ),
+                ),
+                icon: isLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child:
+                            CircularProgressIndicator(
+                          strokeWidth:
+                              2,
+                          color:
+                              Colors.white,
+                        ),
+                      )
+                    : const Icon(
+                        Icons
+                            .add_rounded,
+                      ),
+                label:
+                    const Text(
+                  'Add Category',
+                  style:
+                      TextStyle(
+                    fontWeight:
+                        FontWeight
+                            .w700,
+                  ),
+                ),
+              ),
+            ],
+          );
+
+          if (constraints
+                  .maxWidth <
+              760) {
+            return Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+              children: [
+                heading,
+                const SizedBox(
+                  height: 18,
+                ),
+                actions,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(
+                child:
+                    heading,
+              ),
+              const SizedBox(
+                width: 18,
+              ),
+              actions,
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AdminCategoryStatChip
+    extends StatelessWidget {
+  final String label;
+  final int value;
+
+  const _AdminCategoryStatChip({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      padding:
+          const EdgeInsets
+              .symmetric(
+        horizontal: 13,
+        vertical: 10,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            const Color(
+          0xFFF1F6E9,
+        ),
+        borderRadius:
+            BorderRadius
+                .circular(
+          15,
+        ),
+      ),
+      child: Text(
+        '$label $value',
+        style:
+            const TextStyle(
+          color:
+              _adminCategoriesPrimary,
+          fontSize: 12,
+          fontWeight:
+              FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminCategoryCard
+    extends StatelessWidget {
+  final Map<String, dynamic>
+      category;
+  final int productCount;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _AdminCategoryCard({
+    required this.category,
+    required this.productCount,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
   ) {
     final nameEn =
         category['nameEn']
@@ -769,187 +1295,705 @@ class _AdminCategoriesScreenState
             ? descriptionEn
             : fallbackDescription;
 
-    final productCount =
-        _productCount(
-      category,
-    );
-
-    return Card(
-      elevation: 2,
-      margin:
-          const EdgeInsets.only(
-        bottom: 14,
+    return Container(
+      padding:
+          const EdgeInsets.all(
+        18,
       ),
-      shape:
-          RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(
-          16,
-        ),
+      decoration:
+          _adminCategoriesCardDecoration(
+        22,
       ),
-      child: Padding(
-        padding:
-            const EdgeInsets.all(
-          16,
-        ),
-        child: Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor:
-                  Colors.green
-                      .shade100,
-              child: Icon(
-                Icons.category_outlined,
-                color: Colors.green
-                    .shade700,
-              ),
-            ),
-            const SizedBox(
-              width: 14,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    displayNameEn,
-                    style:
-                        const TextStyle(
-                      fontSize: 18,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment
+                .start,
+        children: [
+          Row(
+            crossAxisAlignment:
+                CrossAxisAlignment
+                    .start,
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration:
+                    BoxDecoration(
+                  color:
+                      _adminCategoriesLight,
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    15,
                   ),
-                  if (nameAr
-                      .isNotEmpty) ...[
-                    const SizedBox(
-                      height: 4,
-                    ),
+                ),
+                child:
+                    const Icon(
+                  Icons
+                      .category_outlined,
+                  color:
+                      _adminCategoriesPrimary,
+                  size: 27,
+                ),
+              ),
+              const SizedBox(
+                width: 12,
+              ),
+              Expanded(
+                child:
+                    Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
+                  children: [
                     Text(
-                      nameAr,
-                      textDirection:
-                          TextDirection.rtl,
+                      displayNameEn,
+                      maxLines:
+                          1,
+                      overflow:
+                          TextOverflow
+                              .ellipsis,
                       style:
                           const TextStyle(
-                        fontSize: 16,
+                        color:
+                            _adminCategoriesText,
+                        fontSize:
+                            17,
                         fontWeight:
-                            FontWeight.w600,
+                            FontWeight
+                                .w800,
                       ),
                     ),
-                  ],
-                  if (displayDescriptionEn
-                      .isNotEmpty) ...[
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    Text(
-                      displayDescriptionEn,
-                      style:
-                          TextStyle(
-                        color: Colors
-                            .grey
-                            .shade700,
-                        height: 1.4,
+                    if (nameAr
+                        .isNotEmpty) ...[
+                      const SizedBox(
+                        height: 4,
                       ),
-                    ),
-                  ],
-                  if (descriptionAr
-                      .isNotEmpty) ...[
-                    const SizedBox(
-                      height: 4,
-                    ),
-                    Text(
-                      descriptionAr,
-                      textDirection:
-                          TextDirection.rtl,
-                      style:
-                          TextStyle(
-                        color: Colors
-                            .grey
-                            .shade700,
-                        height: 1.4,
+                      Text(
+                        nameAr,
+                        maxLines:
+                            1,
+                        overflow:
+                            TextOverflow
+                                .ellipsis,
+                        textDirection:
+                            TextDirection
+                                .rtl,
+                        style:
+                            const TextStyle(
+                          color:
+                              _adminCategoriesText,
+                          fontSize:
+                              14,
+                          fontWeight:
+                              FontWeight
+                                  .w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
-                  const SizedBox(
-                    height: 10,
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets
+                        .symmetric(
+                  horizontal:
+                      10,
+                  vertical:
+                      6,
+                ),
+                decoration:
+                    BoxDecoration(
+                  color:
+                      const Color(
+                    0xFFF1F6E9,
                   ),
-                  Container(
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    16,
+                  ),
+                ),
+                child: Text(
+                  '$productCount ${productCount == 1 ? 'product' : 'products'}',
+                  style:
+                      const TextStyle(
+                    color:
+                        _adminCategoriesPrimary,
+                    fontSize:
+                        10,
+                    fontWeight:
+                        FontWeight
+                            .w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 16,
+          ),
+          if (displayDescriptionEn
+              .isNotEmpty)
+            Container(
+              width:
+                  double.infinity,
+              padding:
+                  const EdgeInsets
+                      .all(
+                12,
+              ),
+              decoration:
+                  BoxDecoration(
+                color:
+                    const Color(
+                  0xFFFBFCF9,
+                ),
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                  13,
+                ),
+                border:
+                    Border.all(
+                  color:
+                      const Color(
+                    0xFFE3E9DF,
+                  ),
+                ),
+              ),
+              child: Text(
+                displayDescriptionEn,
+                maxLines: 3,
+                overflow:
+                    TextOverflow
+                        .ellipsis,
+                style:
+                    const TextStyle(
+                  color:
+                      _adminCategoriesMuted,
+                  fontSize: 12,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          if (descriptionAr
+              .isNotEmpty) ...[
+            const SizedBox(
+              height: 10,
+            ),
+            Container(
+              width:
+                  double.infinity,
+              padding:
+                  const EdgeInsets
+                      .all(
+                12,
+              ),
+              decoration:
+                  BoxDecoration(
+                color:
+                    const Color(
+                  0xFFFBFCF9,
+                ),
+                borderRadius:
+                    BorderRadius
+                        .circular(
+                  13,
+                ),
+                border:
+                    Border.all(
+                  color:
+                      const Color(
+                    0xFFE3E9DF,
+                  ),
+                ),
+              ),
+              child: Text(
+                descriptionAr,
+                maxLines: 3,
+                overflow:
+                    TextOverflow
+                        .ellipsis,
+                textDirection:
+                    TextDirection
+                        .rtl,
+                style:
+                    const TextStyle(
+                  color:
+                      _adminCategoriesMuted,
+                  fontSize: 12,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+          const Spacer(),
+          Row(
+            children: [
+              Expanded(
+                child:
+                    ElevatedButton.icon(
+                  onPressed:
+                      onEdit,
+                  style:
+                      ElevatedButton
+                          .styleFrom(
+                    backgroundColor:
+                        _adminCategoriesPrimary,
+                    foregroundColor:
+                        Colors.white,
+                    elevation: 0,
                     padding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
+                        const EdgeInsets
+                            .symmetric(
+                      vertical:
+                          13,
                     ),
-                    decoration:
-                        BoxDecoration(
-                      color: Colors.blue
-                          .shade50,
+                    shape:
+                        RoundedRectangleBorder(
                       borderRadius:
-                          BorderRadius.circular(
-                        20,
-                      ),
-                    ),
-                    child: Text(
-                      '$productCount product${productCount == 1 ? '' : 's'}',
-                      style:
-                          TextStyle(
-                        color: Colors.blue
-                            .shade700,
-                        fontWeight:
-                            FontWeight.w600,
-                        fontSize: 12,
+                          BorderRadius
+                              .circular(
+                        13,
                       ),
                     ),
                   ),
-                ],
+                  icon:
+                      const Icon(
+                    Icons
+                        .edit_outlined,
+                    size: 18,
+                  ),
+                  label:
+                      const Text(
+                    'Edit',
+                    style:
+                        TextStyle(
+                      fontWeight:
+                          FontWeight
+                              .w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              SizedBox(
+                width: 48,
+                height: 48,
+                child:
+                    IconButton(
+                  tooltip:
+                      productCount >
+                              0
+                          ? 'Category contains products'
+                          : 'Delete Category',
+                  onPressed:
+                      onDelete,
+                  style:
+                      IconButton
+                          .styleFrom(
+                    backgroundColor:
+                        const Color(
+                      0xFFFFF3F3,
+                    ),
+                    foregroundColor:
+                        productCount >
+                                0
+                            ? Colors
+                                .grey
+                            : const Color(
+                                0xFFC65353,
+                              ),
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius
+                              .circular(
+                        13,
+                      ),
+                    ),
+                  ),
+                  icon:
+                      const Icon(
+                    Icons
+                        .delete_outline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminCategoriesEmptyState
+    extends StatelessWidget {
+  final VoidCallback onAddCategory;
+
+  const _AdminCategoriesEmptyState({
+    required this.onAddCategory,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Center(
+      child: Container(
+        constraints:
+            const BoxConstraints(
+          maxWidth: 460,
+        ),
+        margin:
+            const EdgeInsets.all(
+          24,
+        ),
+        padding:
+            const EdgeInsets.all(
+          30,
+        ),
+        decoration:
+            _adminCategoriesCardDecoration(
+          24,
+        ),
+        child: Column(
+          mainAxisSize:
+              MainAxisSize.min,
+          children: [
+            Container(
+              width: 82,
+              height: 82,
+              decoration:
+                  const BoxDecoration(
+                color:
+                    _adminCategoriesLight,
+                shape:
+                    BoxShape.circle,
+              ),
+              child:
+                  const Icon(
+                Icons
+                    .category_outlined,
+                size: 38,
+                color:
+                    _adminCategoriesPrimary,
               ),
             ),
             const SizedBox(
-              width: 8,
+              height: 16,
             ),
-            Column(
-              children: [
-                IconButton(
-                  tooltip:
-                      'Edit Category',
-                  onPressed: () {
-                    _openCategoryDialog(
-                      category:
-                          category,
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.edit_outlined,
-                    color: Colors.blue,
+            const Text(
+              'No Categories Found',
+              textAlign:
+                  TextAlign.center,
+              style:
+                  TextStyle(
+                color:
+                    _adminCategoriesText,
+                fontSize: 20,
+                fontWeight:
+                    FontWeight
+                        .w800,
+              ),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            const Text(
+              'Add the first marketplace category to organize products.',
+              textAlign:
+                  TextAlign.center,
+              style:
+                  TextStyle(
+                color:
+                    _adminCategoriesMuted,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            ElevatedButton.icon(
+              onPressed:
+                  onAddCategory,
+              style:
+                  ElevatedButton
+                      .styleFrom(
+                backgroundColor:
+                    _adminCategoriesPrimary,
+                foregroundColor:
+                    Colors.white,
+                elevation: 0,
+                padding:
+                    const EdgeInsets
+                        .symmetric(
+                  horizontal:
+                      18,
+                  vertical:
+                      14,
+                ),
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    14,
                   ),
                 ),
-                IconButton(
-                  tooltip:
-                      productCount > 0
-                          ? 'Category contains products'
-                          : 'Delete Category',
-                  onPressed: () {
-                    _deleteCategory(
-                      category,
-                    );
-                  },
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color:
-                        productCount > 0
-                            ? Colors.grey
-                            : Colors.red,
-                  ),
-                ),
-              ],
+              ),
+              icon:
+                  const Icon(
+                Icons
+                    .add_rounded,
+              ),
+              label:
+                  const Text(
+                'Add Category',
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _AdminCategoriesErrorState
+    extends StatelessWidget {
+  final String message;
+  final Future<void> Function()
+      onRetry;
+
+  const _AdminCategoriesErrorState({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Center(
+      child: Container(
+        constraints:
+            const BoxConstraints(
+          maxWidth: 440,
+        ),
+        margin:
+            const EdgeInsets.all(
+          24,
+        ),
+        padding:
+            const EdgeInsets.all(
+          28,
+        ),
+        decoration:
+            _adminCategoriesCardDecoration(
+          24,
+        ),
+        child: Column(
+          mainAxisSize:
+              MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons
+                  .error_outline_rounded,
+              size: 56,
+              color:
+                  Color(
+                0xFFC65353,
+              ),
+            ),
+            const SizedBox(
+              height: 14,
+            ),
+            Text(
+              message,
+              textAlign:
+                  TextAlign.center,
+              style:
+                  const TextStyle(
+                color:
+                    _adminCategoriesText,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(
+              height: 18,
+            ),
+            ElevatedButton.icon(
+              onPressed:
+                  onRetry,
+              style:
+                  ElevatedButton
+                      .styleFrom(
+                backgroundColor:
+                    _adminCategoriesPrimary,
+                foregroundColor:
+                    Colors.white,
+                elevation: 0,
+              ),
+              icon:
+                  const Icon(
+                Icons
+                    .refresh_rounded,
+              ),
+              label:
+                  const Text(
+                'Try Again',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AdminCategoriesBackdrop
+    extends StatelessWidget {
+  const _AdminCategoriesBackdrop();
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return IgnorePointer(
+      child: Stack(
+        fit:
+            StackFit.expand,
+        children: [
+          const DecoratedBox(
+            decoration:
+                BoxDecoration(
+              gradient:
+                  LinearGradient(
+                begin:
+                    Alignment
+                        .topCenter,
+                end:
+                    Alignment
+                        .bottomCenter,
+                colors: [
+                  Color(
+                    0xFFF8FAF4,
+                  ),
+                  Color(
+                    0xFFFFFCF5,
+                  ),
+                  Color(
+                    0xFFF3F8EC,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            end: -180,
+            top: 190,
+            child:
+                _AdminCategoriesGlow(
+              size: 450,
+              color:
+                  const Color(
+                0xFFCFE6B4,
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            start: -190,
+            bottom: -220,
+            child:
+                _AdminCategoriesGlow(
+              size: 520,
+              color:
+                  const Color(
+                0xFFE7DFAF,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminCategoriesGlow
+    extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _AdminCategoriesGlow({
+    required this.size,
+    required this.color,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Container(
+      width: size,
+      height: size,
+      decoration:
+          BoxDecoration(
+        shape:
+            BoxShape.circle,
+        gradient:
+            RadialGradient(
+          colors: [
+            color.withValues(
+              alpha: 0.25,
+            ),
+            color.withValues(
+              alpha: 0,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+BoxDecoration
+    _adminCategoriesCardDecoration(
+  double radius,
+) {
+  return BoxDecoration(
+    color:
+        Colors.white,
+    borderRadius:
+        BorderRadius.circular(
+      radius,
+    ),
+    border:
+        Border.all(
+      color:
+          const Color(
+        0xFFDCE5D8,
+      ),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color:
+            _adminCategoriesDark
+                .withValues(
+          alpha: 0.05,
+        ),
+        blurRadius: 20,
+        offset:
+            const Offset(
+          0,
+          7,
+        ),
+      ),
+    ],
+  );
 }
