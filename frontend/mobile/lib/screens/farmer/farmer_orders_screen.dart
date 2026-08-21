@@ -1,9 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/locale_provider.dart';
+
+String _t(
+  BuildContext context,
+  String english,
+  String arabic,
+) {
+  return Localizations.localeOf(context)
+              .languageCode ==
+          'ar'
+      ? arabic
+      : english;
+}
+
+String _localizedStatus(
+  BuildContext context,
+  String status,
+) {
+  switch (status.trim().toUpperCase()) {
+    case 'CONFIRMED':
+      return _t(
+        context,
+        'Confirmed',
+        'مؤكد',
+      );
+    case 'COMPLETED':
+      return _t(
+        context,
+        'Completed',
+        'مكتمل',
+      );
+    case 'CANCELLED':
+      return _t(
+        context,
+        'Cancelled',
+        'ملغي',
+      );
+    case 'PENDING':
+    default:
+      return _t(
+        context,
+        'Pending',
+        'قيد الانتظار',
+      );
+  }
+}
 
 class FarmerOrdersScreen extends StatefulWidget {
   const FarmerOrdersScreen({
@@ -65,11 +112,19 @@ class _FarmerOrdersScreenState
         dialogContext,
       ) {
         return AlertDialog(
-          title: const Text(
-            'Confirm Order',
+          title: Text(
+            _t(
+              context,
+              'Confirm Order',
+              'تأكيد الطلب',
+            ),
           ),
-          content: const Text(
-            'Are you sure you want to confirm this order?',
+          content: Text(
+            _t(
+              context,
+              'Are you sure you want to confirm this order?',
+              'هل أنت متأكد أنك تريد تأكيد هذا الطلب؟',
+            ),
           ),
           actions: [
             TextButton(
@@ -79,8 +134,12 @@ class _FarmerOrdersScreenState
                   false,
                 );
               },
-              child: const Text(
-                'No',
+              child: Text(
+                _t(
+                  context,
+                  'No',
+                  'لا',
+                ),
               ),
             ),
             ElevatedButton(
@@ -90,8 +149,12 @@ class _FarmerOrdersScreenState
                   true,
                 );
               },
-              child: const Text(
-                'Confirm',
+              child: Text(
+                _t(
+                  context,
+                  'Confirm',
+                  'تأكيد',
+                ),
               ),
             ),
           ],
@@ -99,10 +162,8 @@ class _FarmerOrdersScreenState
       },
     );
 
-    if (
-      shouldConfirm != true ||
-      !mounted
-    ) {
+    if (shouldConfirm != true ||
+        !mounted) {
       return;
     }
 
@@ -118,13 +179,10 @@ class _FarmerOrdersScreenState
       listen: false,
     );
 
-    final token =
-        authProvider.token;
+    final token = authProvider.token;
 
-    if (
-      token == null ||
-      token.isEmpty
-    ) {
+    if (token == null ||
+        token.isEmpty) {
       return;
     }
 
@@ -140,8 +198,11 @@ class _FarmerOrdersScreenState
 
     _showResultMessage(
       success: success,
-      successMessage:
-          'Order confirmed successfully',
+      successMessage: _t(
+        context,
+        'Order confirmed successfully',
+        'تم تأكيد الطلب بنجاح',
+      ),
       errorMessage:
           orderProvider.errorMessage,
     );
@@ -157,11 +218,19 @@ class _FarmerOrdersScreenState
         dialogContext,
       ) {
         return AlertDialog(
-          title: const Text(
-            'Complete Order',
+          title: Text(
+            _t(
+              context,
+              'Complete Order',
+              'إكمال الطلب',
+            ),
           ),
-          content: const Text(
-            'Are you sure this order has been completed?',
+          content: Text(
+            _t(
+              context,
+              'Are you sure this order has been completed?',
+              'هل أنت متأكد أن هذا الطلب قد اكتمل؟',
+            ),
           ),
           actions: [
             TextButton(
@@ -171,8 +240,12 @@ class _FarmerOrdersScreenState
                   false,
                 );
               },
-              child: const Text(
-                'No',
+              child: Text(
+                _t(
+                  context,
+                  'No',
+                  'لا',
+                ),
               ),
             ),
             ElevatedButton(
@@ -182,8 +255,12 @@ class _FarmerOrdersScreenState
                   true,
                 );
               },
-              child: const Text(
-                'Complete',
+              child: Text(
+                _t(
+                  context,
+                  'Complete',
+                  'إكمال',
+                ),
               ),
             ),
           ],
@@ -191,10 +268,8 @@ class _FarmerOrdersScreenState
       },
     );
 
-    if (
-      shouldComplete != true ||
-      !mounted
-    ) {
+    if (shouldComplete != true ||
+        !mounted) {
       return;
     }
 
@@ -210,13 +285,10 @@ class _FarmerOrdersScreenState
       listen: false,
     );
 
-    final token =
-        authProvider.token;
+    final token = authProvider.token;
 
-    if (
-      token == null ||
-      token.isEmpty
-    ) {
+    if (token == null ||
+        token.isEmpty) {
       return;
     }
 
@@ -232,8 +304,11 @@ class _FarmerOrdersScreenState
 
     _showResultMessage(
       success: success,
-      successMessage:
-          'Order completed successfully',
+      successMessage: _t(
+        context,
+        'Order completed successfully',
+        'تم إكمال الطلب بنجاح',
+      ),
       errorMessage:
           orderProvider.errorMessage,
     );
@@ -249,11 +324,19 @@ class _FarmerOrdersScreenState
         dialogContext,
       ) {
         return AlertDialog(
-          title: const Text(
-            'Cancel Order',
+          title: Text(
+            _t(
+              context,
+              'Cancel Order',
+              'إلغاء الطلب',
+            ),
           ),
-          content: const Text(
-            'Are you sure you want to cancel this order?',
+          content: Text(
+            _t(
+              context,
+              'Are you sure you want to cancel this order?',
+              'هل أنت متأكد أنك تريد إلغاء هذا الطلب؟',
+            ),
           ),
           actions: [
             TextButton(
@@ -263,8 +346,12 @@ class _FarmerOrdersScreenState
                   false,
                 );
               },
-              child: const Text(
-                'No',
+              child: Text(
+                _t(
+                  context,
+                  'No',
+                  'لا',
+                ),
               ),
             ),
             TextButton(
@@ -274,9 +361,13 @@ class _FarmerOrdersScreenState
                   true,
                 );
               },
-              child: const Text(
-                'Yes, Cancel',
-                style: TextStyle(
+              child: Text(
+                _t(
+                  context,
+                  'Yes, Cancel',
+                  'نعم، إلغاء',
+                ),
+                style: const TextStyle(
                   color: Colors.red,
                 ),
               ),
@@ -286,10 +377,8 @@ class _FarmerOrdersScreenState
       },
     );
 
-    if (
-      shouldCancel != true ||
-      !mounted
-    ) {
+    if (shouldCancel != true ||
+        !mounted) {
       return;
     }
 
@@ -305,13 +394,10 @@ class _FarmerOrdersScreenState
       listen: false,
     );
 
-    final token =
-        authProvider.token;
+    final token = authProvider.token;
 
-    if (
-      token == null ||
-      token.isEmpty
-    ) {
+    if (token == null ||
+        token.isEmpty) {
       return;
     }
 
@@ -327,8 +413,11 @@ class _FarmerOrdersScreenState
 
     _showResultMessage(
       success: success,
-      successMessage:
-          'Order cancelled successfully',
+      successMessage: _t(
+        context,
+        'Order cancelled successfully',
+        'تم إلغاء الطلب بنجاح',
+      ),
       errorMessage:
           orderProvider.errorMessage,
     );
@@ -339,15 +428,23 @@ class _FarmerOrdersScreenState
     required String successMessage,
     String? errorMessage,
   }) {
+    final message = success
+        ? successMessage
+        : (errorMessage == null ||
+                errorMessage.trim().isEmpty)
+            ? _t(
+                context,
+                'Something went wrong',
+                'حدث خطأ ما',
+              )
+            : errorMessage;
+
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           content: Text(
-            success
-                ? successMessage
-                : errorMessage ??
-                    'Something went wrong',
+            message,
           ),
           backgroundColor:
               success
@@ -528,10 +625,20 @@ const _ordersMuted = Color(0xFF6C786E);
 class _OrdersTopBar extends StatelessWidget {
   final Future<void> Function() onRefresh;
 
-  const _OrdersTopBar({required this.onRefresh});
+  const _OrdersTopBar({
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final l10n =
+        AppLocalizations.of(context)!;
+
+    final isArabic =
+        Localizations.localeOf(context)
+                .languageCode ==
+            'ar';
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -542,52 +649,176 @@ class _OrdersTopBar extends StatelessWidget {
           ],
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+      padding: const EdgeInsets.fromLTRB(
+        18,
+        12,
+        18,
+        14,
+      ),
       child: SafeArea(
         bottom: false,
         child: Row(
           children: [
             _HeaderButton(
               icon: Icons.arrow_back_rounded,
-              tooltip: 'Back',
-              onTap: () => Navigator.pop(context),
+              tooltip: _t(
+                context,
+                'Back',
+                'رجوع',
+              ),
+              onTap: () =>
+                  Navigator.pop(context),
             ),
             const SizedBox(width: 12),
             Container(
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFDDECB8),
-                borderRadius: BorderRadius.circular(13),
+                color: const Color(
+                  0xFFDDECB8,
+                ),
+                borderRadius:
+                    BorderRadius.circular(
+                  13,
+                ),
               ),
-              child: const Icon(Icons.eco_rounded, color: _ordersDark),
+              child: const Icon(
+                Icons.eco_rounded,
+                color: _ordersDark,
+              ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'FarmPilot',
-                    style: TextStyle(
+                    l10n.appName,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 19,
-                      fontWeight: FontWeight.w800,
+                      fontWeight:
+                          FontWeight.w800,
                     ),
                   ),
                   Text(
-                    'Manage Orders',
-                    style: TextStyle(
-                      color: Color(0xCCFFFFFF),
+                    _t(
+                      context,
+                      'Manage Orders',
+                      'إدارة الطلبات',
+                    ),
+                    style: const TextStyle(
+                      color:
+                          Color(0xCCFFFFFF),
                       fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
+            PopupMenuButton<String>(
+              tooltip:
+                  l10n.changeLanguage,
+              position:
+                  PopupMenuPosition.under,
+              offset:
+                  const Offset(0, 8),
+              color:
+                  const Color(0xFFF8FAF4),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                  16,
+                ),
+              ),
+              onSelected: (languageCode) {
+                Provider.of<LocaleProvider>(
+                  context,
+                  listen: false,
+                ).setLocale(
+                  Locale(languageCode),
+                );
+              },
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _ordersPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          l10n.english,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _ordersPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          l10n.arabic,
+                        ),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white
+                      .withValues(
+                    alpha: 0.10,
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(
+                    14,
+                  ),
+                ),
+                alignment:
+                    Alignment.center,
+                child: const Icon(
+                  Icons.language_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
             _HeaderButton(
               icon: Icons.refresh_rounded,
-              tooltip: 'Refresh',
+              tooltip: _t(
+                context,
+                'Refresh',
+                'تحديث',
+              ),
               onTap: onRefresh,
             ),
           ],
@@ -664,22 +895,32 @@ class _OrdersHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Customer Orders',
-                      style: TextStyle(
+                      _t(
+                        context,
+                        'Customer Orders',
+                        'طلبات العملاء',
+                      ),
+                      style: const TextStyle(
                         color: _ordersText,
                         fontSize: 24,
-                        fontWeight: FontWeight.w800,
+                        fontWeight:
+                            FontWeight.w800,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Review incoming orders and keep every order status up to date.',
-                      style: TextStyle(
+                      _t(
+                        context,
+                        'Review incoming orders and keep every order status up to date.',
+                        'راجع الطلبات الواردة وحافظ على تحديث حالة كل طلب.',
+                      ),
+                      style: const TextStyle(
                         color: _ordersMuted,
                         fontSize: 13,
                       ),
@@ -694,9 +935,30 @@ class _OrdersHero extends StatelessWidget {
             spacing: 9,
             runSpacing: 9,
             children: [
-              _MiniStat(label: 'Total', value: total),
-              _MiniStat(label: 'Pending', value: pending),
-              _MiniStat(label: 'Confirmed', value: confirmed),
+              _MiniStat(
+                label: _t(
+                  context,
+                  'Total',
+                  'الإجمالي',
+                ),
+                value: total,
+              ),
+              _MiniStat(
+                label: _t(
+                  context,
+                  'Pending',
+                  'قيد الانتظار',
+                ),
+                value: pending,
+              ),
+              _MiniStat(
+                label: _t(
+                  context,
+                  'Confirmed',
+                  'مؤكد',
+                ),
+                value: confirmed,
+              ),
             ],
           );
 
@@ -780,7 +1042,7 @@ class _StatusFilter extends StatelessWidget {
           final selected = selectedStatus == status;
 
           return ChoiceChip(
-            label: Text(_filterLabel(status)),
+            label: Text(_filterLabel(context, status)),
             selected: selected,
             onSelected: (_) => onChanged(status),
             showCheckmark: false,
@@ -803,18 +1065,18 @@ class _StatusFilter extends StatelessWidget {
     );
   }
 
-  String _filterLabel(String status) {
+  String _filterLabel(BuildContext context, String status) {
     switch (status) {
       case 'ALL':
-        return 'All Orders';
+        return _t(context, 'All Orders', 'كل الطلبات');
       case 'PENDING':
-        return 'Pending';
+        return _t(context, 'Pending', 'قيد الانتظار');
       case 'CONFIRMED':
-        return 'Confirmed';
+        return _t(context, 'Confirmed', 'مؤكد');
       case 'COMPLETED':
-        return 'Completed';
+        return _t(context, 'Completed', 'مكتمل');
       case 'CANCELLED':
-        return 'Cancelled';
+        return _t(context, 'Cancelled', 'ملغي');
       default:
         return status;
     }
@@ -870,7 +1132,7 @@ class _FarmerOrderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Order #${_shortOrderId(order.id)}',
+                      "${_t(context, 'Order', 'طلب')} #${_shortOrderId(order.id)}",
                       style: const TextStyle(
                         color: _ordersText,
                         fontSize: 17,
@@ -926,13 +1188,18 @@ class _FarmerOrderCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Order Total',
-                    style: TextStyle(
+                    _t(
+                      context,
+                      'Order Total',
+                      'إجمالي الطلب',
+                    ),
+                    style: const TextStyle(
                       color: _ordersText,
                       fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      fontWeight:
+                          FontWeight.w700,
                     ),
                   ),
                 ),
@@ -958,14 +1225,14 @@ class _FarmerOrderCard extends StatelessWidget {
                     onPressed: isLoading ? null : onConfirm,
                     style: _primaryButtonStyle(),
                     icon: const Icon(Icons.check_circle_outline_rounded),
-                    label: const Text('Confirm Order'),
+                    label: Text(_t(context, 'Confirm Order', 'تأكيد الطلب')),
                   ),
                 if (canComplete)
                   ElevatedButton.icon(
                     onPressed: isLoading ? null : onComplete,
                     style: _primaryButtonStyle(),
                     icon: const Icon(Icons.task_alt_rounded),
-                    label: const Text('Complete Order'),
+                    label: Text(_t(context, 'Complete Order', 'إكمال الطلب')),
                   ),
                 if (canCancel)
                   OutlinedButton.icon(
@@ -982,7 +1249,7 @@ class _FarmerOrderCard extends StatelessWidget {
                       ),
                     ),
                     icon: const Icon(Icons.cancel_outlined),
-                    label: const Text('Cancel'),
+                    label: Text(_t(context, 'Cancel', 'إلغاء')),
                   ),
               ],
             ),
@@ -1011,13 +1278,13 @@ class _CustomerPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final customer = order.customer;
     return _InnerPanel(
-      title: 'Customer',
+      title: _t(context, 'Customer', 'العميل'),
       icon: Icons.person_outline_rounded,
       child: Column(
         children: [
           _InfoRow(
             icon: Icons.person_outline,
-            text: customer.fullName.isEmpty ? 'Customer' : customer.fullName,
+            text: customer.fullName.isEmpty ? _t(context, 'Customer', 'العميل') : customer.fullName,
           ),
           if (customer.email.isNotEmpty)
             _InfoRow(icon: Icons.email_outlined, text: customer.email),
@@ -1042,7 +1309,7 @@ class _ItemsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InnerPanel(
-      title: 'Order Items',
+      title: _t(context, 'Order Items', 'عناصر الطلب'),
       icon: Icons.shopping_basket_outlined,
       child: Column(
         children: order.orderItems
@@ -1107,7 +1374,7 @@ class _OrderItemRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productName =
-        item.product.name.isEmpty ? 'Product' : item.product.name;
+        item.product.name.isEmpty ? _t(context, 'Product', 'منتج') : item.product.name;
     final unit =
         item.product.unit.isEmpty ? '' : ' ${item.product.unit}';
 
@@ -1142,7 +1409,7 @@ class _OrderItemRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Quantity: ${item.quantity}$unit',
+                  "${_t(context, 'Quantity', 'الكمية')}: ${item.quantity}$unit",
                   style: const TextStyle(
                     color: _ordersMuted,
                     fontSize: 12,
@@ -1212,7 +1479,7 @@ class _StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        _statusLabel(status),
+        _localizedStatus(context, status),
         style: TextStyle(
           color: color,
           fontSize: 11,
@@ -1236,19 +1503,6 @@ class _StatusBadge extends StatelessWidget {
     }
   }
 
-  String _statusLabel(String value) {
-    switch (value.toUpperCase()) {
-      case 'CONFIRMED':
-        return 'Confirmed';
-      case 'COMPLETED':
-        return 'Completed';
-      case 'CANCELLED':
-        return 'Cancelled';
-      case 'PENDING':
-      default:
-        return 'Pending';
-    }
-  }
 }
 
 class _EmptyOrdersView extends StatelessWidget {
@@ -1280,8 +1534,16 @@ class _EmptyOrdersView extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               status == 'ALL'
-                  ? 'No orders yet'
-                  : 'No ${status.toLowerCase()} orders',
+                  ? _t(
+                      context,
+                      'No orders yet',
+                      'لا توجد طلبات بعد',
+                    )
+                  : _t(
+                      context,
+                      'No ${status.toLowerCase()} orders',
+                      'لا توجد طلبات بحالة ${_localizedStatus(context, status)}',
+                    ),
               style: const TextStyle(
                 color: _ordersText,
                 fontSize: 19,
@@ -1289,9 +1551,15 @@ class _EmptyOrdersView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Orders from customers will appear here.',
-              style: TextStyle(color: _ordersMuted),
+            Text(
+              _t(
+                context,
+                'Orders from customers will appear here.',
+                'ستظهر طلبات العملاء هنا.',
+              ),
+              style: const TextStyle(
+                color: _ordersMuted,
+              ),
             ),
           ],
         ),
@@ -1336,7 +1604,7 @@ class _ErrorView extends StatelessWidget {
               onPressed: onRetry,
               style: _primaryButtonStyle(),
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
+              label: Text(_t(context, 'Try Again', 'حاول مرة أخرى')),
             ),
           ],
         ),
