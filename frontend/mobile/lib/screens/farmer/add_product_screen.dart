@@ -8,6 +8,7 @@ import '../../core/constants/app_constants.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../providers/product_provider.dart';
 
 class AddProductScreen extends StatefulWidget {
@@ -395,10 +396,20 @@ class _AddProductScreenState
       return;
     }
 
-    final language =
+    final languageCode =
         Localizations.localeOf(
       context,
     ).languageCode;
+
+    final language =
+        languageCode == 'ar'
+            ? 'Arabic'
+            : 'English';
+
+    final fallbackDetails =
+        languageCode == 'ar'
+            ? 'منتج زراعي طازج'
+            : 'Fresh farm product';
 
     try {
       final result =
@@ -407,8 +418,7 @@ class _AddProductScreenState
         productName: productName,
         productDetails:
             productDetails.isEmpty
-                ? l10n
-                    .freshFarmProduct
+                ? fallbackDetails
                 : productDetails,
         language: language,
         productId:
@@ -780,31 +790,28 @@ class _AddProductScreenState
       return;
     }
 
-    final languageCode =
-        Localizations.localeOf(
-      context,
-    ).languageCode;
-
-    final isArabic =
-        languageCode == 'ar';
+    final inputIsArabic =
+        RegExp(
+          r'[\u0600-\u06FF]',
+        ).hasMatch(name);
 
     final nameAr =
-        isArabic
+        inputIsArabic
             ? name
             : '';
 
     final descriptionAr =
-        isArabic
+        inputIsArabic
             ? description
             : '';
 
     final nameEn =
-        isArabic
+        inputIsArabic
             ? ''
             : name;
 
     final descriptionEn =
-        isArabic
+        inputIsArabic
             ? ''
             : description;
 
@@ -920,6 +927,13 @@ class _AddProductScreenState
     }
   }
 
+  void _changeLanguage(String languageCode) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(Locale(languageCode));
+  }
+
   @override
   Widget build(
     BuildContext context,
@@ -936,6 +950,9 @@ class _AddProductScreenState
 
     final l10n =
         AppLocalizations.of(context)!;
+
+    final isArabic =
+        Localizations.localeOf(context).languageCode == 'ar';
 
     final oldImageUrl =
         _buildImageUrl(
@@ -960,10 +977,16 @@ class _AddProductScreenState
             children: [
               _AddProductTopBar(
                 title: pageTitle,
+                backTooltip: isArabic ? 'رجوع' : 'Back',
                 onBack: () =>
                     Navigator.pop(
                   context,
                 ),
+                onLanguage: (languageCode) {
+                  _changeLanguage(
+                    languageCode,
+                  );
+                },
               ),
               Expanded(
                 child:
@@ -1011,13 +1034,15 @@ class _AddProductScreenState
                                   CrossAxisAlignment
                                       .start,
                               children: [
-                                const _ProductSectionTitle(
+                                _ProductSectionTitle(
                                   icon: Icons
                                       .inventory_2_outlined,
-                                  title:
-                                      'Product Information',
-                                  subtitle:
-                                      'Add the core product details customers will see in the marketplace.',
+                                  title: isArabic
+                                      ? 'معلومات المنتج'
+                                      : 'Product Information',
+                                  subtitle: isArabic
+                                      ? 'أضف تفاصيل المنتج الأساسية التي سيشاهدها العملاء في المتجر.'
+                                      : 'Add the core product details customers will see in the marketplace.',
                                 ),
                                 const SizedBox(
                                   height: 24,
@@ -1274,13 +1299,15 @@ class _AddProductScreenState
                                 const SizedBox(
                                   height: 24,
                                 ),
-                                const _ProductSectionTitle(
+                                _ProductSectionTitle(
                                   icon: Icons
                                       .image_outlined,
-                                  title:
-                                      'Product Image',
-                                  subtitle:
-                                      'Choose a clear product photo for the marketplace listing.',
+                                  title: isArabic
+                                      ? 'صورة المنتج'
+                                      : 'Product Image',
+                                  subtitle: isArabic
+                                      ? 'اختر صورة واضحة للمنتج لعرضها في المتجر.'
+                                      : 'Choose a clear product photo for the marketplace listing.',
                                 ),
                                 const SizedBox(
                                   height: 18,
@@ -1457,10 +1484,12 @@ class _AddProductScreenState
                                     label:
                                         productProvider
                                                 .isLoading
-                                            ? const Text(
-                                                'Saving...',
+                                            ? Text(
+                                                isArabic
+                                                    ? 'جارٍ الحفظ...'
+                                                    : 'Saving...',
                                                 style:
-                                                    TextStyle(
+                                                    const TextStyle(
                                                   fontWeight:
                                                       FontWeight.w700,
                                                 ),
@@ -1513,17 +1542,24 @@ const _addProductMuted =
 class _AddProductTopBar
     extends StatelessWidget {
   final String title;
+  final String backTooltip;
   final VoidCallback onBack;
+  final ValueChanged<String> onLanguage;
 
   const _AddProductTopBar({
     required this.title,
+    required this.backTooltip,
     required this.onBack,
+    required this.onLanguage,
   });
 
   @override
   Widget build(
     BuildContext context,
   ) {
+    final l10n =
+        AppLocalizations.of(context)!;
+
     return Container(
       decoration:
           const BoxDecoration(
@@ -1549,7 +1585,7 @@ class _AddProductTopBar
             _AddProductHeaderButton(
               icon: Icons
                   .arrow_back_rounded,
-              tooltip: 'Back',
+              tooltip: backTooltip,
               onTap: onBack,
             ),
             const SizedBox(
@@ -1606,6 +1642,88 @@ class _AddProductTopBar
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: PopupMenuButton<String>(
+                tooltip: l10n.changeLanguage,
+                position: PopupMenuPosition.under,
+                offset: const Offset(0, 8),
+                color: const Color(0xFFF8FAF4),
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onSelected: onLanguage,
+                itemBuilder: (context) {
+                  final isArabic =
+                      Localizations.localeOf(context).languageCode == 'ar';
+
+                  return [
+                    PopupMenuItem<String>(
+                      value: 'en',
+                      child: Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_rounded,
+                              size: 20,
+                              color: !isArabic
+                                  ? _addProductPrimary
+                                  : Colors.transparent,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(l10n.english),
+                          ],
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'ar',
+                      child: Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_rounded,
+                              size: 20,
+                              color: isArabic
+                                  ? _addProductPrimary
+                                  : Colors.transparent,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(l10n.arabic),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ];
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(
+                      alpha: 0.10,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      14,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.language_rounded,
+                    color: Colors.white,
+                    size: 21,
+                  ),
+                ),
               ),
             ),
           ],
@@ -1736,9 +1854,13 @@ class _AddProductHero
                   height: 4,
                 ),
                 Text(
-                  isEditing
-                      ? 'Update product details, image and marketplace information.'
-                      : 'Create a marketplace listing and use AI to help prepare the marketing content.',
+                  Localizations.localeOf(context).languageCode == 'ar'
+                      ? (isEditing
+                          ? 'حدّث تفاصيل المنتج والصورة ومعلومات العرض في المتجر.'
+                          : 'أنشئ منتجًا جديدًا في المتجر واستخدم الذكاء الاصطناعي للمساعدة في إعداد المحتوى التسويقي.')
+                      : (isEditing
+                          ? 'Update product details, image and marketplace information.'
+                          : 'Create a marketplace listing and use AI to help prepare the marketing content.'),
                   style:
                       const TextStyle(
                     color:
@@ -1890,7 +2012,9 @@ class _ImagePreviewCard
                 ),
                 child: IconButton(
                   tooltip:
-                      'Remove image',
+                      Localizations.localeOf(context).languageCode == 'ar'
+                          ? 'إزالة الصورة'
+                          : 'Remove image',
                   onPressed:
                       onRemove,
                   color:

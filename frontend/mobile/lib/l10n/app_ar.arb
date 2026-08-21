@@ -165,5 +165,25 @@
 "reviewPreviousPlantAnalyses": "مراجعة تشخيصات النباتات السابقة",
 "stayOnTopFarmTasks": "تابع مهام مزرعتك باستمرار",
 "viewLatestUpdates": "عرض آخر التحديثات",
-"manageAccountDetails": "إدارة بيانات الحساب"
+"manageAccountDetails": "إدارة بيانات الحساب",
+"back": "رجوع",
+"myProductsSubtitle": "أدر منتجات مزرعتك وأسعارها وكمياتها وحالة توفرها.",
+"productsCount": "{count} منتجات",
+"@productsCount": {
+  "placeholders": {
+    "count": {
+      "type": "int"
+    }
+  }
+},
+"imagePreviewZoomHint": "استخدم التكبير باللمس أو عجلة الفأرة لتكبير الصورة.",
+"createFirstProductListing": "أضف أول منتج لك وابدأ البيع من خلال السوق.",
+"editProductSubtitle": "حدّث تفاصيل المنتج والصورة ومعلومات عرضه في السوق.",
+"addProductSubtitle": "أنشئ منتجًا جديدًا في السوق واستخدم الذكاء الاصطناعي للمساعدة في إعداد المحتوى التسويقي.",
+"productInformation": "معلومات المنتج",
+"productInformationSubtitle": "أضف بيانات المنتج الأساسية التي سيشاهدها العملاء في السوق.",
+"productImage": "صورة المنتج",
+"productImageSubtitle": "اختر صورة واضحة للمنتج لعرضها في السوق.",
+"saving": "جارٍ الحفظ...",
+"removeImage": "إزالة الصورة"
 }

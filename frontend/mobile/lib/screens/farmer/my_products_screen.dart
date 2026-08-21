@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../../providers/locale_provider.dart';
 import '../../providers/product_provider.dart';
 import 'add_product_screen.dart';
 
@@ -139,6 +140,126 @@ class _MyProductsScreenState
     }
 
     return '';
+  }
+
+  Future<void> _openImagePreview({
+    required String imageUrl,
+    required String productName,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.82),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: Container(
+            constraints: const BoxConstraints(
+              maxWidth: 1100,
+              maxHeight: 760,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF101410),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    20,
+                    16,
+                    12,
+                    12,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          productName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: l10n.close,
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+                        },
+                        style: IconButton.styleFrom(
+                          backgroundColor:
+                              Colors.white.withValues(alpha: 0.10),
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: InteractiveViewer(
+                    minScale: 1,
+                    maxScale: 4,
+                    child: Center(
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.contain,
+                        errorBuilder: (
+                          context,
+                          error,
+                          stackTrace,
+                        ) {
+                          return const Padding(
+                            padding: EdgeInsets.all(48),
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              size: 72,
+                              color: Colors.white70,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    16,
+                    10,
+                    16,
+                    16,
+                  ),
+                  child: Text(
+                    l10n.imagePreviewZoomHint,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _deleteProduct({
@@ -320,10 +441,19 @@ class _MyProductsScreenState
     }
   }
 
+  void _changeLanguage(String languageCode) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(Locale(languageCode));
+  }
+
   @override
   Widget build(BuildContext context) {
     final productProvider = Provider.of<ProductProvider>(context);
     final l10n = AppLocalizations.of(context)!;
+    final isArabic =
+        Localizations.localeOf(context).languageCode == 'ar';
     final products = productProvider.products;
 
     return Scaffold(
@@ -338,6 +468,11 @@ class _MyProductsScreenState
                 onRefresh: productProvider.isLoading
                     ? null
                     : productProvider.loadMyProducts,
+                onLanguage: (languageCode) {
+                  _changeLanguage(
+                    languageCode,
+                  );
+                },
               ),
               Expanded(
                 child: RefreshIndicator(
@@ -409,8 +544,53 @@ class _MyProductsScreenState
                                         product['id']?.toString() ?? '';
 
                                     final productName =
-                                        product['name']?.toString() ??
-                                            l10n.unnamedProduct;
+                                        isArabic
+                                            ? (product['nameAr']
+                                                        ?.toString()
+                                                        .trim()
+                                                        .isNotEmpty ==
+                                                    true
+                                                ? product['nameAr']
+                                                    .toString()
+                                                : (product['name']
+                                                            ?.toString()
+                                                            .trim()
+                                                            .isNotEmpty ==
+                                                        true
+                                                    ? product['name']
+                                                        .toString()
+                                                    : (product['nameEn']
+                                                                ?.toString()
+                                                                .trim()
+                                                                .isNotEmpty ==
+                                                            true
+                                                        ? product['nameEn']
+                                                            .toString()
+                                                        : l10n
+                                                            .unnamedProduct)))
+                                            : (product['nameEn']
+                                                        ?.toString()
+                                                        .trim()
+                                                        .isNotEmpty ==
+                                                    true
+                                                ? product['nameEn']
+                                                    .toString()
+                                                : (product['name']
+                                                            ?.toString()
+                                                            .trim()
+                                                            .isNotEmpty ==
+                                                        true
+                                                    ? product['name']
+                                                        .toString()
+                                                    : (product['nameAr']
+                                                                ?.toString()
+                                                                .trim()
+                                                                .isNotEmpty ==
+                                                            true
+                                                        ? product['nameAr']
+                                                            .toString()
+                                                        : l10n
+                                                            .unnamedProduct)));
 
                                     final imageUrl =
                                         _getImageUrl(product['imageUrl']);
@@ -439,6 +619,14 @@ class _MyProductsScreenState
                                       categoryLabel: l10n.category,
                                       editTooltip: l10n.editProduct,
                                       deleteTooltip: l10n.deleteProduct,
+                                      onImageTap: imageUrl == null
+                                          ? null
+                                          : () {
+                                              _openImagePreview(
+                                                imageUrl: imageUrl,
+                                                productName: productName,
+                                              );
+                                            },
                                       onEdit: () => _openEditProduct(product),
                                       onDelete: productId.isEmpty
                                           ? null
@@ -457,7 +645,7 @@ class _MyProductsScreenState
                                   crossAxisCount: crossAxisCount,
                                   crossAxisSpacing: 16,
                                   mainAxisSpacing: 16,
-                                  mainAxisExtent: 465,
+                                  mainAxisExtent: 520,
                                 ),
                               );
                             },
@@ -484,14 +672,18 @@ const _productsMuted = Color(0xFF6C786E);
 class _ProductsTopBar extends StatelessWidget {
   final VoidCallback onBack;
   final Future<void> Function()? onRefresh;
+  final ValueChanged<String> onLanguage;
 
   const _ProductsTopBar({
     required this.onBack,
     required this.onRefresh,
+    required this.onLanguage,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -509,7 +701,7 @@ class _ProductsTopBar extends StatelessWidget {
           children: [
             _TopButton(
               icon: Icons.arrow_back_rounded,
-              tooltip: 'Back',
+              tooltip: l10n.back,
               onTap: onBack,
             ),
             const SizedBox(width: 12),
@@ -526,21 +718,21 @@ class _ProductsTopBar extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'FarmPilot',
-                    style: TextStyle(
+                    l10n.appName,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 19,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   Text(
-                    'My Products',
-                    style: TextStyle(
+                    l10n.myProducts,
+                    style: const TextStyle(
                       color: Color(0xCCFFFFFF),
                       fontSize: 12,
                     ),
@@ -548,9 +740,78 @@ class _ProductsTopBar extends StatelessWidget {
                 ],
               ),
             ),
+            PopupMenuButton<String>(
+              tooltip: l10n.changeLanguage,
+              offset: const Offset(0, 48),
+              position: PopupMenuPosition.under,
+              color: const Color(0xFFF8FAF4),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              onSelected: onLanguage,
+              itemBuilder: (context) {
+                final isArabic =
+                    Localizations.localeOf(context).languageCode == 'ar';
+
+                return [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _productsPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(l10n.english),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _productsPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(l10n.arabic),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(
+                    alpha: 0.10,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.language_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
             _TopButton(
               icon: Icons.refresh_rounded,
-              tooltip: 'Refresh',
+              tooltip: l10n.refresh,
               onTap: onRefresh,
             ),
           ],
@@ -615,6 +876,8 @@ class _ProductsHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -650,9 +913,9 @@ class _ProductsHero extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Manage your farm listings, prices, quantities and product availability.',
-                      style: TextStyle(
+                    Text(
+                      l10n.myProductsSubtitle,
+                      style: const TextStyle(
                         color: _productsMuted,
                         fontSize: 13,
                         height: 1.4,
@@ -679,7 +942,7 @@ class _ProductsHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
-                  '$totalProducts products',
+                  l10n.productsCount(totalProducts),
                   style: const TextStyle(
                     color: _productsPrimary,
                     fontSize: 12,
@@ -758,6 +1021,7 @@ class _ProductCard extends StatelessWidget {
   final String categoryLabel;
   final String editTooltip;
   final String deleteTooltip;
+  final VoidCallback? onImageTap;
   final VoidCallback onEdit;
   final VoidCallback? onDelete;
 
@@ -773,6 +1037,7 @@ class _ProductCard extends StatelessWidget {
     required this.categoryLabel,
     required this.editTooltip,
     required this.deleteTooltip,
+    required this.onImageTap,
     required this.onEdit,
     required this.onDelete,
   });
@@ -798,34 +1063,62 @@ class _ProductCard extends StatelessWidget {
             children: [
               SizedBox(
                 width: double.infinity,
-                height: 170,
-                child: Container(
+                height: 225,
+                child: Material(
                   color: const Color(0xFFF0F5EB),
-                  child: imageUrl == null
-                      ? const Center(
-                          child: Icon(
-                            Icons.inventory_2_outlined,
-                            size: 54,
-                            color: _productsPrimary,
+                  child: InkWell(
+                    onTap: onImageTap,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (imageUrl == null)
+                          const Center(
+                            child: Icon(
+                              Icons.inventory_2_outlined,
+                              size: 54,
+                              color: _productsPrimary,
+                            ),
+                          )
+                        else
+                          Image.network(
+                            imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (
+                              context,
+                              error,
+                              stackTrace,
+                            ) {
+                              return const Center(
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  size: 48,
+                                  color: Color(0xFF9AA59B),
+                                ),
+                              );
+                            },
                           ),
-                        )
-                      : Image.network(
-                          imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (
-                            context,
-                            error,
-                            stackTrace,
-                          ) {
-                            return const Center(
-                              child: Icon(
-                                Icons.broken_image_outlined,
-                                size: 48,
-                                color: Color(0xFF9AA59B),
+                        if (imageUrl != null)
+                          PositionedDirectional(
+                            end: 12,
+                            bottom: 12,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(
+                                  alpha: 0.42,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            );
-                          },
-                        ),
+                              child: const Icon(
+                                Icons.zoom_out_map_rounded,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               PositionedDirectional(
@@ -1079,6 +1372,8 @@ class _EmptyProducts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Container(
         constraints: const BoxConstraints(
@@ -1114,10 +1409,10 @@ class _EmptyProducts extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Create your first product listing to start selling through the marketplace.',
+            Text(
+              l10n.createFirstProductListing,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: _productsMuted,
                 fontSize: 13,
                 height: 1.45,

@@ -163,6 +163,14 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
+  @Post('admin/backfill-translations')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  backfillProductTranslations() {
+    return this.productsService
+        .backfillProductTranslations();
+  }
+
   @Patch('admin/:id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -172,7 +180,8 @@ export class ProductsController {
     @Body()
     updateProductStatusDto: UpdateProductStatusDto,
   ) {
-    return this.productsService.updateProductStatus(
+    return this.productsService
+        .updateProductStatus(
       id,
       updateProductStatusDto.status,
     );
@@ -220,4 +229,4 @@ export class ProductsController {
       user.id,
     );
   }
-} 
+}

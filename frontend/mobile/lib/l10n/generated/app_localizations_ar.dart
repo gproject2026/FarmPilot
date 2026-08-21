@@ -411,4 +411,51 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get manageAccountDetails => 'إدارة بيانات الحساب';
+
+  @override
+  String get back => 'رجوع';
+
+  @override
+  String get myProductsSubtitle =>
+      'أدر منتجات مزرعتك وأسعارها وكمياتها وحالة توفرها.';
+
+  @override
+  String productsCount(int count) {
+    return '$count منتجات';
+  }
+
+  @override
+  String get imagePreviewZoomHint =>
+      'استخدم التكبير باللمس أو عجلة الفأرة لتكبير الصورة.';
+
+  @override
+  String get createFirstProductListing =>
+      'أضف أول منتج لك وابدأ البيع من خلال السوق.';
+
+  @override
+  String get editProductSubtitle =>
+      'حدّث تفاصيل المنتج والصورة ومعلومات عرضه في السوق.';
+
+  @override
+  String get addProductSubtitle =>
+      'أنشئ منتجًا جديدًا في السوق واستخدم الذكاء الاصطناعي للمساعدة في إعداد المحتوى التسويقي.';
+
+  @override
+  String get productInformation => 'معلومات المنتج';
+
+  @override
+  String get productInformationSubtitle =>
+      'أضف بيانات المنتج الأساسية التي سيشاهدها العملاء في السوق.';
+
+  @override
+  String get productImage => 'صورة المنتج';
+
+  @override
+  String get productImageSubtitle => 'اختر صورة واضحة للمنتج لعرضها في السوق.';
+
+  @override
+  String get saving => 'جارٍ الحفظ...';
+
+  @override
+  String get removeImage => 'إزالة الصورة';
 }

@@ -166,5 +166,25 @@
 "reviewPreviousPlantAnalyses": "Review previous plant analyses",
 "stayOnTopFarmTasks": "Stay on top of farm tasks",
 "viewLatestUpdates": "View your latest updates",
-"manageAccountDetails": "Manage account details"
+"manageAccountDetails": "Manage account details",
+"back": "Back",
+"myProductsSubtitle": "Manage your farm listings, prices, quantities and product availability.",
+"productsCount": "{count} products",
+"@productsCount": {
+  "placeholders": {
+    "count": {
+      "type": "int"
+    }
+  }
+},
+"imagePreviewZoomHint": "Use pinch or scroll to zoom the image.",
+"createFirstProductListing": "Create your first product listing to start selling through the marketplace.",
+"editProductSubtitle": "Update product details, image and marketplace information.",
+"addProductSubtitle": "Create a marketplace listing and use AI to help prepare the marketing content.",
+"productInformation": "Product Information",
+"productInformationSubtitle": "Add the core product details customers will see in the marketplace.",
+"productImage": "Product Image",
+"productImageSubtitle": "Choose a clear product photo for the marketplace listing.",
+"saving": "Saving...",
+"removeImage": "Remove image"
 }

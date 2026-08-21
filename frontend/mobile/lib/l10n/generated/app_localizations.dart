@@ -877,6 +877,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manage account details'**
   String get manageAccountDetails;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @myProductsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your farm listings, prices, quantities and product availability.'**
+  String get myProductsSubtitle;
+
+  /// No description provided for @productsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} products'**
+  String productsCount(int count);
+
+  /// No description provided for @imagePreviewZoomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use pinch or scroll to zoom the image.'**
+  String get imagePreviewZoomHint;
+
+  /// No description provided for @createFirstProductListing.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first product listing to start selling through the marketplace.'**
+  String get createFirstProductListing;
+
+  /// No description provided for @editProductSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update product details, image and marketplace information.'**
+  String get editProductSubtitle;
+
+  /// No description provided for @addProductSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a marketplace listing and use AI to help prepare the marketing content.'**
+  String get addProductSubtitle;
+
+  /// No description provided for @productInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Information'**
+  String get productInformation;
+
+  /// No description provided for @productInformationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the core product details customers will see in the marketplace.'**
+  String get productInformationSubtitle;
+
+  /// No description provided for @productImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Image'**
+  String get productImage;
+
+  /// No description provided for @productImageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a clear product photo for the marketplace listing.'**
+  String get productImageSubtitle;
+
+  /// No description provided for @saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get saving;
+
+  /// No description provided for @removeImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove image'**
+  String get removeImage;
 }
 
 class _AppLocalizationsDelegate

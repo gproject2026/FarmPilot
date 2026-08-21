@@ -519,6 +519,189 @@ export class ProductsService {
     });
   }
 
+  async backfillProductTranslations() {
+    const products =
+        await this.prisma.product.findMany({
+          where: {
+            OR: [
+              { nameEn: null },
+              { nameAr: null },
+            ],
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+        });
+
+    let updated = 0;
+    let skipped = 0;
+    const failed: Array<{
+      id: string;
+      name: string;
+      error: string;
+    }> = [];
+
+    for (const product of products) {
+      try {
+        let nameEn =
+            this.cleanOptionalText(
+              product.nameEn,
+            );
+
+        let nameAr =
+            this.cleanOptionalText(
+              product.nameAr,
+            );
+
+        let descriptionEn =
+            this.cleanOptionalText(
+              product.descriptionEn,
+            );
+
+        let descriptionAr =
+            this.cleanOptionalText(
+              product.descriptionAr,
+            );
+
+        const legacyName =
+            product.name.trim();
+
+        const legacyDescription =
+            this.cleanOptionalText(
+              product.description,
+            );
+
+        if (!nameEn && !nameAr) {
+          if (
+            this.containsArabic(
+              legacyName,
+            )
+          ) {
+            nameAr = legacyName;
+            descriptionAr =
+                legacyDescription;
+
+            const translation =
+                await this.geminiService
+                    .translateProductContent({
+              productName: legacyName,
+              description:
+                  legacyDescription ?? '',
+              targetLanguage: 'en',
+            });
+
+            nameEn =
+                translation.productName;
+
+            descriptionEn =
+                this.cleanOptionalText(
+                  translation.description,
+                );
+          } else {
+            nameEn = legacyName;
+            descriptionEn =
+                legacyDescription;
+
+            const translation =
+                await this.geminiService
+                    .translateProductContent({
+              productName: legacyName,
+              description:
+                  legacyDescription ?? '',
+              targetLanguage: 'ar',
+            });
+
+            nameAr =
+                translation.productName;
+
+            descriptionAr =
+                this.cleanOptionalText(
+                  translation.description,
+                );
+          }
+        } else if (!nameEn && nameAr) {
+          const translation =
+              await this.geminiService
+                  .translateProductContent({
+            productName: nameAr,
+            description:
+                descriptionAr ??
+                legacyDescription ??
+                '',
+            targetLanguage: 'en',
+          });
+
+          nameEn =
+              translation.productName;
+
+          descriptionEn =
+              this.cleanOptionalText(
+                translation.description,
+              );
+        } else if (!nameAr && nameEn) {
+          const translation =
+              await this.geminiService
+                  .translateProductContent({
+            productName: nameEn,
+            description:
+                descriptionEn ??
+                legacyDescription ??
+                '',
+            targetLanguage: 'ar',
+          });
+
+          nameAr =
+              translation.productName;
+
+          descriptionAr =
+              this.cleanOptionalText(
+                translation.description,
+              );
+        }
+
+        if (!nameEn || !nameAr) {
+          skipped++;
+          continue;
+        }
+
+        await this.prisma.product.update({
+          where: {
+            id: product.id,
+          },
+          data: {
+            nameEn,
+            nameAr,
+            descriptionEn,
+            descriptionAr,
+            name: nameEn,
+            description:
+                descriptionEn ??
+                descriptionAr ??
+                legacyDescription,
+          },
+        });
+
+        updated++;
+      } catch (error) {
+        failed.push({
+          id: product.id,
+          name: product.name,
+          error:
+              error instanceof Error
+                  ? error.message
+                  : 'Unknown error',
+        });
+      }
+    }
+
+    return {
+      totalFound: products.length,
+      updated,
+      skipped,
+      failed,
+    };
+  }
+
   async updateProductStatus(
     id: string,
     status: ProductStatus,

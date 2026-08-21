@@ -73,14 +73,12 @@ class ProductService {
     }
   }
 
-  Future<Map<String, dynamic>>
-      updateProductStatus({
+  Future<Map<String, dynamic>> updateProductStatus({
     required String productId,
     required String status,
   }) async {
     try {
-      final response =
-          await apiClient.dio.patch(
+      final response = await apiClient.dio.patch(
         '/products/admin/$productId/status',
         data: {
           'status': status,
@@ -97,12 +95,10 @@ class ProductService {
         response.data,
       );
     } on DioException catch (e) {
-      final responseData =
-          e.response?.data;
+      final responseData = e.response?.data;
 
       if (responseData is Map) {
-        final message =
-            responseData['message'];
+        final message = responseData['message'];
 
         if (message is List) {
           throw Exception(
@@ -111,10 +107,7 @@ class ProductService {
         }
 
         if (message != null &&
-            message
-                .toString()
-                .trim()
-                .isNotEmpty) {
+            message.toString().trim().isNotEmpty) {
           throw Exception(
             message.toString(),
           );
@@ -143,18 +136,15 @@ class ProductService {
         ),
       });
 
-      final response =
-          await apiClient.dio.post(
+      final response = await apiClient.dio.post(
         '/uploads/image',
         data: formData,
         options: Options(
-          contentType:
-              'multipart/form-data',
+          contentType: 'multipart/form-data',
         ),
       );
 
-      final responseData =
-          response.data;
+      final responseData = response.data;
 
       if (responseData is! Map) {
         throw Exception(
@@ -163,8 +153,7 @@ class ProductService {
       }
 
       final imageUrl =
-          responseData['imageUrl']
-              ?.toString();
+          responseData['imageUrl']?.toString();
 
       if (imageUrl == null ||
           imageUrl.trim().isEmpty) {
@@ -177,8 +166,7 @@ class ProductService {
     } on DioException catch (e) {
       final serverMessage =
           e.response?.data is Map
-              ? e.response?.data['message']
-                  ?.toString()
+              ? e.response?.data['message']?.toString()
               : null;
 
       throw Exception(
@@ -206,28 +194,52 @@ class ProductService {
     String? imageUrl,
   }) async {
     try {
+      final data = <String, dynamic>{
+        'categoryId': categoryId,
+        'name': name.trim(),
+        'description': description.trim(),
+        if (nameEn.trim().isNotEmpty)
+          'nameEn': nameEn.trim(),
+        if (nameAr.trim().isNotEmpty)
+          'nameAr': nameAr.trim(),
+        if (descriptionEn.trim().isNotEmpty)
+          'descriptionEn': descriptionEn.trim(),
+        if (descriptionAr.trim().isNotEmpty)
+          'descriptionAr': descriptionAr.trim(),
+        'price': price,
+        'quantity': quantity,
+        'unit': unit.trim(),
+        if (imageUrl != null &&
+            imageUrl.trim().isNotEmpty)
+          'imageUrl': imageUrl.trim(),
+      };
+
       await apiClient.dio.post(
         '/products',
-        data: {
-          'categoryId': categoryId,
+        data: data,
+      );
+    } on DioException catch (e) {
+      final responseData = e.response?.data;
 
-          // old fields for compatibility
-          'name': name,
-          'description': description,
+      if (responseData is Map) {
+        final message = responseData['message'];
 
-          // bilingual fields
-          'nameEn': nameEn,
-          'nameAr': nameAr,
-          'descriptionEn':
-              descriptionEn,
-          'descriptionAr':
-              descriptionAr,
+        if (message is List) {
+          throw Exception(
+            message.join(', '),
+          );
+        }
 
-          'price': price,
-          'quantity': quantity,
-          'unit': unit,
-          'imageUrl': imageUrl,
-        },
+        if (message != null &&
+            message.toString().trim().isNotEmpty) {
+          throw Exception(
+            message.toString(),
+          );
+        }
+      }
+
+      throw Exception(
+        'Failed to create product',
       );
     } catch (e) {
       throw Exception(
@@ -251,28 +263,52 @@ class ProductService {
     String? imageUrl,
   }) async {
     try {
+      final data = <String, dynamic>{
+        'categoryId': categoryId,
+        'name': name.trim(),
+        'description': description.trim(),
+        if (nameEn.trim().isNotEmpty)
+          'nameEn': nameEn.trim(),
+        if (nameAr.trim().isNotEmpty)
+          'nameAr': nameAr.trim(),
+        if (descriptionEn.trim().isNotEmpty)
+          'descriptionEn': descriptionEn.trim(),
+        if (descriptionAr.trim().isNotEmpty)
+          'descriptionAr': descriptionAr.trim(),
+        'price': price,
+        'quantity': quantity,
+        'unit': unit.trim(),
+        if (imageUrl != null &&
+            imageUrl.trim().isNotEmpty)
+          'imageUrl': imageUrl.trim(),
+      };
+
       await apiClient.dio.patch(
         '/products/$productId',
-        data: {
-          'categoryId': categoryId,
+        data: data,
+      );
+    } on DioException catch (e) {
+      final responseData = e.response?.data;
 
-          // old fields for compatibility
-          'name': name,
-          'description': description,
+      if (responseData is Map) {
+        final message = responseData['message'];
 
-          // bilingual fields
-          'nameEn': nameEn,
-          'nameAr': nameAr,
-          'descriptionEn':
-              descriptionEn,
-          'descriptionAr':
-              descriptionAr,
+        if (message is List) {
+          throw Exception(
+            message.join(', '),
+          );
+        }
 
-          'price': price,
-          'quantity': quantity,
-          'unit': unit,
-          'imageUrl': imageUrl,
-        },
+        if (message != null &&
+            message.toString().trim().isNotEmpty) {
+          throw Exception(
+            message.toString(),
+          );
+        }
+      }
+
+      throw Exception(
+        'Failed to update product',
       );
     } catch (e) {
       throw Exception(
@@ -287,6 +323,23 @@ class ProductService {
     try {
       await apiClient.dio.delete(
         '/products/$productId',
+      );
+    } on DioException catch (e) {
+      final responseData = e.response?.data;
+
+      if (responseData is Map) {
+        final message = responseData['message'];
+
+        if (message != null &&
+            message.toString().trim().isNotEmpty) {
+          throw Exception(
+            message.toString(),
+          );
+        }
+      }
+
+      throw Exception(
+        'Failed to delete product',
       );
     } catch (e) {
       throw Exception(

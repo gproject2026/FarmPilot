@@ -416,4 +416,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manageAccountDetails => 'Manage account details';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get myProductsSubtitle =>
+      'Manage your farm listings, prices, quantities and product availability.';
+
+  @override
+  String productsCount(int count) {
+    return '$count products';
+  }
+
+  @override
+  String get imagePreviewZoomHint => 'Use pinch or scroll to zoom the image.';
+
+  @override
+  String get createFirstProductListing =>
+      'Create your first product listing to start selling through the marketplace.';
+
+  @override
+  String get editProductSubtitle =>
+      'Update product details, image and marketplace information.';
+
+  @override
+  String get addProductSubtitle =>
+      'Create a marketplace listing and use AI to help prepare the marketing content.';
+
+  @override
+  String get productInformation => 'Product Information';
+
+  @override
+  String get productInformationSubtitle =>
+      'Add the core product details customers will see in the marketplace.';
+
+  @override
+  String get productImage => 'Product Image';
+
+  @override
+  String get productImageSubtitle =>
+      'Choose a clear product photo for the marketplace listing.';
+
+  @override
+  String get saving => 'Saving...';
+
+  @override
+  String get removeImage => 'Remove image';
 }
