@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE "diagnoses" ADD COLUMN     "causes_ar" TEXT,
+ADD COLUMN     "causes_en" TEXT,
+ADD COLUMN     "description_ar" TEXT,
+ADD COLUMN     "description_en" TEXT,
+ADD COLUMN     "disease_name_ar" VARCHAR(150),
+ADD COLUMN     "disease_name_en" VARCHAR(150),
+ADD COLUMN     "plant_name_ar" VARCHAR(150),
+ADD COLUMN     "plant_name_en" VARCHAR(150),
+ADD COLUMN     "prevention_ar" TEXT,
+ADD COLUMN     "prevention_en" TEXT,
+ADD COLUMN     "treatment_ar" TEXT,
+ADD COLUMN     "treatment_en" TEXT,
+ADD COLUMN     "visible_symptoms_ar" TEXT,
+ADD COLUMN     "visible_symptoms_en" TEXT;

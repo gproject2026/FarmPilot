@@ -1,9 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/crop_provider.dart';
+import '../../providers/locale_provider.dart';
 import 'add_crop_screen.dart';
+
+
+String _t(
+  BuildContext context,
+  String english,
+  String arabic,
+) {
+  return Localizations.localeOf(context).languageCode == 'ar'
+      ? arabic
+      : english;
+}
+
+String _localizedCropValue(
+  BuildContext context,
+  dynamic value,
+) {
+  if (value == null || value.toString().trim().isEmpty) {
+    return _t(
+      context,
+      'Not specified',
+      'غير محدد',
+    );
+  }
+
+  final original = value.toString().trim();
+  final key = original.toLowerCase();
+
+  const arabicMap = <String, String>{
+    'wheat': 'قمح',
+    'strawberry': 'فراولة',
+    'cucumber': 'خيار',
+    'tomato': 'طماطم',
+    'grain': 'حبوب',
+    'fruit': 'فاكهة',
+    'vegetable': 'خضروات',
+    'every 3 days': 'كل 3 أيام',
+    'drip irrigation every morning': 'ري بالتنقيط كل صباح',
+    'daily in the early morning': 'يوميًا في الصباح الباكر',
+    'npk fertilizer every 3 weeks': 'سماد NPK كل 3 أسابيع',
+    'organic fertilizer every 3 weeks': 'سماد عضوي كل 3 أسابيع',
+    'npk fertilizer every 14 days': 'سماد NPK كل 14 يومًا',
+    'requires full sunlight and moderate humidity':
+        'يحتاج إلى أشعة شمس كاملة ورطوبة معتدلة',
+    'grown in open field. check regularly for powdery mildew':
+        'مزروع في حقل مفتوح. افحصه بانتظام بحثًا عن البياض الدقيقي',
+    'not specified': 'غير محدد',
+  };
+
+  if (Localizations.localeOf(context).languageCode == 'ar') {
+    return arabicMap[key] ?? original;
+  }
+
+  return original;
+}
+
+
+String _localizedCropField(
+  BuildContext context,
+  Map<String, dynamic> crop, {
+  required String legacyKey,
+  required String enKey,
+  required String arKey,
+}) {
+  final isArabic =
+      Localizations.localeOf(context).languageCode == 'ar';
+
+  final preferred =
+      crop[isArabic ? arKey : enKey]?.toString().trim();
+
+  if (preferred != null && preferred.isNotEmpty) {
+    return preferred;
+  }
+
+  final fallbackOtherLanguage =
+      crop[isArabic ? enKey : arKey]?.toString().trim();
+
+  if (fallbackOtherLanguage != null &&
+      fallbackOtherLanguage.isNotEmpty) {
+    return fallbackOtherLanguage;
+  }
+
+  return _localizedCropValue(
+    context,
+    crop[legacyKey],
+  );
+}
 
 class MyCropsScreen extends StatefulWidget {
   const MyCropsScreen({super.key});
@@ -77,24 +165,30 @@ class _MyCropsScreenState extends State<MyCropsScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Delete Crop'),
+          title: Text(_t(context, 'Delete Crop', 'حذف المحصول')),
           content: Text(
-            'Are you sure you want to delete ${crop['cropName']}?',
+            "${_t(context, 'Are you sure you want to delete', 'هل أنت متأكد أنك تريد حذف')} ${_localizedCropField(
+              context,
+              crop,
+              legacyKey: 'cropName',
+              enKey: 'cropNameEn',
+              arKey: 'cropNameAr',
+            )}?",
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext, false);
               },
-              child: const Text('Cancel'),
+              child: Text(_t(context, 'Cancel', 'إلغاء')),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext, true);
               },
-              child: const Text(
-                'Delete',
-                style: TextStyle(
+              child: Text(
+                _t(context, 'Delete', 'حذف'),
+                style: const TextStyle(
                   color: Colors.red,
                 ),
               ),
@@ -122,8 +216,14 @@ class _MyCropsScreenState extends State<MyCropsScreen> {
 
     if (token == null || token.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Authentication token not found'),
+        SnackBar(
+          content: Text(
+            _t(
+              context,
+              'Authentication token not found',
+              'لم يتم العثور على رمز تسجيل الدخول',
+            ),
+          ),
         ),
       );
       return;
@@ -140,8 +240,14 @@ class _MyCropsScreenState extends State<MyCropsScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Crop deleted successfully'),
+        SnackBar(
+          content: Text(
+            _t(
+              context,
+              'Crop deleted successfully',
+              'تم حذف المحصول بنجاح',
+            ),
+          ),
         ),
       );
     } else {
@@ -149,24 +255,42 @@ class _MyCropsScreenState extends State<MyCropsScreen> {
         SnackBar(
           content: Text(
             cropProvider.errorMessage ??
-                'Failed to delete crop',
+                _t(
+                  context,
+                  'Failed to delete crop',
+                  'فشل حذف المحصول',
+                ),
           ),
         ),
       );
     }
   }
 
-  String _displayValue(dynamic value) {
-    if (value == null || value.toString().trim().isEmpty) {
-      return 'Not specified';
-    }
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
 
-    return value.toString();
+  String _displayValue(dynamic value) {
+    return _localizedCropValue(
+      context,
+      value,
+    );
   }
 
   String _formatDate(dynamic value) {
     if (value == null || value.toString().isEmpty) {
-      return 'Not specified';
+      return _t(
+        context,
+        'Not specified',
+        'غير محدد',
+      );
     }
 
     final date = DateTime.tryParse(value.toString());
@@ -188,6 +312,10 @@ class _MyCropsScreenState extends State<MyCropsScreen> {
       body: Consumer<CropProvider>(
         builder: (context, cropProvider, child) {
           final crops = cropProvider.crops;
+          final l10n =
+              AppLocalizations.of(context)!;
+          final isArabic =
+              Localizations.localeOf(context).languageCode == 'ar';
 
           return Stack(
             children: [
@@ -195,7 +323,16 @@ class _MyCropsScreenState extends State<MyCropsScreen> {
               Column(
                 children: [
                   _CropsTopBar(
-                    onRefresh: cropProvider.isLoading ? null : _loadCrops,
+                    onRefresh:
+                        cropProvider.isLoading
+                            ? null
+                            : _loadCrops,
+                    onLanguage:
+                        _changeLanguage,
+                    isArabic:
+                        isArabic,
+                    l10n:
+                        l10n,
                   ),
                   Expanded(
                     child: RefreshIndicator(
@@ -294,7 +431,7 @@ class _MyCropsScreenState extends State<MyCropsScreen> {
                                       crossAxisCount: crossAxisCount,
                                       crossAxisSpacing: 16,
                                       mainAxisSpacing: 16,
-                                      mainAxisExtent: 430,
+                                      mainAxisExtent: 455,
                                     ),
                                   );
                                 },
@@ -322,9 +459,15 @@ const _cropsMuted = Color(0xFF6C786E);
 
 class _CropsTopBar extends StatelessWidget {
   final Future<void> Function()? onRefresh;
+  final ValueChanged<String> onLanguage;
+  final bool isArabic;
+  final AppLocalizations l10n;
 
   const _CropsTopBar({
     required this.onRefresh,
+    required this.onLanguage,
+    required this.isArabic,
+    required this.l10n,
   });
 
   @override
@@ -339,23 +482,38 @@ class _CropsTopBar extends StatelessWidget {
           ],
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+      padding: const EdgeInsets.fromLTRB(
+        18,
+        12,
+        18,
+        14,
+      ),
       child: SafeArea(
         bottom: false,
         child: Row(
           children: [
             _CropsHeaderButton(
               icon: Icons.arrow_back_rounded,
-              tooltip: 'Back',
-              onTap: () => Navigator.pop(context),
+              tooltip: _t(
+                context,
+                'Back',
+                'رجوع',
+              ),
+              onTap: () =>
+                  Navigator.pop(context),
             ),
             const SizedBox(width: 12),
             Container(
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFDDECB8),
-                borderRadius: BorderRadius.circular(13),
+                color: const Color(
+                  0xFFDDECB8,
+                ),
+                borderRadius:
+                    BorderRadius.circular(
+                  13,
+                ),
               ),
               child: const Icon(
                 Icons.eco_rounded,
@@ -363,31 +521,130 @@ class _CropsTopBar extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'FarmPilot',
-                    style: TextStyle(
+                    l10n.appName,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 19,
-                      fontWeight: FontWeight.w800,
+                      fontWeight:
+                          FontWeight.w800,
                     ),
                   ),
                   Text(
-                    'My Crops',
-                    style: TextStyle(
-                      color: Color(0xCCFFFFFF),
+                    _t(
+                      context,
+                      'My Crops',
+                      'محاصيلي',
+                    ),
+                    style: const TextStyle(
+                      color:
+                          Color(0xCCFFFFFF),
                       fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
+            PopupMenuButton<String>(
+              tooltip:
+                  l10n.changeLanguage,
+              position:
+                  PopupMenuPosition.under,
+              offset:
+                  const Offset(0, 8),
+              color:
+                  const Color(0xFFF8FAF4),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                  16,
+                ),
+              ),
+              onSelected: onLanguage,
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _cropsPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          l10n.english,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _cropsPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          l10n.arabic,
+                        ),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white
+                      .withValues(
+                    alpha: 0.10,
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(
+                    14,
+                  ),
+                ),
+                alignment:
+                    Alignment.center,
+                child: const Icon(
+                  Icons.language_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
             _CropsHeaderButton(
               icon: Icons.refresh_rounded,
-              tooltip: 'Refresh',
+              tooltip: _t(
+                context,
+                'Refresh',
+                'تحديث',
+              ),
               onTap: onRefresh,
             ),
           ],
@@ -470,22 +727,32 @@ class _CropsHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'My Crops',
-                      style: TextStyle(
+                      _t(
+                        context,
+                        'My Crops',
+                        'محاصيلي',
+                      ),
+                      style: const TextStyle(
                         color: _cropsText,
                         fontSize: 24,
-                        fontWeight: FontWeight.w800,
+                        fontWeight:
+                            FontWeight.w800,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Track planting dates, irrigation, fertilization and notes for every crop.',
-                      style: TextStyle(
+                      _t(
+                        context,
+                        'Track planting dates, irrigation, fertilization and notes for every crop.',
+                        'تابع مواعيد الزراعة والري والتسميد والملاحظات لكل محصول.',
+                      ),
+                      style: const TextStyle(
                         color: _cropsMuted,
                         fontSize: 13,
                         height: 1.4,
@@ -512,7 +779,7 @@ class _CropsHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
-                  '$totalCrops crops',
+                  Localizations.localeOf(context).languageCode == 'ar' ? '$totalCrops محاصيل' : '$totalCrops crops',
                   style: const TextStyle(
                     color: _cropsPrimary,
                     fontSize: 12,
@@ -545,10 +812,15 @@ class _CropsHero extends StatelessWidget {
                         ),
                       )
                     : const Icon(Icons.add_rounded),
-                label: const Text(
-                  'Add Crop',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
+                label: Text(
+                  _t(
+                    context,
+                    'Add Crop',
+                    'إضافة محصول',
+                  ),
+                  style: const TextStyle(
+                    fontWeight:
+                        FontWeight.w700,
                   ),
                 ),
               ),
@@ -596,8 +868,21 @@ class _CropCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cropName = displayValue(crop['cropName']);
-    final cropType = displayValue(crop['cropType']);
+    final cropName = _localizedCropField(
+      context,
+      crop,
+      legacyKey: 'cropName',
+      enKey: 'cropNameEn',
+      arKey: 'cropNameAr',
+    );
+
+    final cropType = _localizedCropField(
+      context,
+      crop,
+      legacyKey: 'cropType',
+      enKey: 'cropTypeEn',
+      arKey: 'cropTypeAr',
+    );
 
     return Container(
       decoration: _cropCardDecoration(22),
@@ -653,27 +938,45 @@ class _CropCard extends StatelessWidget {
           const SizedBox(height: 18),
           _CropInfoTile(
             icon: Icons.calendar_month,
-            label: 'Planting date',
+            label: _t(context, 'Planting date', 'تاريخ الزراعة'),
             value: formatDate(crop['plantingDate']),
           ),
           const SizedBox(height: 10),
           _CropInfoTile(
             icon: Icons.water_drop_outlined,
-            label: 'Irrigation',
-            value: displayValue(crop['irrigationSchedule']),
+            label: _t(context, 'Irrigation', 'الري'),
+            value: _localizedCropField(
+              context,
+              crop,
+              legacyKey: 'irrigationSchedule',
+              enKey: 'irrigationScheduleEn',
+              arKey: 'irrigationScheduleAr',
+            ),
           ),
           const SizedBox(height: 10),
           _CropInfoTile(
             icon: Icons.science_outlined,
-            label: 'Fertilization',
-            value: displayValue(crop['fertilizationSchedule']),
+            label: _t(context, 'Fertilization', 'التسميد'),
+            value: _localizedCropField(
+              context,
+              crop,
+              legacyKey: 'fertilizationSchedule',
+              enKey: 'fertilizationScheduleEn',
+              arKey: 'fertilizationScheduleAr',
+            ),
           ),
           const SizedBox(height: 10),
           _CropInfoTile(
             icon: Icons.notes_rounded,
-            label: 'Notes',
-            value: displayValue(crop['notes']),
-            maxLines: 2,
+            label: _t(context, 'Notes', 'ملاحظات'),
+            value: _localizedCropField(
+              context,
+              crop,
+              legacyKey: 'notes',
+              enKey: 'notesEn',
+              arKey: 'notesAr',
+            ),
+            maxLines: 3,
           ),
           const Spacer(),
           Row(
@@ -694,10 +997,15 @@ class _CropCard extends StatelessWidget {
                     Icons.edit_outlined,
                     size: 18,
                   ),
-                  label: const Text(
-                    'Edit Crop',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
+                  label: Text(
+                    _t(
+                      context,
+                      'Edit Crop',
+                      'تعديل المحصول',
+                    ),
+                    style: const TextStyle(
+                      fontWeight:
+                          FontWeight.w700,
                     ),
                   ),
                 ),
@@ -707,7 +1015,7 @@ class _CropCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 child: IconButton(
-                  tooltip: 'Delete Crop',
+                  tooltip: _t(context, 'Delete Crop', 'حذف المحصول'),
                   onPressed: onDelete,
                   style: IconButton.styleFrom(
                     backgroundColor: const Color(0xFFFFF3F3),
@@ -840,20 +1148,29 @@ class _EmptyCrops extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'No crops added yet',
+            Text(
+              _t(
+                context,
+                'No crops added yet',
+                'لم تتم إضافة محاصيل بعد',
+              ),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: _cropsText,
                 fontSize: 20,
-                fontWeight: FontWeight.w800,
+                fontWeight:
+                    FontWeight.w800,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Add your first crop to start managing planting, irrigation and fertilization.',
+            Text(
+              _t(
+                context,
+                'Add your first crop to start managing planting, irrigation and fertilization.',
+                'أضف محصولك الأول لبدء إدارة الزراعة والري والتسميد.',
+              ),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: _cropsMuted,
                 fontSize: 13,
                 height: 1.45,
@@ -875,7 +1192,7 @@ class _EmptyCrops extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Add Crop'),
+              label: Text(_t(context, 'Add Crop', 'إضافة محصول')),
             ),
           ],
         ),
@@ -929,7 +1246,7 @@ class _CropsErrorState extends StatelessWidget {
                 elevation: 0,
               ),
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
+              label: Text(_t(context, 'Try Again', 'حاول مرة أخرى')),
             ),
           ],
         ),

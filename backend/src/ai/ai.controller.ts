@@ -4,6 +4,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+
 import { UserRole } from '@prisma/client';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -12,6 +13,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 import { AiService } from './ai.service';
+import { CropCareSuggestionDto } from './dto/crop-care-suggestion.dto';
 import { MarketingDescriptionDto } from './dto/marketing-description.dto';
 
 interface AuthenticatedUser {
@@ -21,7 +23,10 @@ interface AuthenticatedUser {
 }
 
 @Controller('ai')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(
+  JwtAuthGuard,
+  RolesGuard,
+)
 export class AiController {
   constructor(
     private readonly aiService: AiService,
@@ -29,14 +34,26 @@ export class AiController {
 
   @Post('marketing-description')
   @Roles(UserRole.FARMER)
-  generateMarketingDescription( 
-    @CurrentUser() user: AuthenticatedUser,
+  generateMarketingDescription(
+    @CurrentUser()
+    user: AuthenticatedUser,
     @Body()
     marketingDescriptionDto: MarketingDescriptionDto,
   ) {
     return this.aiService.generateMarketingDescription(
       user.id,
       marketingDescriptionDto,
+    );
+  }
+
+  @Post('crop-care-suggestion')
+  @Roles(UserRole.FARMER)
+  generateCropCareSuggestion(
+    @Body()
+    cropCareSuggestionDto: CropCareSuggestionDto,
+  ) {
+    return this.aiService.generateCropCareSuggestion(
+      cropCareSuggestionDto,
     );
   }
 }

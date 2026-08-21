@@ -1,29 +1,89 @@
 import 'package:flutter/material.dart';
 
+import '../services/ai_service.dart';
 import '../services/crop_service.dart';
 
 class CropProvider extends ChangeNotifier {
-  final CropService _cropService = CropService();
+  final CropService _cropService =
+      CropService();
+
+  final AiService _aiService =
+      AiService();
 
   List<dynamic> _crops = [];
   bool _isLoading = false;
+  bool _isGeneratingCare = false;
   String? _errorMessage;
 
   List<dynamic> get crops => _crops;
   bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
+  bool get isGeneratingCare =>
+      _isGeneratingCare;
+  String? get errorMessage =>
+      _errorMessage;
 
-  Future<void> getMyCrops(String token) async {
+  Future<void> getMyCrops(
+    String token,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _crops = await _cropService.getMyCrops(token);
+      _crops =
+          await _cropService.getMyCrops(
+        token,
+      );
     } catch (error) {
-      _errorMessage = error.toString();
+      _errorMessage =
+          error
+              .toString()
+              .replaceFirst(
+                'Exception: ',
+                '',
+              );
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>?>
+      generateCropCareSuggestion({
+    required String cropName,
+    required String cropType,
+    required String language,
+    String? plantingDate,
+    String? notes,
+  }) async {
+    _isGeneratingCare = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result =
+          await _aiService
+              .generateCropCareSuggestion(
+        cropName: cropName,
+        cropType: cropType,
+        language: language,
+        plantingDate: plantingDate,
+        notes: notes,
+      );
+
+      return result;
+    } catch (error) {
+      _errorMessage =
+          error
+              .toString()
+              .replaceFirst(
+                'Exception: ',
+                '',
+              );
+
+      return null;
+    } finally {
+      _isGeneratingCare = false;
       notifyListeners();
     }
   }
@@ -32,30 +92,69 @@ class CropProvider extends ChangeNotifier {
     required String token,
     required String cropName,
     String? cropType,
+    String? cropNameEn,
+    String? cropNameAr,
+    String? cropTypeEn,
+    String? cropTypeAr,
     String? plantingDate,
     String? irrigationSchedule,
+    String? irrigationScheduleEn,
+    String? irrigationScheduleAr,
     String? fertilizationSchedule,
+    String? fertilizationScheduleEn,
+    String? fertilizationScheduleAr,
     String? notes,
+    String? notesEn,
+    String? notesAr,
   }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final newCrop = await _cropService.createCrop(
+      final newCrop =
+          await _cropService.createCrop(
         token: token,
         cropName: cropName,
         cropType: cropType,
-        plantingDate: plantingDate,
-        irrigationSchedule: irrigationSchedule,
-        fertilizationSchedule: fertilizationSchedule,
+        cropNameEn: cropNameEn,
+        cropNameAr: cropNameAr,
+        cropTypeEn: cropTypeEn,
+        cropTypeAr: cropTypeAr,
+        plantingDate:
+            plantingDate,
+        irrigationSchedule:
+            irrigationSchedule,
+        irrigationScheduleEn:
+            irrigationScheduleEn,
+        irrigationScheduleAr:
+            irrigationScheduleAr,
+        fertilizationSchedule:
+            fertilizationSchedule,
+        fertilizationScheduleEn:
+            fertilizationScheduleEn,
+        fertilizationScheduleAr:
+            fertilizationScheduleAr,
         notes: notes,
+        notesEn: notesEn,
+        notesAr: notesAr,
       );
 
-      _crops.insert(0, newCrop);
+      _crops.insert(
+        0,
+        newCrop,
+      );
+
       return true;
     } catch (error) {
-      _errorMessage = error.toString();
+      _errorMessage =
+          error
+              .toString()
+              .replaceFirst(
+                'Exception: ',
+                '',
+              );
+
       return false;
     } finally {
       _isLoading = false;
@@ -68,38 +167,76 @@ class CropProvider extends ChangeNotifier {
     required String cropId,
     required String cropName,
     String? cropType,
+    String? cropNameEn,
+    String? cropNameAr,
+    String? cropTypeEn,
+    String? cropTypeAr,
     String? plantingDate,
     String? irrigationSchedule,
+    String? irrigationScheduleEn,
+    String? irrigationScheduleAr,
     String? fertilizationSchedule,
+    String? fertilizationScheduleEn,
+    String? fertilizationScheduleAr,
     String? notes,
+    String? notesEn,
+    String? notesAr,
   }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final updatedCrop = await _cropService.updateCrop(
+      final updatedCrop =
+          await _cropService.updateCrop(
         token: token,
         cropId: cropId,
         cropName: cropName,
         cropType: cropType,
-        plantingDate: plantingDate,
-        irrigationSchedule: irrigationSchedule,
-        fertilizationSchedule: fertilizationSchedule,
+        cropNameEn: cropNameEn,
+        cropNameAr: cropNameAr,
+        cropTypeEn: cropTypeEn,
+        cropTypeAr: cropTypeAr,
+        plantingDate:
+            plantingDate,
+        irrigationSchedule:
+            irrigationSchedule,
+        irrigationScheduleEn:
+            irrigationScheduleEn,
+        irrigationScheduleAr:
+            irrigationScheduleAr,
+        fertilizationSchedule:
+            fertilizationSchedule,
+        fertilizationScheduleEn:
+            fertilizationScheduleEn,
+        fertilizationScheduleAr:
+            fertilizationScheduleAr,
         notes: notes,
+        notesEn: notesEn,
+        notesAr: notesAr,
       );
 
-      final cropIndex = _crops.indexWhere(
-        (crop) => crop['id'] == cropId,
+      final cropIndex =
+          _crops.indexWhere(
+        (crop) =>
+            crop['id'] == cropId,
       );
 
       if (cropIndex != -1) {
-        _crops[cropIndex] = updatedCrop;
+        _crops[cropIndex] =
+            updatedCrop;
       }
 
       return true;
     } catch (error) {
-      _errorMessage = error.toString();
+      _errorMessage =
+          error
+              .toString()
+              .replaceFirst(
+                'Exception: ',
+                '',
+              );
+
       return false;
     } finally {
       _isLoading = false;
@@ -122,12 +259,21 @@ class CropProvider extends ChangeNotifier {
       );
 
       _crops.removeWhere(
-        (crop) => crop['id'] == cropId,
+        (crop) =>
+            crop['id'] ==
+            cropId,
       );
 
       return true;
     } catch (error) {
-      _errorMessage = error.toString();
+      _errorMessage =
+          error
+              .toString()
+              .replaceFirst(
+                'Exception: ',
+                '',
+              );
+
       return false;
     } finally {
       _isLoading = false;

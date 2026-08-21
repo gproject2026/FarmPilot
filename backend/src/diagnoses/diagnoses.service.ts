@@ -59,15 +59,48 @@ export class DiagnosesService {
         analysis,
       );
 
+    const visibleSymptomsEn =
+      analysis.visibleSymptoms ?? [];
+
+    const arabicTranslation =
+      await this.geminiService
+          .translateDiagnosisToArabic({
+        plantName:
+          detectedPlantName,
+        diseaseName,
+        visibleSymptoms:
+          visibleSymptomsEn,
+        description:
+          analysis.description,
+        causes:
+          analysis.causes,
+        treatment:
+          analysis.treatment,
+        prevention:
+          analysis.prevention,
+      });
+
     const diagnosis =
       await this.prisma.diagnosis.create({
         data: {
           farmerId,
           cropId,
+
           plantName:
             detectedPlantName,
+          plantNameEn:
+            detectedPlantName,
+          plantNameAr:
+            arabicTranslation.plantName,
+
           imageUrl,
+
           diseaseName,
+          diseaseNameEn:
+            diseaseName,
+          diseaseNameAr:
+            arabicTranslation.diseaseName,
+
           confidence:
             analysis.confidence,
 
@@ -85,8 +118,18 @@ export class DiagnosesService {
 
           visibleSymptoms:
             JSON.stringify(
-              analysis.visibleSymptoms ??
-                  [],
+              visibleSymptomsEn,
+            ),
+
+          visibleSymptomsEn:
+            JSON.stringify(
+              visibleSymptomsEn,
+            ),
+
+          visibleSymptomsAr:
+            JSON.stringify(
+              arabicTranslation.visibleSymptoms ??
+                [],
             ),
 
           needsExpertReview:
@@ -95,14 +138,38 @@ export class DiagnosesService {
           description:
             analysis.description,
 
+          descriptionEn:
+            analysis.description,
+
+          descriptionAr:
+            arabicTranslation.description,
+
           causes:
             analysis.causes,
+
+          causesEn:
+            analysis.causes,
+
+          causesAr:
+            arabicTranslation.causes,
 
           treatment:
             analysis.treatment,
 
+          treatmentEn:
+            analysis.treatment,
+
+          treatmentAr:
+            arabicTranslation.treatment,
+
           prevention:
             analysis.prevention,
+
+          preventionEn:
+            analysis.prevention,
+
+          preventionAr:
+            arabicTranslation.prevention,
         },
         include: {
           crop: true,
@@ -136,8 +203,20 @@ export class DiagnosesService {
         plantName:
           detectedPlantName,
 
+        plantNameEn:
+          detectedPlantName,
+
+        plantNameAr:
+          arabicTranslation.plantName,
+
         diseaseName:
           diagnosis.diseaseName,
+
+        diseaseNameEn:
+          diseaseName,
+
+        diseaseNameAr:
+          arabicTranslation.diseaseName,
 
         confidence:
           analysis.confidence,
@@ -146,19 +225,50 @@ export class DiagnosesService {
           analysis.severity,
 
         visibleSymptoms:
-          analysis.visibleSymptoms,
+          visibleSymptomsEn,
+
+        visibleSymptomsEn:
+          visibleSymptomsEn,
+
+        visibleSymptomsAr:
+          arabicTranslation.visibleSymptoms ??
+            [],
 
         description:
           analysis.description,
 
+        descriptionEn:
+          analysis.description,
+
+        descriptionAr:
+          arabicTranslation.description,
+
         causes:
           analysis.causes,
+
+        causesEn:
+          analysis.causes,
+
+        causesAr:
+          arabicTranslation.causes,
 
         treatment:
           analysis.treatment,
 
+        treatmentEn:
+          analysis.treatment,
+
+        treatmentAr:
+          arabicTranslation.treatment,
+
         prevention:
           analysis.prevention,
+
+        preventionEn:
+          analysis.prevention,
+
+        preventionAr:
+          arabicTranslation.prevention,
 
         needsExpertReview:
           analysis.needsExpertReview,
@@ -355,6 +465,188 @@ export class DiagnosesService {
       data:
         updateDiagnosisDto,
     });
+  }
+
+  async backfillArabic(
+    farmerId: string,
+  ) {
+    const diagnoses =
+      await this.prisma.diagnosis.findMany({
+        where: {
+          farmerId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+    let updated = 0;
+    let skipped = 0;
+    const failed: string[] = [];
+
+    for (const diagnosis of diagnoses) {
+      const hasArabicTranslation =
+        diagnosis.plantNameAr?.trim() &&
+        diagnosis.diseaseNameAr?.trim() &&
+        diagnosis.descriptionAr?.trim() &&
+        diagnosis.causesAr?.trim() &&
+        diagnosis.treatmentAr?.trim() &&
+        diagnosis.preventionAr?.trim();
+
+      if (hasArabicTranslation) {
+        skipped++;
+        continue;
+      }
+
+      try {
+        let visibleSymptoms: string[] = [];
+
+        if (
+          diagnosis.visibleSymptoms &&
+          diagnosis.visibleSymptoms.trim()
+        ) {
+          try {
+            const parsedSymptoms =
+              JSON.parse(
+                diagnosis.visibleSymptoms,
+              );
+
+            if (Array.isArray(parsedSymptoms)) {
+              visibleSymptoms =
+                parsedSymptoms.map(
+                  (item) =>
+                    item.toString(),
+                );
+            } else {
+              visibleSymptoms = [
+                diagnosis.visibleSymptoms,
+              ];
+            }
+          } catch (_) {
+            visibleSymptoms = [
+              diagnosis.visibleSymptoms,
+            ];
+          }
+        }
+
+        const plantName =
+          diagnosis.plantName?.trim() ||
+          'Unknown plant';
+
+        const diseaseName =
+          diagnosis.diseaseName?.trim() ||
+          'Unknown diagnosis';
+
+        const description =
+          diagnosis.description?.trim() ||
+          '';
+
+        const causes =
+          diagnosis.causes?.trim() ||
+          '';
+
+        const treatment =
+          diagnosis.treatment?.trim() ||
+          '';
+
+        const prevention =
+          diagnosis.prevention?.trim() ||
+          '';
+
+        const translation =
+          await this.geminiService
+              .translateDiagnosisToArabic({
+            plantName,
+            diseaseName,
+            visibleSymptoms,
+            description,
+            causes,
+            treatment,
+            prevention,
+          });
+
+        await this.prisma.diagnosis.update({
+          where: {
+            id: diagnosis.id,
+          },
+          data: {
+            plantNameEn:
+              diagnosis.plantName ??
+              plantName,
+
+            plantNameAr:
+              translation.plantName,
+
+            diseaseNameEn:
+              diagnosis.diseaseName ??
+              diseaseName,
+
+            diseaseNameAr:
+              translation.diseaseName,
+
+            visibleSymptomsEn:
+              JSON.stringify(
+                visibleSymptoms,
+              ),
+
+            visibleSymptomsAr:
+              JSON.stringify(
+                translation.visibleSymptoms ??
+                  [],
+              ),
+
+            descriptionEn:
+              diagnosis.description ??
+              description,
+
+            descriptionAr:
+              translation.description,
+
+            causesEn:
+              diagnosis.causes ??
+              causes,
+
+            causesAr:
+              translation.causes,
+
+            treatmentEn:
+              diagnosis.treatment ??
+              treatment,
+
+            treatmentAr:
+              translation.treatment,
+
+            preventionEn:
+              diagnosis.prevention ??
+              prevention,
+
+            preventionAr:
+              translation.prevention,
+          },
+        });
+
+        updated++;
+      } catch (error) {
+        console.error(
+          `Failed to backfill Arabic diagnosis ${diagnosis.id}:`,
+          error,
+        );
+
+        failed.push(
+          diagnosis.id,
+        );
+      }
+    }
+
+    return {
+      message:
+        'Arabic diagnosis backfill completed',
+      totalFound:
+        diagnoses.length,
+      updated,
+      skipped,
+      failed,
+    };
   }
 
   async remove(

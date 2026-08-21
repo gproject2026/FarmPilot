@@ -4,9 +4,22 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/generated/app_localizations.dart';
+
 import '../../core/constants/app_constants.dart';
 import '../../providers/diagnosis_provider.dart';
+import '../../providers/locale_provider.dart';
 import 'diagnosis_result_screen.dart';
+
+String _t(
+  BuildContext context,
+  String english,
+  String arabic,
+) {
+  return Localizations.localeOf(context).languageCode == 'ar'
+      ? arabic
+      : english;
+}
 
 class DiagnosisHistoryScreen extends StatefulWidget {
   const DiagnosisHistoryScreen({
@@ -67,17 +80,33 @@ class _DiagnosisHistoryScreenState
   String _getCropName(
     Map<String, dynamic> diagnosis,
   ) {
+    final isArabic =
+        Localizations.localeOf(context).languageCode == 'ar';
+
+    final localizedDetectedName = isArabic
+        ? diagnosis['plantNameAr']?.toString()
+        : diagnosis['plantNameEn']?.toString();
+
+    if (localizedDetectedName != null &&
+        localizedDetectedName.trim().isNotEmpty) {
+      return localizedDetectedName.trim();
+    }
+
     final detectedPlantName =
         diagnosis['plantName']?.toString();
-
-    if (detectedPlantName != null &&
-        detectedPlantName.trim().isNotEmpty) {
-      return detectedPlantName.trim();
-    }
 
     final crop = diagnosis['crop'];
 
     if (crop is Map) {
+      final localizedCropName = isArabic
+          ? crop['cropNameAr']?.toString()
+          : crop['cropNameEn']?.toString();
+
+      if (localizedCropName != null &&
+          localizedCropName.trim().isNotEmpty) {
+        return localizedCropName.trim();
+      }
+
       final cropName =
           crop['cropName']?.toString() ??
               crop['name']?.toString();
@@ -88,7 +117,46 @@ class _DiagnosisHistoryScreenState
       }
     }
 
-    return 'Unknown Plant';
+    if (detectedPlantName != null &&
+        detectedPlantName.trim().isNotEmpty) {
+      return detectedPlantName.trim();
+    }
+
+    return _t(
+      context,
+      'Unknown Plant',
+      'نبات غير معروف',
+    );
+  }
+
+  String _getDiseaseName(
+    Map<String, dynamic> diagnosis,
+  ) {
+    final isArabic =
+        Localizations.localeOf(context).languageCode == 'ar';
+
+    final localizedDisease = isArabic
+        ? diagnosis['diseaseNameAr']?.toString()
+        : diagnosis['diseaseNameEn']?.toString();
+
+    if (localizedDisease != null &&
+        localizedDisease.trim().isNotEmpty) {
+      return localizedDisease.trim();
+    }
+
+    final diseaseName =
+        diagnosis['diseaseName']?.toString();
+
+    if (diseaseName != null &&
+        diseaseName.trim().isNotEmpty) {
+      return diseaseName.trim();
+    }
+
+    return _t(
+      context,
+      'Unknown Diagnosis',
+      'تشخيص غير معروف',
+    );
   }
 
   double _getConfidence(
@@ -107,7 +175,11 @@ class _DiagnosisHistoryScreenState
     dynamic createdAt,
   ) {
     if (createdAt == null) {
-      return 'Unknown date';
+      return _t(
+        context,
+        'Unknown date',
+        'تاريخ غير معروف',
+      );
     }
 
     final date = DateTime.tryParse(
@@ -115,12 +187,16 @@ class _DiagnosisHistoryScreenState
     );
 
     if (date == null) {
-      return 'Unknown date';
+      return _t(
+        context,
+        'Unknown date',
+        'تاريخ غير معروف',
+      );
     }
 
     final localDate = date.toLocal();
 
-    const months = [
+    const monthsEn = [
       'Jan',
       'Feb',
       'Mar',
@@ -135,12 +211,29 @@ class _DiagnosisHistoryScreenState
       'Dec',
     ];
 
-    final day = localDate.day;
-    final month = months[
-        localDate.month - 1];
-    final year = localDate.year;
+    const monthsAr = [
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
+    ];
 
-    return '$day $month $year';
+    final isArabic =
+        Localizations.localeOf(context).languageCode == 'ar';
+
+    final month = isArabic
+        ? monthsAr[localDate.month - 1]
+        : monthsEn[localDate.month - 1];
+
+    return '${localDate.day} $month ${localDate.year}';
   }
 
   bool _isHealthyDiagnosis(
@@ -190,7 +283,7 @@ class _DiagnosisHistoryScreenState
     if (diagnosisId == null ||
         diagnosisId.isEmpty) {
       _showMessage(
-        'Diagnosis ID was not found',
+        _t(context, 'Diagnosis ID was not found', 'لم يتم العثور على معرف التشخيص'),
       );
 
       return;
@@ -202,11 +295,65 @@ class _DiagnosisHistoryScreenState
 
     if (imageUrl == null) {
       _showMessage(
-        'Diagnosis image was not found',
+        _t(context, 'Diagnosis image was not found', 'لم يتم العثور على صورة التشخيص'),
       );
 
       return;
     }
+
+    final downloadErrorMessage = _t(
+      context,
+      'Could not download diagnosis image',
+      'تعذر تنزيل صورة التشخيص',
+    );
+
+    final noDescriptionMessage = _t(
+      context,
+      'No description available.',
+      'لا يوجد وصف متاح.',
+    );
+
+    final noCausesMessage = _t(
+      context,
+      'No causes available.',
+      'لا توجد أسباب متاحة.',
+    );
+
+    final noTreatmentMessage = _t(
+      context,
+      'No treatment available.',
+      'لا يوجد علاج متاح.',
+    );
+
+    final noPreventionMessage = _t(
+      context,
+      'No prevention information available.',
+      'لا توجد معلومات وقاية متاحة.',
+    );
+
+    final disclaimerMessage = _t(
+      context,
+      'This is a preliminary AI-assisted assessment and not a laboratory diagnosis. Consult an agricultural specialist before applying hazardous chemicals.',
+      'هذا تقييم أولي بمساعدة الذكاء الاصطناعي وليس تشخيصًا مخبريًا. استشر مختصًا زراعيًا قبل استخدام أي مواد كيميائية خطرة.',
+    );
+
+    final diseaseName =
+        _getDiseaseName(diagnosis);
+
+    final confidence =
+        _getConfidence(
+      diagnosis,
+    );
+
+    final cropName =
+        _getCropName(
+      diagnosis,
+    );
+
+    final isHealthy =
+        _isHealthyDiagnosis(
+      diseaseName,
+    );
 
     setState(() {
       _openingDiagnosisId = diagnosisId;
@@ -226,33 +373,13 @@ class _DiagnosisHistoryScreenState
       if (responseData == null ||
           responseData.isEmpty) {
         throw Exception(
-          'Could not download diagnosis image',
+          downloadErrorMessage,
         );
       }
 
       final imageBytes =
           Uint8List.fromList(
         responseData,
-      );
-
-      final diseaseName =
-          diagnosis['diseaseName']
-                  ?.toString() ??
-              'Unknown Diagnosis';
-
-      final confidence =
-          _getConfidence(
-        diagnosis,
-      );
-
-      final cropName =
-          _getCropName(
-        diagnosis,
-      );
-
-      final isHealthy =
-          _isHealthyDiagnosis(
-        diseaseName,
       );
 
       final result = <String, dynamic>{
@@ -277,24 +404,24 @@ class _DiagnosisHistoryScreenState
           'description':
               diagnosis['description']
                       ?.toString() ??
-                  'No description available.',
+                  noDescriptionMessage,
           'causes':
               diagnosis['causes']
                       ?.toString() ??
-                  'No causes available.',
+                  noCausesMessage,
           'treatment':
               diagnosis['treatment']
                       ?.toString() ??
-                  'No treatment available.',
+                  noTreatmentMessage,
           'prevention':
               diagnosis['prevention']
                       ?.toString() ??
-                  'No prevention information available.',
+                  noPreventionMessage,
           'needsExpertReview': !isHealthy,
         },
         'diagnosis': diagnosis,
         'disclaimer':
-            'This is a preliminary AI-assisted assessment and not a laboratory diagnosis. Consult an agricultural specialist before applying hazardous chemicals.',
+            disclaimerMessage,
       };
 
       if (!mounted) {
@@ -333,6 +460,143 @@ class _DiagnosisHistoryScreenState
     }
   }
 
+  Future<void> _deleteDiagnosis(
+    Map<String, dynamic> diagnosis,
+  ) async {
+    final diagnosisId =
+        diagnosis['id']?.toString();
+
+    if (diagnosisId == null ||
+        diagnosisId.isEmpty) {
+      _showMessage(
+        _t(
+          context,
+          'Diagnosis ID was not found',
+          'لم يتم العثور على معرف التشخيص',
+        ),
+      );
+      return;
+    }
+
+    final shouldDelete =
+        await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(
+            _t(
+              context,
+              'Delete Diagnosis',
+              'حذف التشخيص',
+            ),
+          ),
+          content: Text(
+            _t(
+              context,
+              'Are you sure you want to delete this diagnosis?',
+              'هل أنت متأكد أنك تريد حذف هذا التشخيص؟',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  false,
+                );
+              },
+              child: Text(
+                _t(
+                  context,
+                  'Cancel',
+                  'إلغاء',
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  true,
+                );
+              },
+              child: Text(
+                _t(
+                  context,
+                  'Delete',
+                  'حذف',
+                ),
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight:
+                      FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true ||
+        !mounted) {
+      return;
+    }
+
+    final diagnosisProvider =
+        Provider.of<DiagnosisProvider>(
+      context,
+      listen: false,
+    );
+
+    final success =
+        await diagnosisProvider
+            .deleteDiagnosis(
+      diagnosisId,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (success) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            _t(
+              context,
+              'Diagnosis deleted successfully',
+              'تم حذف التشخيص بنجاح',
+            ),
+          ),
+          backgroundColor:
+              Colors.green,
+        ),
+      );
+    } else {
+      _showMessage(
+        diagnosisProvider.errorMessage ??
+            _t(
+              context,
+              'Failed to delete diagnosis',
+              'فشل حذف التشخيص',
+            ),
+      );
+    }
+  }
+
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
+
   void _showMessage(
     String message,
   ) {
@@ -359,6 +623,12 @@ class _DiagnosisHistoryScreenState
     final diagnoses =
         diagnosisProvider.diagnoses;
 
+    final l10n =
+        AppLocalizations.of(context)!;
+
+    final isArabic =
+        Localizations.localeOf(context).languageCode == 'ar';
+
     return Scaffold(
       backgroundColor:
           const Color(0xFFF8FAF4),
@@ -380,6 +650,12 @@ class _DiagnosisHistoryScreenState
                             .isLoading
                         ? null
                         : _loadDiagnoses,
+                onLanguage:
+                    _changeLanguage,
+                isArabic:
+                    isArabic,
+                l10n:
+                    l10n,
               ),
               Expanded(
                 child:
@@ -511,9 +787,9 @@ class _DiagnosisHistoryScreenState
                                     );
 
                                     final diseaseName =
-                                        diagnosis['diseaseName']
-                                                ?.toString() ??
-                                            'Unknown Diagnosis';
+                                        _getDiseaseName(
+                                      diagnosis,
+                                    );
 
                                     return _DiagnosisHistoryCard(
                                       diagnosis:
@@ -548,8 +824,18 @@ class _DiagnosisHistoryScreenState
                                               diagnosis[
                                                       'id']
                                                   ?.toString(),
+                                      isDeleting:
+                                          diagnosisProvider
+                                                  .deletingDiagnosisId ==
+                                              diagnosis[
+                                                      'id']
+                                                  ?.toString(),
                                       onOpen: () =>
                                           _openDiagnosis(
+                                        diagnosis,
+                                      ),
+                                      onDelete: () =>
+                                          _deleteDiagnosis(
                                         diagnosis,
                                       ),
                                     );
@@ -599,12 +885,17 @@ const _historyMuted =
 class _HistoryTopBar
     extends StatelessWidget {
   final VoidCallback onBack;
-  final Future<void> Function()?
-      onRefresh;
+  final Future<void> Function()? onRefresh;
+  final ValueChanged<String> onLanguage;
+  final bool isArabic;
+  final AppLocalizations l10n;
 
   const _HistoryTopBar({
     required this.onBack,
     required this.onRefresh,
+    required this.onLanguage,
+    required this.isArabic,
+    required this.l10n,
   });
 
   @override
@@ -634,9 +925,12 @@ class _HistoryTopBar
         child: Row(
           children: [
             _HistoryHeaderButton(
-              icon: Icons
-                  .arrow_back_rounded,
-              tooltip: 'Back',
+              icon: Icons.arrow_back_rounded,
+              tooltip: _t(
+                context,
+                'Back',
+                'رجوع',
+              ),
               onTap: onBack,
             ),
             const SizedBox(
@@ -647,18 +941,15 @@ class _HistoryTopBar
               height: 44,
               decoration:
                   BoxDecoration(
-                color:
-                    const Color(
+                color: const Color(
                   0xFFDDECB8,
                 ),
                 borderRadius:
-                    BorderRadius
-                        .circular(
+                    BorderRadius.circular(
                   13,
                 ),
               ),
-              child:
-                  const Icon(
+              child: const Icon(
                 Icons.eco_rounded,
                 color:
                     _historyDark,
@@ -667,45 +958,140 @@ class _HistoryTopBar
             const SizedBox(
               width: 10,
             ),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
+                    CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'FarmPilot',
+                    l10n.appName,
                     style:
-                        TextStyle(
+                        const TextStyle(
                       color:
                           Colors.white,
-                      fontSize:
-                          19,
+                      fontSize: 19,
                       fontWeight:
-                          FontWeight
-                              .w800,
+                          FontWeight.w800,
                     ),
                   ),
                   Text(
-                    'Diagnosis History',
+                    _t(
+                      context,
+                      'Diagnosis History',
+                      'سجل التشخيصات',
+                    ),
                     style:
-                        TextStyle(
-                      color:
-                          Color(
+                        const TextStyle(
+                      color: Color(
                         0xCCFFFFFF,
                       ),
-                      fontSize:
-                          12,
+                      fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
+            PopupMenuButton<String>(
+              tooltip:
+                  l10n.changeLanguage,
+              position:
+                  PopupMenuPosition.under,
+              offset:
+                  const Offset(0, 8),
+              color:
+                  const Color(0xFFF8FAF4),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                  16,
+                ),
+              ),
+              onSelected:
+                  onLanguage,
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _historyPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          l10n.english,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _historyPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          l10n.arabic,
+                        ),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration:
+                    BoxDecoration(
+                  color: Colors.white
+                      .withValues(
+                    alpha: 0.10,
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(
+                    14,
+                  ),
+                ),
+                alignment:
+                    Alignment.center,
+                child: const Icon(
+                  Icons.language_rounded,
+                  color:
+                      Colors.white,
+                  size: 21,
+                ),
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
             _HistoryHeaderButton(
               icon:
                   Icons.refresh_rounded,
-              tooltip:
-                  'Refresh',
+              tooltip: _t(
+                context,
+                'Refresh',
+                'تحديث',
+              ),
               onTap:
                   onRefresh,
             ),
@@ -801,10 +1187,10 @@ class _HistoryHero
           constraints,
         ) {
           final heading =
-              const Row(
+              Row(
             children: [
-              _HistoryHeroIcon(),
-              SizedBox(
+              const _HistoryHeroIcon(),
+              const SizedBox(
                 width: 16,
               ),
               Expanded(
@@ -814,9 +1200,13 @@ class _HistoryHero
                           .start,
                   children: [
                     Text(
-                      'Diagnosis History',
+                      _t(
+                        context,
+                        'Diagnosis History',
+                        'سجل التشخيصات',
+                      ),
                       style:
-                          TextStyle(
+                          const TextStyle(
                         color:
                             _historyText,
                         fontSize:
@@ -826,13 +1216,17 @@ class _HistoryHero
                                 .w800,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 4,
                     ),
                     Text(
-                      'Review previous AI plant analyses and reopen detailed results.',
+                      _t(
+                        context,
+                        'Review previous AI plant analyses and reopen detailed results.',
+                        'راجع تحليلات النباتات السابقة بالذكاء الاصطناعي وافتح النتائج التفصيلية مجددًا.',
+                      ),
                       style:
-                          TextStyle(
+                          const TextStyle(
                         color:
                             _historyMuted,
                         fontSize:
@@ -868,7 +1262,9 @@ class _HistoryHero
               ),
             ),
             child: Text(
-              '$totalDiagnoses diagnoses',
+              Localizations.localeOf(context).languageCode == 'ar'
+                  ? '$totalDiagnoses تشخيصات'
+                  : '$totalDiagnoses diagnoses',
               style:
                   const TextStyle(
                 color:
@@ -960,7 +1356,9 @@ class _DiagnosisHistoryCard
   final String? imageUrl;
   final Color statusColor;
   final bool isOpening;
+  final bool isDeleting;
   final VoidCallback onOpen;
+  final VoidCallback onDelete;
 
   const _DiagnosisHistoryCard({
     required this.diagnosis,
@@ -971,7 +1369,9 @@ class _DiagnosisHistoryCard
     required this.imageUrl,
     required this.statusColor,
     required this.isOpening,
+    required this.isDeleting,
     required this.onOpen,
+    required this.onDelete,
   });
 
   @override
@@ -983,7 +1383,7 @@ class _DiagnosisHistoryCard
           Colors.transparent,
       child: InkWell(
         onTap:
-            isOpening
+            isOpening || isDeleting
                 ? null
                 : onOpen,
         borderRadius:
@@ -1097,26 +1497,55 @@ class _DiagnosisHistoryCard
                           ),
                           if (isOpening)
                             const SizedBox(
-                              width:
-                                  20,
-                              height:
-                                  20,
+                              width: 20,
+                              height: 20,
                               child:
                                   CircularProgressIndicator(
-                                strokeWidth:
-                                    2,
+                                strokeWidth: 2,
                                 color:
                                     _historyPrimary,
                               ),
                             )
                           else
-                            const Icon(
-                              Icons
-                                  .arrow_forward_ios_rounded,
-                              size:
-                                  15,
-                              color:
-                                  _historyMuted,
+                            IconButton(
+                              tooltip: _t(
+                                context,
+                                'Delete Diagnosis',
+                                'حذف التشخيص',
+                              ),
+                              onPressed:
+                                  isDeleting
+                                      ? null
+                                      : onDelete,
+                              style:
+                                  IconButton.styleFrom(
+                                backgroundColor:
+                                    const Color(
+                                  0xFFFFF3F3,
+                                ),
+                                foregroundColor:
+                                    const Color(
+                                  0xFFC65353,
+                                ),
+                              ),
+                              icon: isDeleting
+                                  ? const SizedBox(
+                                      width: 17,
+                                      height: 17,
+                                      child:
+                                          CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color:
+                                            Color(
+                                          0xFFC65353,
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons
+                                          .delete_outline_rounded,
+                                      size: 18,
+                                    ),
                             ),
                         ],
                       ),
@@ -1263,11 +1692,11 @@ class _HistoryEmptyState
             _historyCardDecoration(
           24,
         ),
-        child: const Column(
+        child: Column(
           mainAxisSize:
               MainAxisSize.min,
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               radius: 40,
               backgroundColor:
                   _historyLight,
@@ -1279,15 +1708,19 @@ class _HistoryEmptyState
                     _historyPrimary,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 16,
             ),
             Text(
-              'No diagnoses yet',
+              _t(
+                context,
+                'No diagnoses yet',
+                'لا توجد تشخيصات بعد',
+              ),
               textAlign:
                   TextAlign.center,
               style:
-                  TextStyle(
+                  const TextStyle(
                 color:
                     _historyText,
                 fontSize:
@@ -1297,15 +1730,19 @@ class _HistoryEmptyState
                         .w800,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 8,
             ),
             Text(
-              'Your plant diagnosis history will appear here.',
+              _t(
+                context,
+                'Your plant diagnosis history will appear here.',
+                'سيظهر سجل تشخيصات النباتات هنا.',
+              ),
               textAlign:
                   TextAlign.center,
               style:
-                  TextStyle(
+                  const TextStyle(
                 color:
                     _historyMuted,
                 fontSize:
@@ -1399,8 +1836,12 @@ class _HistoryErrorState
                     .refresh_rounded,
               ),
               label:
-                  const Text(
-                'Try Again',
+                  Text(
+                _t(
+                  context,
+                  'Try Again',
+                  'حاول مرة أخرى',
+                ),
               ),
             ),
           ],

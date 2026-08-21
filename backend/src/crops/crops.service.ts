@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import { PrismaService } from '../prisma/prisma.service';
 
 import { CreateCropDto } from './dto/create-crop.dto';
@@ -10,18 +11,25 @@ import { UpdateCropDto } from './dto/update-crop.dto';
 
 @Injectable()
 export class CropsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+  ) {}
 
   async create(
     createCropDto: CreateCropDto,
     farmerId: string,
   ) {
+    const {
+      plantingDate,
+      ...cropData
+    } = createCropDto;
+
     return this.prisma.crop.create({
       data: {
-        ...createCropDto,
+        ...cropData,
         farmerId,
-        plantingDate: createCropDto.plantingDate
-          ? new Date(createCropDto.plantingDate)
+        plantingDate: plantingDate
+          ? new Date(plantingDate)
           : undefined,
       },
     });
@@ -48,7 +56,9 @@ export class CropsService {
     });
   }
 
-  async findMyCrops(farmerId: string) {
+  async findMyCrops(
+    farmerId: string,
+  ) {
     return this.prisma.crop.findMany({
       where: {
         farmerId,
@@ -59,9 +69,14 @@ export class CropsService {
     });
   }
 
-  async findOne(id: string) {
-    const crop = await this.prisma.crop.findUnique({
-      where: { id },
+  async findOne(
+    id: string,
+  ) {
+    const crop =
+        await this.prisma.crop.findUnique({
+      where: {
+        id,
+      },
       include: {
         farmer: {
           select: {
@@ -91,8 +106,11 @@ export class CropsService {
     updateCropDto: UpdateCropDto,
     farmerId: string,
   ) {
-    const crop = await this.prisma.crop.findUnique({
-      where: { id },
+    const crop =
+        await this.prisma.crop.findUnique({
+      where: {
+        id,
+      },
     });
 
     if (!crop) {
@@ -101,19 +119,31 @@ export class CropsService {
       );
     }
 
-    if (crop.farmerId !== farmerId) {
+    if (
+      crop.farmerId !== farmerId
+    ) {
       throw new ForbiddenException(
         'You are not allowed to update this crop',
       );
     }
 
+    const {
+      plantingDate,
+      ...cropData
+    } = updateCropDto;
+
     return this.prisma.crop.update({
-      where: { id },
+      where: {
+        id,
+      },
       data: {
-        ...updateCropDto,
-        plantingDate: updateCropDto.plantingDate
-          ? new Date(updateCropDto.plantingDate)
-          : undefined,
+        ...cropData,
+        plantingDate:
+            plantingDate !== undefined
+                ? new Date(
+                    plantingDate,
+                  )
+                : undefined,
       },
     });
   }
@@ -122,8 +152,11 @@ export class CropsService {
     id: string,
     farmerId: string,
   ) {
-    const crop = await this.prisma.crop.findUnique({
-      where: { id },
+    const crop =
+        await this.prisma.crop.findUnique({
+      where: {
+        id,
+      },
     });
 
     if (!crop) {
@@ -132,14 +165,18 @@ export class CropsService {
       );
     }
 
-    if (crop.farmerId !== farmerId) {
+    if (
+      crop.farmerId !== farmerId
+    ) {
       throw new ForbiddenException(
         'You are not allowed to delete this crop',
       );
     }
 
     return this.prisma.crop.delete({
-      where: { id },
+      where: {
+        id,
+      },
     });
   }
 }

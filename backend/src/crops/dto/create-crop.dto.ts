@@ -15,6 +15,22 @@ export class CreateCropDto {
   cropType?: string;
 
   @IsOptional()
+  @IsString()
+  cropNameEn?: string;
+
+  @IsOptional()
+  @IsString()
+  cropNameAr?: string;
+
+  @IsOptional()
+  @IsString()
+  cropTypeEn?: string;
+
+  @IsOptional()
+  @IsString()
+  cropTypeAr?: string;
+
+  @IsOptional()
   @IsDateString()
   plantingDate?: string;
 
@@ -24,9 +40,33 @@ export class CreateCropDto {
 
   @IsOptional()
   @IsString()
+  irrigationScheduleEn?: string;
+
+  @IsOptional()
+  @IsString()
+  irrigationScheduleAr?: string;
+
+  @IsOptional()
+  @IsString()
   fertilizationSchedule?: string;
 
   @IsOptional()
   @IsString()
+  fertilizationScheduleEn?: string;
+
+  @IsOptional()
+  @IsString()
+  fertilizationScheduleAr?: string;
+
+  @IsOptional()
+  @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  notesEn?: string;
+
+  @IsOptional()
+  @IsString()
+  notesAr?: string;
 }

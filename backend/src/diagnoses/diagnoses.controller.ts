@@ -8,6 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+
 import { UserRole } from '@prisma/client';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -57,6 +58,18 @@ export class DiagnosesController {
   ) {
     return this.diagnosesService.translateToArabic(
       translateDiagnosisDto,
+    );
+  }
+
+  @Post('backfill-arabic')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.FARMER)
+  backfillArabic(
+    @CurrentUser()
+    user: AuthenticatedUser,
+  ) {
+    return this.diagnosesService.backfillArabic(
+      user.id,
     );
   }
 
@@ -134,4 +147,4 @@ export class DiagnosesController {
       user.id,
     );
   }
-} 
+}

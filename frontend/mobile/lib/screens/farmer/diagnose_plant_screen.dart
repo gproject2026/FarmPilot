@@ -4,11 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/diagnosis_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../services/image_upload_service.dart';
 import 'diagnosis_result_screen.dart';
+
+String _t(
+  BuildContext context,
+  String english,
+  String arabic,
+) {
+  return Localizations.localeOf(context).languageCode == 'ar'
+      ? arabic
+      : english;
+}
 
 class DiagnosePlantScreen extends StatefulWidget {
   const DiagnosePlantScreen({
@@ -67,7 +79,7 @@ class _DiagnosePlantScreenState
     if (token == null ||
         token.isEmpty) {
       _showMessage(
-        'Authentication token was not found',
+        _t(context, 'Authentication token was not found', 'لم يتم العثور على رمز تسجيل الدخول'),
         isError: true,
       );
 
@@ -115,7 +127,7 @@ class _DiagnosePlantScreenState
       }
 
       _showMessage(
-        'Failed to select image: $error',
+        "${_t(context, 'Failed to select image', 'فشل اختيار الصورة')}: $error",
         isError: true,
       );
     }
@@ -132,7 +144,7 @@ class _DiagnosePlantScreenState
     if (_selectedImageBytes == null ||
         _selectedImageName == null) {
       _showMessage(
-        'Please select or capture a plant image',
+        _t(context, 'Please select or capture a plant image', 'يرجى اختيار صورة للنبات أو التقاط صورة'),
         isError: true,
       );
 
@@ -221,6 +233,17 @@ class _DiagnosePlantScreenState
     }
   }
 
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
+
   void _showMessage(
     String message, {
     required bool isError,
@@ -267,6 +290,12 @@ class _DiagnosePlantScreenState
         _isUploading ||
             diagnosisProvider.isLoading;
 
+    final l10n =
+        AppLocalizations.of(context)!;
+
+    final isArabic =
+        Localizations.localeOf(context).languageCode == 'ar';
+
     return Scaffold(
       backgroundColor:
           const Color(0xFFF8FAF4),
@@ -283,6 +312,12 @@ class _DiagnosePlantScreenState
                     Navigator.pop(
                   context,
                 ),
+                onLanguage:
+                    _changeLanguage,
+                isArabic:
+                    isArabic,
+                l10n:
+                    l10n,
               ),
               Expanded(
                 child:
@@ -325,13 +360,19 @@ class _DiagnosePlantScreenState
                                   CrossAxisAlignment
                                       .start,
                               children: [
-                                const _DiagnosisSectionTitle(
+                                _DiagnosisSectionTitle(
                                   icon: Icons
                                       .image_search_outlined,
-                                  title:
-                                      'Plant Image',
-                                  subtitle:
-                                      'Use a clear, well-lit image of the affected plant area.',
+                                  title: _t(
+                                    context,
+                                    'Plant Image',
+                                    'صورة النبات',
+                                  ),
+                                  subtitle: _t(
+                                    context,
+                                    'Use a clear, well-lit image of the affected plant area.',
+                                    'استخدم صورة واضحة وجيدة الإضاءة للجزء المصاب من النبات.',
+                                  ),
                                 ),
                                 const SizedBox(
                                   height: 18,
@@ -400,10 +441,14 @@ class _DiagnosePlantScreenState
                                             .camera_alt_outlined,
                                       ),
                                       label:
-                                          const Text(
-                                        'Take Photo',
+                                          Text(
+                                        _t(
+                                          context,
+                                          'Take Photo',
+                                          'التقاط صورة',
+                                        ),
                                         style:
-                                            TextStyle(
+                                            const TextStyle(
                                           fontWeight:
                                               FontWeight
                                                   .w700,
@@ -452,10 +497,14 @@ class _DiagnosePlantScreenState
                                             .photo_library_outlined,
                                       ),
                                       label:
-                                          const Text(
-                                        'Gallery',
+                                          Text(
+                                        _t(
+                                          context,
+                                          'Gallery',
+                                          'المعرض',
+                                        ),
                                         style:
-                                            TextStyle(
+                                            const TextStyle(
                                           fontWeight:
                                               FontWeight
                                                   .w700,
@@ -507,13 +556,19 @@ class _DiagnosePlantScreenState
                                 const SizedBox(
                                   height: 26,
                                 ),
-                                const _DiagnosisSectionTitle(
+                                _DiagnosisSectionTitle(
                                   icon: Icons
                                       .tune_rounded,
-                                  title:
-                                      'Diagnosis Details',
-                                  subtitle:
-                                      'Link the diagnosis to a crop or let AI identify the plant automatically.',
+                                  title: _t(
+                                    context,
+                                    'Diagnosis Details',
+                                    'تفاصيل التشخيص',
+                                  ),
+                                  subtitle: _t(
+                                    context,
+                                    'Link the diagnosis to a crop or let AI identify the plant automatically.',
+                                    'اربط التشخيص بمحصول أو دع الذكاء الاصطناعي يحدد النبات تلقائيًا.',
+                                  ),
                                 ),
                                 const SizedBox(
                                   height: 18,
@@ -542,20 +597,30 @@ class _DiagnosePlantScreenState
                                         _selectedCropValue,
                                     decoration:
                                         _diagnosisFieldDecoration(
-                                      label:
-                                          'Link to Crop (Optional)',
+                                      label: _t(
+                                        context,
+                                        'Link to Crop (Optional)',
+                                        'ربط بمحصول (اختياري)',
+                                      ),
                                       icon: Icons
                                           .eco_outlined,
-                                      helperText:
-                                          'Leave AI detection selected to identify the plant automatically.',
+                                      helperText: _t(
+                                        context,
+                                        'Leave AI detection selected to identify the plant automatically.',
+                                        'اترك خيار اكتشاف الذكاء الاصطناعي محددًا ليتم التعرف على النبات تلقائيًا.',
+                                      ),
                                     ),
                                     items: [
-                                      const DropdownMenuItem<
+                                      DropdownMenuItem<
                                           String>(
                                         value:
                                             _aiDetectValue,
                                         child: Text(
-                                          'Let AI detect the plant',
+                                          _t(
+                                            context,
+                                            'Let AI detect the plant',
+                                            'دع الذكاء الاصطناعي يحدد النبات',
+                                          ),
                                         ),
                                       ),
                                       ...cropProvider
@@ -569,11 +634,39 @@ class _DiagnosePlantScreenState
                                                   ?.toString();
 
                                           final cropName =
-                                              crop['cropName']
-                                                      ?.toString() ??
-                                                  crop['name']
-                                                      ?.toString() ??
-                                                  'Unnamed Crop';
+                                              isArabic
+                                                  ? (crop['cropNameAr']
+                                                              ?.toString()
+                                                              .trim()
+                                                              .isNotEmpty ==
+                                                          true
+                                                      ? crop['cropNameAr']
+                                                          .toString()
+                                                      : crop['cropName']
+                                                              ?.toString() ??
+                                                          crop['name']
+                                                              ?.toString() ??
+                                                          _t(
+                                                            context,
+                                                            'Unnamed Crop',
+                                                            'محصول بدون اسم',
+                                                          ))
+                                                  : (crop['cropNameEn']
+                                                              ?.toString()
+                                                              .trim()
+                                                              .isNotEmpty ==
+                                                          true
+                                                      ? crop['cropNameEn']
+                                                          .toString()
+                                                      : crop['cropName']
+                                                              ?.toString() ??
+                                                          crop['name']
+                                                              ?.toString() ??
+                                                          _t(
+                                                            context,
+                                                            'Unnamed Crop',
+                                                            'محصول بدون اسم',
+                                                          ));
 
                                           return DropdownMenuItem<
                                               String>(
@@ -620,10 +713,16 @@ class _DiagnosePlantScreenState
                                   maxLines: 4,
                                   decoration:
                                       _diagnosisFieldDecoration(
-                                    label:
-                                        'Observed Symptoms (Optional)',
-                                    hint:
-                                        'Example: Yellow leaves, brown spots, wilting...',
+                                    label: _t(
+                                      context,
+                                      'Observed Symptoms (Optional)',
+                                      'الأعراض الملحوظة (اختياري)',
+                                    ),
+                                    hint: _t(
+                                      context,
+                                      'Example: Yellow leaves, brown spots, wilting...',
+                                      'مثال: اصفرار الأوراق، بقع بنية، ذبول...',
+                                    ),
                                     icon: Icons
                                         .description_outlined,
                                     alignLabelWithHint:
@@ -686,8 +785,16 @@ class _DiagnosePlantScreenState
                                               ),
                                     label: Text(
                                       isLoading
-                                          ? 'Analyzing Plant...'
-                                          : 'Analyze Plant',
+                                          ? _t(
+                                              context,
+                                              'Analyzing Plant...',
+                                              'جارٍ تحليل النبات...',
+                                            )
+                                          : _t(
+                                              context,
+                                              'Analyze Plant',
+                                              'تحليل النبات',
+                                            ),
                                       style:
                                           const TextStyle(
                                         fontWeight:
@@ -723,12 +830,12 @@ class _DiagnosePlantScreenState
                                     ),
                                   ),
                                   child:
-                                      const Row(
+                                      Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment
                                             .start,
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons
                                             .tips_and_updates_outlined,
                                         size:
@@ -736,16 +843,20 @@ class _DiagnosePlantScreenState
                                         color:
                                             _diagnosisPrimary,
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         width:
                                             10,
                                       ),
                                       Expanded(
                                         child:
                                             Text(
-                                          'For better results, use a clear photo showing the affected leaves, stem, or fruit.',
+                                          _t(
+                                            context,
+                                            'For better results, use a clear photo showing the affected leaves, stem, or fruit.',
+                                            'لنتائج أفضل، استخدم صورة واضحة تُظهر الأوراق أو الساق أو الثمار المصابة.',
+                                          ),
                                           style:
-                                              TextStyle(
+                                              const TextStyle(
                                             color:
                                                 _diagnosisMuted,
                                             fontSize:
@@ -789,9 +900,15 @@ const _diagnosisMuted =
 class _DiagnosisTopBar
     extends StatelessWidget {
   final VoidCallback onBack;
+  final ValueChanged<String> onLanguage;
+  final bool isArabic;
+  final AppLocalizations l10n;
 
   const _DiagnosisTopBar({
     required this.onBack,
+    required this.onLanguage,
+    required this.isArabic,
+    required this.l10n,
   });
 
   @override
@@ -821,68 +938,147 @@ class _DiagnosisTopBar
         child: Row(
           children: [
             _DiagnosisHeaderButton(
-              icon: Icons
-                  .arrow_back_rounded,
-              tooltip: 'Back',
+              icon: Icons.arrow_back_rounded,
+              tooltip: _t(
+                context,
+                'Back',
+                'رجوع',
+              ),
               onTap: onBack,
             ),
-            const SizedBox(
-              width: 12,
-            ),
+            const SizedBox(width: 12),
             Container(
               width: 44,
               height: 44,
-              decoration:
-                  BoxDecoration(
+              decoration: BoxDecoration(
                 color: const Color(
                   0xFFDDECB8,
                 ),
                 borderRadius:
-                    BorderRadius
-                        .circular(
+                    BorderRadius.circular(
                   13,
                 ),
               ),
               child: const Icon(
                 Icons.eco_rounded,
-                color:
-                    _diagnosisDark,
+                color: _diagnosisDark,
               ),
             ),
-            const SizedBox(
-              width: 10,
-            ),
-            const Expanded(
+            const SizedBox(width: 10),
+            Expanded(
               child: Column(
                 crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
+                    CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'FarmPilot',
-                    style:
-                        TextStyle(
-                      color:
-                          Colors.white,
-                      fontSize:
-                          19,
+                    l10n.appName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 19,
                       fontWeight:
-                          FontWeight
-                              .w800,
+                          FontWeight.w800,
                     ),
                   ),
                   Text(
-                    'Plant Diagnosis',
-                    style:
-                        TextStyle(
-                      color: Color(
-                        0xCCFFFFFF,
-                      ),
-                      fontSize:
-                          12,
+                    _t(
+                      context,
+                      'Plant Diagnosis',
+                      'تشخيص النبات',
+                    ),
+                    style: const TextStyle(
+                      color:
+                          Color(0xCCFFFFFF),
+                      fontSize: 12,
                     ),
                   ),
                 ],
+              ),
+            ),
+            PopupMenuButton<String>(
+              tooltip:
+                  l10n.changeLanguage,
+              position:
+                  PopupMenuPosition.under,
+              offset:
+                  const Offset(0, 8),
+              color:
+                  const Color(0xFFF8FAF4),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                  16,
+                ),
+              ),
+              onSelected: onLanguage,
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _diagnosisPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          l10n.english,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _diagnosisPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          l10n.arabic,
+                        ),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white
+                      .withValues(
+                    alpha: 0.10,
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(
+                    14,
+                  ),
+                ),
+                alignment:
+                    Alignment.center,
+                child: const Icon(
+                  Icons.language_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
               ),
             ),
           ],
@@ -986,16 +1182,20 @@ class _DiagnosisHero
           const SizedBox(
             width: 16,
           ),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment:
                   CrossAxisAlignment
                       .start,
               children: [
                 Text(
-                  'AI Plant Disease Detection',
+                  _t(
+                    context,
+                    'AI Plant Disease Detection',
+                    'اكتشاف أمراض النبات بالذكاء الاصطناعي',
+                  ),
                   style:
-                      TextStyle(
+                      const TextStyle(
                     color:
                         _diagnosisText,
                     fontSize:
@@ -1005,13 +1205,17 @@ class _DiagnosisHero
                             .w800,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 4,
                 ),
                 Text(
-                  'Capture or select a clear image. AI will identify the plant and analyze visible symptoms.',
+                  _t(
+                    context,
+                    'Capture or select a clear image. AI will identify the plant and analyze visible symptoms.',
+                    'التقط أو اختر صورة واضحة. سيحدد الذكاء الاصطناعي النبات ويحلل الأعراض الظاهرة.',
+                  ),
                   style:
-                      TextStyle(
+                      const TextStyle(
                     color:
                         _diagnosisMuted,
                     fontSize:
@@ -1149,12 +1353,12 @@ class _DiagnosisImageBox
       clipBehavior:
           Clip.antiAlias,
       child: imageBytes == null
-          ? const Column(
+          ? Column(
               mainAxisAlignment:
                   MainAxisAlignment
                       .center,
               children: [
-                Icon(
+                const Icon(
                   Icons
                       .image_outlined,
                   size: 64,
@@ -1163,13 +1367,17 @@ class _DiagnosisImageBox
                     0xFF97A29A,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10,
                 ),
                 Text(
-                  'No image selected',
+                  _t(
+                    context,
+                    'No image selected',
+                    'لم يتم اختيار صورة',
+                  ),
                   style:
-                      TextStyle(
+                      const TextStyle(
                     color:
                         _diagnosisMuted,
                     fontWeight:
@@ -1202,8 +1410,11 @@ class _DiagnosisImageBox
                       12,
                     ),
                     child: IconButton(
-                      tooltip:
-                          'Remove image',
+                      tooltip: _t(
+                        context,
+                        'Remove image',
+                        'إزالة الصورة',
+                      ),
                       onPressed:
                           isLoading
                               ? null

@@ -19,9 +19,8 @@ class CropService {
     );
 
     if (response.statusCode == 200) {
-      final decodedBody = jsonDecode(
-        response.body,
-      );
+      final decodedBody =
+          jsonDecode(response.body);
 
       if (decodedBody is! List) {
         throw Exception(
@@ -42,14 +41,25 @@ class CropService {
     );
   }
 
-  Future<Map<String, dynamic>> createCrop({
+  Future<Map<String, dynamic>>
+      createCrop({
     required String token,
     required String cropName,
     String? cropType,
+    String? cropNameEn,
+    String? cropNameAr,
+    String? cropTypeEn,
+    String? cropTypeAr,
     String? plantingDate,
     String? irrigationSchedule,
+    String? irrigationScheduleEn,
+    String? irrigationScheduleAr,
     String? fertilizationSchedule,
+    String? fertilizationScheduleEn,
+    String? fertilizationScheduleAr,
     String? notes,
+    String? notesEn,
+    String? notesAr,
   }) async {
     final response = await http.post(
       Uri.parse(
@@ -61,31 +71,62 @@ class CropService {
       },
       body: jsonEncode({
         'cropName': cropName,
-        if (cropType != null &&
-            cropType.isNotEmpty)
+        if (_hasValue(cropType))
           'cropType': cropType,
-        if (plantingDate != null &&
-            plantingDate.isNotEmpty)
-          'plantingDate': plantingDate,
-        if (irrigationSchedule != null &&
-            irrigationSchedule.isNotEmpty)
+        if (_hasValue(cropNameEn))
+          'cropNameEn': cropNameEn,
+        if (_hasValue(cropNameAr))
+          'cropNameAr': cropNameAr,
+        if (_hasValue(cropTypeEn))
+          'cropTypeEn': cropTypeEn,
+        if (_hasValue(cropTypeAr))
+          'cropTypeAr': cropTypeAr,
+        if (_hasValue(plantingDate))
+          'plantingDate':
+              plantingDate,
+        if (_hasValue(
+          irrigationSchedule,
+        ))
           'irrigationSchedule':
               irrigationSchedule,
-        if (fertilizationSchedule != null &&
-            fertilizationSchedule.isNotEmpty)
+        if (_hasValue(
+          irrigationScheduleEn,
+        ))
+          'irrigationScheduleEn':
+              irrigationScheduleEn,
+        if (_hasValue(
+          irrigationScheduleAr,
+        ))
+          'irrigationScheduleAr':
+              irrigationScheduleAr,
+        if (_hasValue(
+          fertilizationSchedule,
+        ))
           'fertilizationSchedule':
               fertilizationSchedule,
-        if (notes != null &&
-            notes.isNotEmpty)
+        if (_hasValue(
+          fertilizationScheduleEn,
+        ))
+          'fertilizationScheduleEn':
+              fertilizationScheduleEn,
+        if (_hasValue(
+          fertilizationScheduleAr,
+        ))
+          'fertilizationScheduleAr':
+              fertilizationScheduleAr,
+        if (_hasValue(notes))
           'notes': notes,
+        if (_hasValue(notesEn))
+          'notesEn': notesEn,
+        if (_hasValue(notesAr))
+          'notesAr': notesAr,
       }),
     );
 
     if (response.statusCode == 200 ||
         response.statusCode == 201) {
-      final decodedBody = jsonDecode(
-        response.body,
-      );
+      final decodedBody =
+          jsonDecode(response.body);
 
       if (decodedBody
           is! Map<String, dynamic>) {
@@ -105,15 +146,26 @@ class CropService {
     );
   }
 
-  Future<Map<String, dynamic>> updateCrop({
+  Future<Map<String, dynamic>>
+      updateCrop({
     required String token,
     required String cropId,
     required String cropName,
     String? cropType,
+    String? cropNameEn,
+    String? cropNameAr,
+    String? cropTypeEn,
+    String? cropTypeAr,
     String? plantingDate,
     String? irrigationSchedule,
+    String? irrigationScheduleEn,
+    String? irrigationScheduleAr,
     String? fertilizationSchedule,
+    String? fertilizationScheduleEn,
+    String? fertilizationScheduleAr,
     String? notes,
+    String? notesEn,
+    String? notesAr,
   }) async {
     final response = await http.patch(
       Uri.parse(
@@ -125,20 +177,34 @@ class CropService {
       },
       body: jsonEncode({
         'cropName': cropName,
-        'cropType': ?cropType,
-        'plantingDate': ?plantingDate,
+        'cropType': cropType,
+        'cropNameEn': cropNameEn,
+        'cropNameAr': cropNameAr,
+        'cropTypeEn': cropTypeEn,
+        'cropTypeAr': cropTypeAr,
+        'plantingDate':
+            plantingDate,
         'irrigationSchedule':
-            ?irrigationSchedule,
+            irrigationSchedule,
+        'irrigationScheduleEn':
+            irrigationScheduleEn,
+        'irrigationScheduleAr':
+            irrigationScheduleAr,
         'fertilizationSchedule':
-            ?fertilizationSchedule,
-        'notes': ?notes,
+            fertilizationSchedule,
+        'fertilizationScheduleEn':
+            fertilizationScheduleEn,
+        'fertilizationScheduleAr':
+            fertilizationScheduleAr,
+        'notes': notes,
+        'notesEn': notesEn,
+        'notesAr': notesAr,
       }),
     );
 
     if (response.statusCode == 200) {
-      final decodedBody = jsonDecode(
-        response.body,
-      );
+      final decodedBody =
+          jsonDecode(response.body);
 
       if (decodedBody
           is! Map<String, dynamic>) {
@@ -183,14 +249,20 @@ class CropService {
     }
   }
 
+  bool _hasValue(
+    String? value,
+  ) {
+    return value != null &&
+        value.trim().isNotEmpty;
+  }
+
   String _readErrorMessage(
     String responseBody,
     String fallbackMessage,
   ) {
     try {
-      final decodedBody = jsonDecode(
-        responseBody,
-      );
+      final decodedBody =
+          jsonDecode(responseBody);
 
       if (decodedBody
           is Map<String, dynamic>) {
@@ -205,9 +277,7 @@ class CropService {
           return message.join(', ');
         }
       }
-    } catch (_) {
-      // Use the fallback message.
-    }
+    } catch (_) {}
 
     return fallbackMessage;
   }
