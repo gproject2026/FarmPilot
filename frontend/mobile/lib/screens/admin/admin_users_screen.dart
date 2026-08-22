@@ -18,6 +18,9 @@ class _AdminUsersScreenState
     extends State<AdminUsersScreen> {
   String? _updatingUserId;
 
+  bool get _isArabic =>
+      Localizations.localeOf(context).languageCode == 'ar';
+
   @override
   void initState() {
     super.initState();
@@ -82,8 +85,12 @@ class _AdminUsersScreenState
           SnackBar(
             content: Text(
               newStatus
-                  ? '${user.fullName} account has been unblocked'
-                  : '${user.fullName} account has been blocked',
+                  ? (_isArabic
+                      ? 'تم إلغاء حظر حساب ${user.fullName}'
+                      : '${user.fullName} account has been unblocked')
+                  : (_isArabic
+                      ? 'تم حظر حساب ${user.fullName}'
+                      : '${user.fullName} account has been blocked'),
             ),
             backgroundColor: const Color(0xFF2F743F),
           ),
@@ -95,7 +102,9 @@ class _AdminUsersScreenState
           SnackBar(
             content: Text(
               userProvider.errorMessage ??
-                  'Failed to update user status',
+                  (_isArabic
+                      ? 'فشل تحديث حالة المستخدم'
+                      : 'Failed to update user status'),
             ),
             backgroundColor:
                 Colors.red,
@@ -114,13 +123,17 @@ class _AdminUsersScreenState
         return AlertDialog(
           title: Text(
             newStatus
-                ? 'Unblock User'
-                : 'Block User',
+                ? (_isArabic ? 'إلغاء حظر المستخدم' : 'Unblock User')
+                : (_isArabic ? 'حظر المستخدم' : 'Block User'),
           ),
           content: Text(
             newStatus
-                ? 'Are you sure you want to unblock ${user.fullName}? They will be able to log in again.'
-                : 'Are you sure you want to block ${user.fullName}? They will not be able to log in while the account is blocked.',
+                ? (_isArabic
+                    ? 'هل أنت متأكد من إلغاء حظر ${user.fullName}؟ سيتمكن من تسجيل الدخول مرة أخرى.'
+                    : 'Are you sure you want to unblock ${user.fullName}? They will be able to log in again.')
+                : (_isArabic
+                    ? 'هل أنت متأكد من حظر ${user.fullName}؟ لن يتمكن من تسجيل الدخول ما دام الحساب محظورًا.'
+                    : 'Are you sure you want to block ${user.fullName}? They will not be able to log in while the account is blocked.'),
           ),
           actions: [
             TextButton(
@@ -129,8 +142,8 @@ class _AdminUsersScreenState
                   dialogContext,
                 ).pop(false);
               },
-              child: const Text(
-                'Cancel',
+              child: Text(
+                _isArabic ? 'إلغاء' : 'Cancel',
               ),
             ),
             ElevatedButton(
@@ -150,8 +163,8 @@ class _AdminUsersScreenState
               ),
               child: Text(
                 newStatus
-                    ? 'Unblock'
-                    : 'Block',
+                    ? (_isArabic ? 'إلغاء الحظر' : 'Unblock')
+                    : (_isArabic ? 'حظر' : 'Block'),
               ),
             ),
           ],
@@ -185,6 +198,7 @@ class _AdminUsersScreenState
           Column(
             children: [
               _AdminUsersTopBar(
+                isArabic: _isArabic,
                 onBack: () => Navigator.pop(context),
                 onRefresh:
                     userProvider.isLoading ? null : _loadUsers,
@@ -211,6 +225,7 @@ class _AdminUsersScreenState
                                 18,
                               ),
                               child: _AdminUsersHero(
+                                isArabic: _isArabic,
                                 totalUsers: users.length,
                                 activeUsers: activeCount,
                                 blockedUsers: blockedCount,
@@ -234,14 +249,17 @@ class _AdminUsersScreenState
                         SliverFillRemaining(
                           hasScrollBody: false,
                           child: _AdminUsersErrorState(
+                            isArabic: _isArabic,
                             message: userProvider.errorMessage!,
                             onRetry: _loadUsers,
                           ),
                         )
                       else if (users.isEmpty)
-                        const SliverFillRemaining(
+                        SliverFillRemaining(
                           hasScrollBody: false,
-                          child: _AdminUsersEmptyState(),
+                          child: _AdminUsersEmptyState(
+                            isArabic: _isArabic,
+                          ),
                         )
                       else
                         SliverPadding(
@@ -269,6 +287,7 @@ class _AdminUsersScreenState
                                     final user = users[index];
 
                                     return _AdminUserCard(
+                                      isArabic: _isArabic,
                                       user: user,
                                       roleColor:
                                           _roleColor(user.role),
@@ -371,10 +390,12 @@ const _adminUsersText = Color(0xFF1D2C21);
 const _adminUsersMuted = Color(0xFF6C786E);
 
 class _AdminUsersTopBar extends StatelessWidget {
+  final bool isArabic;
   final VoidCallback onBack;
   final Future<void> Function()? onRefresh;
 
   const _AdminUsersTopBar({
+    required this.isArabic,
     required this.onBack,
     required this.onRefresh,
   });
@@ -398,7 +419,7 @@ class _AdminUsersTopBar extends StatelessWidget {
           children: [
             _AdminUsersHeaderButton(
               icon: Icons.arrow_back_rounded,
-              tooltip: 'Back',
+              tooltip: isArabic ? 'رجوع' : 'Back',
               onTap: onBack,
             ),
             const SizedBox(width: 12),
@@ -415,11 +436,11 @@ class _AdminUsersTopBar extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'FarmPilot',
                     style: TextStyle(
                       color: Colors.white,
@@ -428,8 +449,8 @@ class _AdminUsersTopBar extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Manage Users',
-                    style: TextStyle(
+                    isArabic ? 'إدارة المستخدمين' : 'Manage Users',
+                    style: const TextStyle(
                       color: Color(0xCCFFFFFF),
                       fontSize: 12,
                     ),
@@ -439,7 +460,7 @@ class _AdminUsersTopBar extends StatelessWidget {
             ),
             _AdminUsersHeaderButton(
               icon: Icons.refresh_rounded,
-              tooltip: 'Refresh',
+              tooltip: isArabic ? 'تحديث' : 'Refresh',
               onTap: onRefresh,
             ),
           ],
@@ -490,11 +511,13 @@ class _AdminUsersHeaderButton extends StatelessWidget {
 }
 
 class _AdminUsersHero extends StatelessWidget {
+  final bool isArabic;
   final int totalUsers;
   final int activeUsers;
   final int blockedUsers;
 
   const _AdminUsersHero({
+    required this.isArabic,
     required this.totalUsers,
     required this.activeUsers,
     required this.blockedUsers,
@@ -524,22 +547,24 @@ class _AdminUsersHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Manage Users',
-                      style: TextStyle(
+                      isArabic ? 'إدارة المستخدمين' : 'Manage Users',
+                      style: const TextStyle(
                         color: _adminUsersText,
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Review user accounts, roles and access status across FarmPilot.',
-                      style: TextStyle(
+                      isArabic
+                          ? 'مراجعة حسابات المستخدمين والأدوار وحالة الوصول في FarmPilot.'
+                          : 'Review user accounts, roles and access status across FarmPilot.',
+                      style: const TextStyle(
                         color: _adminUsersMuted,
                         fontSize: 13,
                         height: 1.4,
@@ -556,15 +581,15 @@ class _AdminUsersHero extends StatelessWidget {
             runSpacing: 10,
             children: [
               _AdminUsersStatChip(
-                label: 'Total',
+                label: isArabic ? 'الإجمالي' : 'Total',
                 value: totalUsers,
               ),
               _AdminUsersStatChip(
-                label: 'Active',
+                label: isArabic ? 'نشط' : 'Active',
                 value: activeUsers,
               ),
               _AdminUsersStatChip(
-                label: 'Blocked',
+                label: isArabic ? 'محظور' : 'Blocked',
                 value: blockedUsers,
               ),
             ],
@@ -627,6 +652,7 @@ class _AdminUsersStatChip extends StatelessWidget {
 }
 
 class _AdminUserCard extends StatelessWidget {
+  final bool isArabic;
   final UserModel user;
   final Color roleColor;
   final IconData roleIcon;
@@ -635,6 +661,7 @@ class _AdminUserCard extends StatelessWidget {
   final VoidCallback onChangeStatus;
 
   const _AdminUserCard({
+    required this.isArabic,
     required this.user,
     required this.roleColor,
     required this.roleIcon,
@@ -682,7 +709,9 @@ class _AdminUserCard extends StatelessWidget {
                   children: [
                     Text(
                       user.fullName.isEmpty
-                          ? 'Unnamed User'
+                          ? (isArabic
+                              ? 'مستخدم بدون اسم'
+                              : 'Unnamed User')
                           : user.fullName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -713,12 +742,17 @@ class _AdminUserCard extends StatelessWidget {
             runSpacing: 8,
             children: [
               _AdminUserBadge(
-                text: user.role,
+                text: _localizedRole(
+                  user.role,
+                  isArabic,
+                ),
                 color: roleColor,
                 icon: roleIcon,
               ),
               _AdminUserBadge(
-                text: user.isActive ? 'ACTIVE' : 'BLOCKED',
+                text: user.isActive
+                    ? (isArabic ? 'نشط' : 'ACTIVE')
+                    : (isArabic ? 'محظور' : 'BLOCKED'),
                 color: statusColor,
                 icon: user.isActive
                     ? Icons.check_circle_outline_rounded
@@ -741,7 +775,9 @@ class _AdminUserCard extends StatelessWidget {
           if (user.createdAt != null)
             _AdminUserInfoRow(
               icon: Icons.calendar_today_outlined,
-              text: 'Joined: ${formatDate(user.createdAt!)}',
+              text: isArabic
+                  ? 'تاريخ الانضمام: ${formatDate(user.createdAt!)}'
+                  : 'Joined: ${formatDate(user.createdAt!)}',
             ),
           const Spacer(),
           Container(
@@ -761,9 +797,9 @@ class _AdminUserCard extends StatelessWidget {
                     crossAxisAlignment:
                         CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Account Status',
-                        style: TextStyle(
+                      Text(
+                        isArabic ? 'حالة الحساب' : 'Account Status',
+                        style: const TextStyle(
                           color: _adminUsersText,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -772,8 +808,12 @@ class _AdminUserCard extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         user.isActive
-                            ? 'This account can access FarmPilot'
-                            : 'This account cannot log in',
+                            ? (isArabic
+                                ? 'يمكن لهذا الحساب الوصول إلى FarmPilot'
+                                : 'This account can access FarmPilot')
+                            : (isArabic
+                                ? 'لا يمكن لهذا الحساب تسجيل الدخول'
+                                : 'This account cannot log in'),
                         style: const TextStyle(
                           color: _adminUsersMuted,
                           fontSize: 10,
@@ -818,8 +858,8 @@ class _AdminUserCard extends StatelessWidget {
                     ),
                     label: Text(
                       user.isActive
-                          ? 'Block'
-                          : 'Unblock',
+                          ? (isArabic ? 'حظر' : 'Block')
+                          : (isArabic ? 'إلغاء الحظر' : 'Unblock'),
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                       ),
@@ -926,7 +966,11 @@ class _AdminUserInfoRow extends StatelessWidget {
 }
 
 class _AdminUsersEmptyState extends StatelessWidget {
-  const _AdminUsersEmptyState();
+  final bool isArabic;
+
+  const _AdminUsersEmptyState({
+    required this.isArabic,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -938,10 +982,10 @@ class _AdminUsersEmptyState extends StatelessWidget {
         margin: const EdgeInsets.all(24),
         padding: const EdgeInsets.all(30),
         decoration: _adminUsersCardDecoration(24),
-        child: const Column(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               radius: 40,
               backgroundColor: _adminUsersLight,
               child: Icon(
@@ -950,11 +994,11 @@ class _AdminUsersEmptyState extends StatelessWidget {
                 color: _adminUsersPrimary,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
-              'No users found',
+              isArabic ? 'لم يتم العثور على مستخدمين' : 'No users found',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: _adminUsersText,
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
@@ -968,10 +1012,12 @@ class _AdminUsersEmptyState extends StatelessWidget {
 }
 
 class _AdminUsersErrorState extends StatelessWidget {
+  final bool isArabic;
   final String message;
   final Future<void> Function() onRetry;
 
   const _AdminUsersErrorState({
+    required this.isArabic,
     required this.message,
     required this.onRetry,
   });
@@ -1014,8 +1060,8 @@ class _AdminUsersErrorState extends StatelessWidget {
               icon: const Icon(
                 Icons.refresh_rounded,
               ),
-              label: const Text(
-                'Try Again',
+              label: Text(
+                isArabic ? 'حاول مرة أخرى' : 'Try Again',
               ),
             ),
           ],
@@ -1093,6 +1139,27 @@ class _AdminUsersGlow extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+
+String _localizedRole(
+  String role,
+  bool isArabic,
+) {
+  if (!isArabic) {
+    return role;
+  }
+
+  switch (role.trim().toUpperCase()) {
+    case 'ADMIN':
+      return 'مسؤول';
+    case 'FARMER':
+      return 'مزارع';
+    case 'CUSTOMER':
+      return 'عميل';
+    default:
+      return role;
   }
 }
 

@@ -466,7 +466,9 @@ class _AdminDashboardScreenState
                           title:
                               l10n.manageUsers,
                           subtitle:
-                              'View and manage system users and roles.',
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'عرض وإدارة مستخدمي النظام وأدوارهم.'
+                                  : 'View and manage system users and roles.',
                           onPressed:
                               _openManageUsers,
                         ),
@@ -476,7 +478,9 @@ class _AdminDashboardScreenState
                           title:
                               l10n.manageOrders,
                           subtitle:
-                              'Review orders and track their status.',
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'مراجعة الطلبات ومتابعة حالتها.'
+                                  : 'Review orders and track their status.',
                           onPressed:
                               _openManageOrders,
                         ),
@@ -486,7 +490,9 @@ class _AdminDashboardScreenState
                           title:
                               l10n.manageProducts,
                           subtitle:
-                              'Review marketplace products and availability.',
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'مراجعة منتجات المتجر ومدى توفرها.'
+                                  : 'Review marketplace products and availability.',
                           onPressed:
                               _openManageProducts,
                         ),
@@ -496,7 +502,9 @@ class _AdminDashboardScreenState
                           title:
                               l10n.manageCategories,
                           subtitle:
-                              'Organize marketplace product categories.',
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'تنظيم تصنيفات منتجات المتجر.'
+                                  : 'Organize marketplace product categories.',
                           onPressed:
                               _openManageCategories,
                         ),
