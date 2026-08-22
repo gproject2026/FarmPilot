@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/locale_provider.dart';
 
 class AdminOrdersScreen extends StatefulWidget {
   const AdminOrdersScreen({
@@ -18,6 +19,9 @@ class AdminOrdersScreen extends StatefulWidget {
 class _AdminOrdersScreenState
     extends State<AdminOrdersScreen> {
   String _selectedStatus = 'ALL';
+
+  bool get _isArabic =>
+      Localizations.localeOf(context).languageCode == 'ar';
 
   @override
   void initState() {
@@ -50,6 +54,17 @@ class _AdminOrdersScreenState
       listen: false,
     ).fetchAdminOrders(
       token: token,
+    );
+  }
+
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
     );
   }
 
@@ -119,10 +134,10 @@ class _AdminOrdersScreenState
               ),
             ),
             const SizedBox(width: 10),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'FarmPilot',
                   style: TextStyle(
                     color: Colors.white,
@@ -131,8 +146,8 @@ class _AdminOrdersScreenState
                   ),
                 ),
                 Text(
-                  'Manage Orders',
-                  style: TextStyle(
+                  _isArabic ? 'إدارة الطلبات' : 'Manage Orders',
+                  style: const TextStyle(
                     color: Color(0xCCFFFFFF),
                     fontSize: 12,
                   ),
@@ -142,8 +157,52 @@ class _AdminOrdersScreenState
           ],
         ),
         actions: [
+          PopupMenuButton<String>(
+            tooltip:
+                _isArabic ? 'تغيير اللغة' : 'Change Language',
+            color: Colors.white,
+            onSelected: _changeLanguage,
+            icon: const Icon(
+              Icons.language_rounded,
+              color: Colors.white,
+            ),
+            itemBuilder: (context) {
+              return [
+                PopupMenuItem<String>(
+                  value: 'en',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_rounded,
+                        color: !_isArabic
+                            ? const Color(0xFF2F743F)
+                            : Colors.transparent,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text('English'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'ar',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_rounded,
+                        color: _isArabic
+                            ? const Color(0xFF2F743F)
+                            : Colors.transparent,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text('Arabic'),
+                    ],
+                  ),
+                ),
+              ];
+            },
+          ),
           IconButton(
-            tooltip: 'Refresh',
+            tooltip: _isArabic ? 'تحديث' : 'Refresh',
             onPressed:
                 orderProvider.isLoading
                     ? null
@@ -203,7 +262,7 @@ class _AdminOrdersScreenState
                 ),
                 child: ChoiceChip(
                   label: Text(
-                    status == 'ALL' ? 'ALL ORDERS' : status,
+                    _localizedStatus(status),
                   ),
                   selected: selected,
                   selectedColor: const Color(0xFF2F743F),
@@ -279,7 +338,9 @@ class _AdminOrdersScreenState
             Text(
               orderProvider
                       .errorMessage ??
-                  'Failed to load orders',
+                  (_isArabic
+                      ? 'فشل تحميل الطلبات'
+                      : 'Failed to load orders'),
               textAlign:
                   TextAlign.center,
               style:
@@ -301,9 +362,8 @@ class _AdminOrdersScreenState
                     const Icon(
                   Icons.refresh,
                 ),
-                label:
-                    const Text(
-                  'Try Again',
+                label: Text(
+                  _isArabic ? 'حاول مرة أخرى' : 'Try Again',
                 ),
               ),
             ),
@@ -340,8 +400,12 @@ class _AdminOrdersScreenState
               child: Text(
                 _selectedStatus ==
                         'ALL'
-                    ? 'No orders found'
-                    : 'No $_selectedStatus orders found',
+                    ? (_isArabic
+                        ? 'لا توجد طلبات'
+                        : 'No orders found')
+                    : (_isArabic
+                        ? 'لا توجد طلبات بحالة ${_localizedStatus(_selectedStatus)}'
+                        : 'No $_selectedStatus orders found'),
                 style:
                     const TextStyle(
                   fontSize: 18,
@@ -427,7 +491,7 @@ class _AdminOrdersScreenState
           order.customer.fullName
                   .trim()
                   .isEmpty
-              ? 'Unknown Customer'
+              ? (_isArabic ? 'عميل غير معروف' : 'Unknown Customer')
               : order
                   .customer.fullName,
           style:
@@ -446,13 +510,17 @@ class _AdminOrdersScreenState
                 CrossAxisAlignment.start,
             children: [
               Text(
-                'Order #${_shortId(order.id)}',
+                _isArabic
+                    ? 'طلب رقم #${_shortId(order.id)}'
+                    : 'Order #${_shortId(order.id)}',
               ),
               const SizedBox(
                 height: 4,
               ),
               Text(
-                'Total: ${order.totalPrice.toStringAsFixed(2)}',
+                _isArabic
+                    ? 'الإجمالي: ${order.totalPrice.toStringAsFixed(2)}'
+                    : 'Total: ${order.totalPrice.toStringAsFixed(2)}',
               ),
               const SizedBox(
                 height: 4,
@@ -483,7 +551,7 @@ class _AdminOrdersScreenState
             ),
           ),
           child: Text(
-            order.status,
+            _localizedStatus(order.status),
             style:
                 TextStyle(
               color:
@@ -503,7 +571,7 @@ class _AdminOrdersScreenState
             icon:
                 Icons.person_outline,
             title:
-                'Customer',
+                _isArabic ? 'العميل' : 'Customer',
           ),
           const SizedBox(
             height: 8,
@@ -539,7 +607,7 @@ class _AdminOrdersScreenState
             icon:
                 Icons.inventory_2_outlined,
             title:
-                'Order Items',
+                _isArabic ? 'عناصر الطلب' : 'Order Items',
           ),
           const SizedBox(
             height: 8,
@@ -566,7 +634,7 @@ class _AdminOrdersScreenState
         product.farmer.fullName
                 .trim()
                 .isEmpty
-            ? 'Unknown Farmer'
+            ? (_isArabic ? 'مزارع غير معروف' : 'Unknown Farmer')
             : product
                 .farmer.fullName;
 
@@ -601,7 +669,7 @@ class _AdminOrdersScreenState
             product.name
                     .trim()
                     .isEmpty
-                ? 'Unknown Product'
+                ? (_isArabic ? 'منتج غير معروف' : 'Unknown Product')
                 : product.name,
             style:
                 const TextStyle(
@@ -614,25 +682,31 @@ class _AdminOrdersScreenState
             height: 7,
           ),
           Text(
-            'Farmer: $farmerName',
+            _isArabic ? 'المزارع: $farmerName' : 'Farmer: $farmerName',
           ),
           const SizedBox(
             height: 4,
           ),
           Text(
-            'Quantity: ${item.quantity} ${product.unit}',
+            _isArabic
+                ? 'الكمية: ${item.quantity} ${product.unit}'
+                : 'Quantity: ${item.quantity} ${product.unit}',
           ),
           const SizedBox(
             height: 4,
           ),
           Text(
-            'Price: ${item.price.toStringAsFixed(2)}',
+            _isArabic
+                ? 'السعر: ${item.price.toStringAsFixed(2)}'
+                : 'Price: ${item.price.toStringAsFixed(2)}',
           ),
           const SizedBox(
             height: 4,
           ),
           Text(
-            'Subtotal: ${(item.price * item.quantity).toStringAsFixed(2)}',
+            _isArabic
+                ? 'المجموع الفرعي: ${(item.price * item.quantity).toStringAsFixed(2)}'
+                : 'Subtotal: ${(item.price * item.quantity).toStringAsFixed(2)}',
             style:
                 const TextStyle(
               fontWeight:
@@ -704,6 +778,34 @@ class _AdminOrdersScreenState
         ],
       ),
     );
+  }
+
+  String _localizedStatus(
+    String status,
+  ) {
+    final normalized =
+        status.trim().toUpperCase();
+
+    if (!_isArabic) {
+      return normalized == 'ALL'
+          ? 'ALL ORDERS'
+          : normalized;
+    }
+
+    switch (normalized) {
+      case 'ALL':
+        return 'جميع الطلبات';
+      case 'PENDING':
+        return 'قيد الانتظار';
+      case 'CONFIRMED':
+        return 'مؤكد';
+      case 'COMPLETED':
+        return 'مكتمل';
+      case 'CANCELLED':
+        return 'ملغي';
+      default:
+        return status;
+    }
   }
 
   Color _statusColor(
