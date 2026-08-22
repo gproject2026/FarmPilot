@@ -31,6 +31,17 @@ class _ProfileScreenState
       TextEditingController();
 
   bool fieldsInitialized = false;
+  bool _isArabic = false;
+
+  void _setLanguage(bool isArabic) {
+    if (_isArabic == isArabic) {
+      return;
+    }
+
+    setState(() {
+      _isArabic = isArabic;
+    });
+  }
 
   @override
   void initState() {
@@ -108,9 +119,11 @@ class _ProfileScreenState
     if (fullName.isEmpty) {
       ScaffoldMessenger.of(context)
           .showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Please enter your full name',
+            _isArabic
+                ? 'يرجى إدخال الاسم الكامل'
+                : 'Please enter your full name',
           ),
         ),
       );
@@ -138,9 +151,11 @@ class _ProfileScreenState
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Profile updated successfully',
+            _isArabic
+                ? 'تم تحديث الملف الشخصي بنجاح'
+                : 'Profile updated successfully',
           ),
           backgroundColor:
               Colors.green,
@@ -171,7 +186,10 @@ class _ProfileScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Directionality(
+      textDirection:
+          _isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
       backgroundColor: const Color(0xFFF8FAF4),
       body: Consumer<ProfileProvider>(
         builder: (context, provider, child) {
@@ -185,14 +203,19 @@ class _ProfileScreenState
 
           if (provider.errorMessage != null && provider.user == null) {
             return _ProfileErrorState(
+              isArabic: _isArabic,
               message: provider.errorMessage!,
               onRetry: provider.loadProfile,
             );
           }
 
           if (provider.user == null) {
-            return const Center(
-              child: Text('Profile data not found'),
+            return Center(
+              child: Text(
+                _isArabic
+                    ? 'لم يتم العثور على بيانات الملف الشخصي'
+                    : 'Profile data not found',
+              ),
             );
           }
 
@@ -205,6 +228,8 @@ class _ProfileScreenState
               Column(
                 children: [
                   _ProfileTopBar(
+                    isArabic: _isArabic,
+                    onLanguageChanged: _setLanguage,
                     onBack: () => Navigator.pop(context),
                     onRefresh: provider.isLoading
                         ? null
@@ -225,6 +250,7 @@ class _ProfileScreenState
                           child: Column(
                             children: [
                               _ProfileHero(
+                                isArabic: _isArabic,
                                 fullName: user.fullName,
                                 email: user.email,
                                 role: user.role,
@@ -234,6 +260,7 @@ class _ProfileScreenState
                               LayoutBuilder(
                                 builder: (context, constraints) {
                                   final form = _ProfileFormCard(
+                                    isArabic: _isArabic,
                                     fullNameController: fullNameController,
                                     emailController: emailController,
                                     phoneController: phoneController,
@@ -244,6 +271,7 @@ class _ProfileScreenState
                                   );
 
                                   final side = _ProfileSideCard(
+                                    isArabic: _isArabic,
                                     fullName: user.fullName,
                                     email: user.email,
                                     role: user.role,
@@ -282,6 +310,7 @@ class _ProfileScreenState
           );
         },
       ),
+    ),
     );
   }
 }
@@ -293,10 +322,14 @@ const _profileText = Color(0xFF1D2C21);
 const _profileMuted = Color(0xFF6C786E);
 
 class _ProfileTopBar extends StatelessWidget {
+  final bool isArabic;
+  final ValueChanged<bool> onLanguageChanged;
   final VoidCallback onBack;
   final VoidCallback? onRefresh;
 
   const _ProfileTopBar({
+    required this.isArabic,
+    required this.onLanguageChanged,
     required this.onBack,
     required this.onRefresh,
   });
@@ -322,7 +355,7 @@ class _ProfileTopBar extends StatelessWidget {
           children: [
             _TopButton(
               icon: Icons.arrow_back_rounded,
-              tooltip: 'Back',
+              tooltip: isArabic ? 'رجوع' : 'Back',
               onTap: onBack,
             ),
             const SizedBox(width: 12),
@@ -339,11 +372,11 @@ class _ProfileTopBar extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'FarmPilot',
                     style: TextStyle(
                       color: Colors.white,
@@ -351,10 +384,10 @@ class _ProfileTopBar extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 1),
+                  const SizedBox(height: 1),
                   Text(
-                    'My Profile',
-                    style: TextStyle(
+                    isArabic ? 'ملفي الشخصي' : 'My Profile',
+                    style: const TextStyle(
                       color: Color(0xCCFFFFFF),
                       fontSize: 12,
                     ),
@@ -362,9 +395,76 @@ class _ProfileTopBar extends StatelessWidget {
                 ],
               ),
             ),
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: PopupMenuButton<String>(
+                tooltip:
+                    isArabic ? 'تغيير اللغة' : 'Change Language',
+                position: PopupMenuPosition.under,
+                offset: const Offset(0, 8),
+                color: const Color(0xFFF8FAF4),
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onSelected: (language) {
+                  onLanguageChanged(language == 'ar');
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _profilePrimaryGreen
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('English'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _profilePrimaryGreen
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('Arabic'),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.language_rounded,
+                    color: Colors.white,
+                    size: 21,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             _TopButton(
               icon: Icons.refresh_rounded,
-              tooltip: 'Refresh profile',
+              tooltip:
+                  isArabic ? 'تحديث الملف الشخصي' : 'Refresh profile',
               onTap: onRefresh,
             ),
           ],
@@ -411,12 +511,14 @@ class _TopButton extends StatelessWidget {
 }
 
 class _ProfileHero extends StatelessWidget {
+  final bool isArabic;
   final String fullName;
   final String email;
   final String role;
   final String? profileImage;
 
   const _ProfileHero({
+    required this.isArabic,
     required this.fullName,
     required this.email,
     required this.role,
@@ -479,7 +581,10 @@ class _ProfileHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              _RoleChip(role: role),
+              _RoleChip(
+                role: role,
+                isArabic: isArabic,
+              ),
             ],
           );
 
@@ -563,8 +668,12 @@ class _ProfileAvatar extends StatelessWidget {
 
 class _RoleChip extends StatelessWidget {
   final String role;
+  final bool isArabic;
 
-  const _RoleChip({required this.role});
+  const _RoleChip({
+    required this.role,
+    required this.isArabic,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -584,7 +693,10 @@ class _RoleChip extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            role,
+            _localizedRoleLabel(
+              role,
+              isArabic,
+            ),
             style: const TextStyle(
               color: _profilePrimaryGreen,
               fontSize: 12,
@@ -598,6 +710,7 @@ class _RoleChip extends StatelessWidget {
 }
 
 class _ProfileFormCard extends StatelessWidget {
+  final bool isArabic;
   final TextEditingController fullNameController;
   final TextEditingController emailController;
   final TextEditingController phoneController;
@@ -607,6 +720,7 @@ class _ProfileFormCard extends StatelessWidget {
   final Future<void> Function() onSave;
 
   const _ProfileFormCard({
+    required this.isArabic,
     required this.fullNameController,
     required this.emailController,
     required this.phoneController,
@@ -624,10 +738,13 @@ class _ProfileFormCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionHeading(
+          _SectionHeading(
             icon: Icons.edit_note_rounded,
-            title: 'Personal Information',
-            subtitle: 'Update the information associated with your account.',
+            title:
+                isArabic ? 'المعلومات الشخصية' : 'Personal Information',
+            subtitle: isArabic
+                ? 'حدّث المعلومات المرتبطة بحسابك.'
+                : 'Update the information associated with your account.',
           ),
           const SizedBox(height: 24),
           LayoutBuilder(
@@ -637,27 +754,27 @@ class _ProfileFormCard extends StatelessWidget {
                   children: [
                     _ProfileField(
                       controller: fullNameController,
-                      label: 'Full Name',
+                      label: isArabic ? 'الاسم الكامل' : 'Full Name',
                       icon: Icons.person_outline_rounded,
                     ),
                     const SizedBox(height: 15),
                     _ProfileField(
                       controller: emailController,
-                      label: 'Email',
+                      label: isArabic ? 'البريد الإلكتروني' : 'Email',
                       icon: Icons.email_outlined,
                       readOnly: true,
                     ),
                     const SizedBox(height: 15),
                     _ProfileField(
                       controller: phoneController,
-                      label: 'Phone',
+                      label: isArabic ? 'رقم الهاتف' : 'Phone',
                       icon: Icons.phone_outlined,
                       keyboardType: TextInputType.phone,
                     ),
                     const SizedBox(height: 15),
                     _ProfileField(
                       controller: roleController,
-                      label: 'Role',
+                      label: isArabic ? 'نوع الحساب' : 'Role',
                       icon: Icons.badge_outlined,
                       readOnly: true,
                     ),
@@ -672,7 +789,7 @@ class _ProfileFormCard extends StatelessWidget {
                       Expanded(
                         child: _ProfileField(
                           controller: fullNameController,
-                          label: 'Full Name',
+                          label: isArabic ? 'الاسم الكامل' : 'Full Name',
                           icon: Icons.person_outline_rounded,
                         ),
                       ),
@@ -680,7 +797,7 @@ class _ProfileFormCard extends StatelessWidget {
                       Expanded(
                         child: _ProfileField(
                           controller: emailController,
-                          label: 'Email',
+                          label: isArabic ? 'البريد الإلكتروني' : 'Email',
                           icon: Icons.email_outlined,
                           readOnly: true,
                         ),
@@ -693,7 +810,7 @@ class _ProfileFormCard extends StatelessWidget {
                       Expanded(
                         child: _ProfileField(
                           controller: phoneController,
-                          label: 'Phone',
+                          label: isArabic ? 'رقم الهاتف' : 'Phone',
                           icon: Icons.phone_outlined,
                           keyboardType: TextInputType.phone,
                         ),
@@ -702,7 +819,7 @@ class _ProfileFormCard extends StatelessWidget {
                       Expanded(
                         child: _ProfileField(
                           controller: roleController,
-                          label: 'Role',
+                          label: isArabic ? 'نوع الحساب' : 'Role',
                           icon: Icons.badge_outlined,
                           readOnly: true,
                         ),
@@ -716,7 +833,7 @@ class _ProfileFormCard extends StatelessWidget {
           const SizedBox(height: 15),
           _ProfileField(
             controller: addressController,
-            label: 'Address',
+            label: isArabic ? 'العنوان' : 'Address',
             icon: Icons.location_on_outlined,
             maxLines: 3,
           ),
@@ -747,7 +864,9 @@ class _ProfileFormCard extends StatelessWidget {
                     )
                   : const Icon(Icons.save_outlined, size: 20),
               label: Text(
-                isSaving ? 'Saving...' : 'Save Changes',
+                isSaving
+                    ? (isArabic ? 'جارٍ الحفظ...' : 'Saving...')
+                    : (isArabic ? 'حفظ التغييرات' : 'Save Changes'),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -820,11 +939,13 @@ class _ProfileField extends StatelessWidget {
 }
 
 class _ProfileSideCard extends StatelessWidget {
+  final bool isArabic;
   final String fullName;
   final String email;
   final String role;
 
   const _ProfileSideCard({
+    required this.isArabic,
     required this.fullName,
     required this.email,
     required this.role,
@@ -838,28 +959,30 @@ class _ProfileSideCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionHeading(
+          _SectionHeading(
             icon: Icons.shield_outlined,
-            title: 'Account',
-            subtitle: 'Your FarmPilot account information.',
+            title: isArabic ? 'الحساب' : 'Account',
+            subtitle: isArabic
+                ? 'معلومات حسابك في FarmPilot.'
+                : 'Your FarmPilot account information.',
           ),
           const SizedBox(height: 20),
           _AccountInfoRow(
             icon: Icons.person_outline,
-            label: 'Name',
+            label: isArabic ? 'الاسم' : 'Name',
             value: fullName,
           ),
           const Divider(height: 28, color: Color(0xFFE2E8DE)),
           _AccountInfoRow(
             icon: Icons.email_outlined,
-            label: 'Email',
+            label: isArabic ? 'البريد الإلكتروني' : 'Email',
             value: email,
           ),
           const Divider(height: 28, color: Color(0xFFE2E8DE)),
           _AccountInfoRow(
             icon: Icons.badge_outlined,
-            label: 'Account type',
-            value: role,
+            label: isArabic ? 'نوع الحساب' : 'Account type',
+            value: _localizedRoleLabel(role, isArabic),
           ),
           const SizedBox(height: 20),
           Container(
@@ -869,19 +992,21 @@ class _ProfileSideCard extends StatelessWidget {
               color: const Color(0xFFF1F7E9),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Row(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
+                const Icon(
                   Icons.lock_outline_rounded,
                   color: _profilePrimaryGreen,
                   size: 19,
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Email and account role are protected and cannot be changed here.',
-                    style: TextStyle(
+                    isArabic
+                        ? 'البريد الإلكتروني ونوع الحساب محميان ولا يمكن تغييرهما من هنا.'
+                        : 'Email and account role are protected and cannot be changed here.',
+                    style: const TextStyle(
                       color: _profileMuted,
                       fontSize: 12,
                       height: 1.45,
@@ -1007,10 +1132,12 @@ class _SectionHeading extends StatelessWidget {
 }
 
 class _ProfileErrorState extends StatelessWidget {
+  final bool isArabic;
   final String message;
   final Future<void> Function() onRetry;
 
   const _ProfileErrorState({
+    required this.isArabic,
     required this.message,
     required this.onRetry,
   });
@@ -1048,7 +1175,9 @@ class _ProfileErrorState extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
+              label: Text(
+                isArabic ? 'حاول مرة أخرى' : 'Try Again',
+              ),
             ),
           ],
         ),
@@ -1125,6 +1254,27 @@ class _Glow extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+
+String _localizedRoleLabel(
+  String role,
+  bool isArabic,
+) {
+  if (!isArabic) {
+    return role;
+  }
+
+  switch (role.trim().toUpperCase()) {
+    case 'FARMER':
+      return 'مزارع';
+    case 'CUSTOMER':
+      return 'عميل';
+    case 'ADMIN':
+      return 'مسؤول';
+    default:
+      return role;
   }
 }
 
