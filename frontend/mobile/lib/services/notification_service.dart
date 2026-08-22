@@ -65,6 +65,27 @@ class NotificationService {
     }
   }
 
+  Future<void> deleteNotification(
+    String notificationId,
+  ) async {
+    try {
+      await apiClient.dio.delete(
+        '/notifications/$notificationId',
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _extractErrorMessage(
+          e,
+          'Failed to delete notification',
+        ),
+      );
+    } catch (e) {
+      throw Exception(
+        'Failed to delete notification: $e',
+      );
+    }
+  }
+
   String _extractErrorMessage(
     DioException error,
     String fallbackMessage,

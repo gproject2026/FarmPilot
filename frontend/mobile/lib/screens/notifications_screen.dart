@@ -27,6 +27,18 @@ const Color _notifTextSecondary = Color(0xFF68756B);
 
 class _NotificationsScreenState
     extends State<NotificationsScreen> {
+  bool _isArabic = false;
+
+  void _setLanguage(bool isArabic) {
+    if (_isArabic == isArabic) {
+      return;
+    }
+
+    setState(() {
+      _isArabic = isArabic;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -76,9 +88,11 @@ class _NotificationsScreenState
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'All notifications are already read',
+              _isArabic
+                  ? 'تمت قراءة جميع الإشعارات بالفعل'
+                  : 'All notifications are already read',
             ),
           ),
         );
@@ -98,7 +112,9 @@ class _NotificationsScreenState
         SnackBar(
           content: Text(
             notificationProvider.errorMessage ??
-                'All notifications marked as read',
+                (_isArabic
+                    ? 'تم تحديد جميع الإشعارات كمقروءة'
+                    : 'All notifications marked as read'),
           ),
           backgroundColor:
               notificationProvider.errorMessage == null
@@ -108,12 +124,103 @@ class _NotificationsScreenState
       );
   }
 
+  Future<void> _deleteNotification(
+    Map<String, dynamic> notification,
+  ) async {
+    final notificationId =
+        notification['id']?.toString() ?? '';
+
+    if (notificationId.isEmpty) {
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(
+            _isArabic
+                ? 'حذف الإشعار'
+                : 'Delete notification',
+          ),
+          content: Text(
+            _isArabic
+                ? 'هل تريد حذف هذا الإشعار؟'
+                : 'Are you sure you want to delete this notification?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                _isArabic ? 'إلغاء' : 'Cancel',
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: Text(
+                _isArabic ? 'حذف' : 'Delete',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    final notificationProvider =
+        Provider.of<NotificationProvider>(
+      context,
+      listen: false,
+    );
+
+    final success =
+        await notificationProvider.deleteNotification(
+      notificationId,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? (_isArabic
+                    ? 'تم حذف الإشعار'
+                    : 'Notification deleted')
+                : (notificationProvider.errorMessage ??
+                    (_isArabic
+                        ? 'تعذر حذف الإشعار'
+                        : 'Failed to delete notification')),
+          ),
+          backgroundColor:
+              success ? Colors.green : Colors.red,
+        ),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     final notificationProvider =
         Provider.of<NotificationProvider>(context);
 
-    return Scaffold(
+    return Directionality(
+      textDirection:
+          _isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
       backgroundColor: _notifBackground,
       body: Stack(
         children: [
@@ -126,6 +233,8 @@ class _NotificationsScreenState
               slivers: [
                 SliverToBoxAdapter(
                   child: _NotificationsHeader(
+                    isArabic: _isArabic,
+                    onLanguageChanged: _setLanguage,
                     unreadCount: notificationProvider.unreadCount,
                     isLoading: notificationProvider.isLoading,
                     onBack: () => Navigator.pop(context),
@@ -137,6 +246,7 @@ class _NotificationsScreenState
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(22, 24, 22, 18),
                     child: _NotificationsIntro(
+                      isArabic: _isArabic,
                       total: notificationProvider.notifications.length,
                       unread: notificationProvider.unreadCount,
                     ),
@@ -153,9 +263,11 @@ class _NotificationsScreenState
                     ),
                   )
                 else if (notificationProvider.notifications.isEmpty)
-                  const SliverFillRemaining(
+                  SliverFillRemaining(
                     hasScrollBody: false,
-                    child: _EmptyNotifications(),
+                    child: _EmptyNotifications(
+                      isArabic: _isArabic,
+                    ),
                   )
                 else
                   SliverPadding(
@@ -169,7 +281,11 @@ separatorBuilder: (_, _) =>
                           notificationProvider.notifications[index],
                         );
                         return _NotificationCard(
+                          isArabic: _isArabic,
                           notification: notification,
+                          onDelete: () => _deleteNotification(
+                            notification,
+                          ),
                         );
                       },
                     ),
@@ -179,12 +295,15 @@ separatorBuilder: (_, _) =>
           ),
         ],
       ),
+    ),
     );
   }
 }
 
 
 class _NotificationsHeader extends StatelessWidget {
+  final bool isArabic;
+  final ValueChanged<bool> onLanguageChanged;
   final int unreadCount;
   final bool isLoading;
   final VoidCallback onBack;
@@ -192,6 +311,8 @@ class _NotificationsHeader extends StatelessWidget {
   final Future<void> Function() onRefresh;
 
   const _NotificationsHeader({
+    required this.isArabic,
+    required this.onLanguageChanged,
     required this.unreadCount,
     required this.isLoading,
     required this.onBack,
@@ -227,7 +348,7 @@ class _NotificationsHeader extends StatelessWidget {
           children: [
             _NotifHeaderButton(
               icon: Icons.arrow_back_rounded,
-              tooltip: 'Back',
+              tooltip: isArabic ? 'رجوع' : 'Back',
               onTap: onBack,
             ),
             const SizedBox(width: 12),
@@ -238,14 +359,14 @@ class _NotificationsHeader extends StatelessWidget {
                 color: _notifLightGreen,
                 borderRadius: BorderRadius.circular(13),
               ),
-              child: const Icon(
+              child:  Icon(
                 Icons.eco_rounded,
                 color: _notifDarkGreen,
                 size: 24,
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -259,8 +380,8 @@ class _NotificationsHeader extends StatelessWidget {
                   ),
                   SizedBox(height: 2),
                   Text(
-                    'Notifications',
-                    style: TextStyle(
+                    isArabic ? 'الإشعارات' : 'Notifications',
+                    style: const TextStyle(
                       color: Color(0xCCFFFFFF),
                       fontSize: 12,
                     ),
@@ -271,14 +392,80 @@ class _NotificationsHeader extends StatelessWidget {
             if (unreadCount > 0) ...[
               _NotifHeaderButton(
                 icon: Icons.done_all_rounded,
-                tooltip: 'Mark all as read',
+                tooltip: isArabic ? 'تحديد الكل كمقروء' : 'Mark all as read',
                 onTap: isLoading ? null : onMarkAllRead,
               ),
               const SizedBox(width: 8),
             ],
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: PopupMenuButton<String>(
+                tooltip:
+                    isArabic ? 'تغيير اللغة' : 'Change Language',
+                position: PopupMenuPosition.under,
+                offset: const Offset(0, 8),
+                color: const Color(0xFFF8FAF4),
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onSelected: (language) {
+                  onLanguageChanged(language == 'ar');
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _notifPrimaryGreen
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('English'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _notifPrimaryGreen
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('Arabic'),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.language_rounded,
+                    color: Colors.white,
+                    size: 21,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             _NotifHeaderButton(
               icon: Icons.refresh_rounded,
-              tooltip: 'Refresh',
+              tooltip: isArabic ? 'تحديث' : 'Refresh',
               onTap: isLoading ? null : onRefresh,
             ),
           ],
@@ -325,10 +512,12 @@ class _NotifHeaderButton extends StatelessWidget {
 }
 
 class _NotificationsIntro extends StatelessWidget {
+  final bool isArabic;
   final int total;
   final int unread;
 
   const _NotificationsIntro({
+    required this.isArabic,
     required this.total,
     required this.unread,
   });
@@ -360,26 +549,28 @@ class _NotificationsIntro extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final info = const Row(
+          final info = Row(
             children: [
-              _IntroIcon(),
-              SizedBox(width: 16),
+              const _IntroIcon(),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Notifications',
-                      style: TextStyle(
+                      isArabic ? 'الإشعارات' : 'Notifications',
+                      style: const TextStyle(
                         color: _notifTextPrimary,
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Stay updated with orders, diagnoses, reminders and farm activity.',
-                      style: TextStyle(
+                      isArabic
+                          ? 'ابقَ على اطلاع بالطلبات والتشخيصات والتذكيرات ونشاط المزرعة.'
+                          : 'Stay updated with orders, diagnoses, reminders and farm activity.',
+                      style: const TextStyle(
                         color: _notifTextSecondary,
                         fontSize: 13,
                         height: 1.45,
@@ -397,13 +588,13 @@ class _NotificationsIntro extends StatelessWidget {
             children: [
               _NotifStat(
                 icon: Icons.notifications_outlined,
-                label: '$total total',
+                label: isArabic ? '$total إجمالي' : '$total total',
                 background: const Color(0xFFEAF3DF),
                 foreground: _notifPrimaryGreen,
               ),
               _NotifStat(
                 icon: Icons.mark_email_unread_outlined,
-                label: '$unread unread',
+                label: isArabic ? '$unread غير مقروء' : '$unread unread',
                 background: const Color(0xFFFFF0DE),
                 foreground: const Color(0xFFB46A2C),
               ),
@@ -496,7 +687,11 @@ class _NotifStat extends StatelessWidget {
 }
 
 class _EmptyNotifications extends StatelessWidget {
-  const _EmptyNotifications();
+  final bool isArabic;
+
+  const _EmptyNotifications({
+    required this.isArabic,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -518,7 +713,7 @@ class _EmptyNotifications extends StatelessWidget {
               ),
             ],
           ),
-          child: const Column(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
@@ -526,20 +721,22 @@ class _EmptyNotifications extends StatelessWidget {
                 size: 72,
                 color: _notifPrimaryGreen,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
-                'No notifications yet',
-                style: TextStyle(
+                isArabic ? 'لا توجد إشعارات بعد' : 'No notifications yet',
+                style: const TextStyle(
                   color: _notifTextPrimary,
                   fontSize: 21,
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'Your latest FarmPilot updates will appear here.',
+                isArabic
+                    ? 'ستظهر آخر تحديثات FarmPilot هنا.'
+                    : 'Your latest FarmPilot updates will appear here.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: _notifTextSecondary,
                   fontSize: 14,
                   height: 1.5,
@@ -618,10 +815,14 @@ class _NotificationsBackdrop extends StatelessWidget {
 
 class _NotificationCard
     extends StatelessWidget {
+  final bool isArabic;
   final Map<String, dynamic> notification;
+  final VoidCallback onDelete;
 
   const _NotificationCard({
+    required this.isArabic,
     required this.notification,
+    required this.onDelete,
   });
 
   @override
@@ -629,13 +830,39 @@ class _NotificationCard
     final id =
         notification['id']?.toString() ?? '';
 
-    final title =
+    final fallbackTitle =
         notification['title']?.toString() ??
             'Notification';
 
-    final message =
+    final fallbackMessage =
         notification['message']?.toString() ??
             '';
+
+    final localizedTitle =
+        (isArabic
+                ? notification['titleAr']
+                : notification['titleEn'])
+            ?.toString()
+            .trim();
+
+    final localizedMessage =
+        (isArabic
+                ? notification['messageAr']
+                : notification['messageEn'])
+            ?.toString()
+            .trim();
+
+    final title =
+        localizedTitle != null &&
+                localizedTitle.isNotEmpty
+            ? localizedTitle
+            : fallbackTitle;
+
+    final message =
+        localizedMessage != null &&
+                localizedMessage.isNotEmpty
+            ? localizedMessage
+            : fallbackMessage;
 
     final type =
         notification['type']?.toString() ?? '';
@@ -704,7 +931,9 @@ class _NotificationCard
                     content: Text(
                       notificationProvider
                               .errorMessage ??
-                          'Failed to mark notification as read',
+                          (isArabic
+                              ? 'تعذر تحديد الإشعار كمقروء'
+                              : 'Failed to mark notification as read'),
                     ),
                     backgroundColor:
                         Colors.red,
@@ -821,7 +1050,7 @@ class _NotificationCard
                             ),
                           ),
                         ),
-                        if (!isRead)
+                        if (!isRead) ...[
                           Container(
                             width: 10,
                             height: 10,
@@ -832,6 +1061,26 @@ class _NotificationCard
                                   BoxShape.circle,
                             ),
                           ),
+                          const SizedBox(width: 8),
+                        ],
+                        Tooltip(
+                          message:
+                              isArabic ? 'حذف' : 'Delete',
+                          child: InkWell(
+                            onTap: onDelete,
+                            borderRadius:
+                                BorderRadius.circular(10),
+                            child: const Padding(
+                              padding:
+                                  EdgeInsets.all(6),
+                              child: Icon(
+                                Icons.delete_outline_rounded,
+                                size: 20,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
 
@@ -866,7 +1115,7 @@ class _NotificationCard
                             width: 5,
                           ),
                           Text(
-                            'Tap to view diagnosis',
+                            isArabic ? 'اضغط لعرض التشخيص' : 'Tap to view diagnosis',
                             style: TextStyle(
                               fontSize: 12,
                               color:
@@ -895,7 +1144,7 @@ class _NotificationCard
                             width: 5,
                           ),
                           Text(
-                            'Tap to view orders',
+                            isArabic ? 'اضغط لعرض الطلبات' : 'Tap to view orders',
                             style: TextStyle(
                               fontSize: 12,
                               color:
@@ -933,7 +1182,10 @@ class _NotificationCard
                               ),
                             ),
                             child: Text(
-                              type,
+                              _localizedNotificationType(
+                                type,
+                                isArabic,
+                              ),
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Colors
@@ -1030,6 +1282,60 @@ class _NotificationCard
     }
 
     return Icons.notifications_outlined;
+  }
+
+  String _localizedNotificationType(
+    String type,
+    bool isArabic,
+  ) {
+    if (!isArabic) {
+      return type;
+    }
+
+    final normalized =
+        type.toUpperCase();
+
+    if (normalized.contains('ORDER')) {
+      return 'طلب';
+    }
+
+    if (normalized.contains('DIAGNOSIS_HIGH_RISK')) {
+      return 'تشخيص عالي الخطورة';
+    }
+
+    if (normalized.contains('DIAGNOSIS_MODERATE_RISK')) {
+      return 'تشخيص متوسط الخطورة';
+    }
+
+    if (normalized.contains('DIAGNOSIS_HEALTHY')) {
+      return 'تشخيص سليم';
+    }
+
+    if (normalized.contains('DIAGNOSIS_EXPERT_REVIEW')) {
+      return 'مراجعة مختص';
+    }
+
+    if (normalized.contains('DIAGNOSIS')) {
+      return 'تشخيص';
+    }
+
+    if (normalized.contains('REMINDER')) {
+      return 'تذكير';
+    }
+
+    if (normalized.contains('PRODUCT')) {
+      return 'منتج';
+    }
+
+    if (normalized.contains('CROP')) {
+      return 'محصول';
+    }
+
+    if (normalized.contains('REVIEW')) {
+      return 'تقييم';
+    }
+
+    return type;
   }
 
   String _formatDate(

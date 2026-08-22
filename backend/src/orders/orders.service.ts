@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import {
   OrderStatus,
   Prisma,
@@ -55,12 +56,13 @@ export class OrdersService {
     createOrderDto: CreateOrderDto,
     customerId: string,
   ) {
-    const productIds = createOrderDto.items.map(
-      (item) => item.productId,
-    );
+    const productIds =
+      createOrderDto.items.map(
+        (item) => item.productId,
+      );
 
     const uniqueProductIds =
-        new Set(productIds);
+      new Set(productIds);
 
     if (
       uniqueProductIds.size !==
@@ -74,13 +76,13 @@ export class OrdersService {
     return this.prisma.$transaction(
       async (tx) => {
         const products =
-            await tx.product.findMany({
-          where: {
-            id: {
-              in: productIds,
+          await tx.product.findMany({
+            where: {
+              id: {
+                in: productIds,
+              },
             },
-          },
-        });
+          });
 
         if (
           products.length !==
@@ -91,11 +93,13 @@ export class OrdersService {
           );
         }
 
-        const farmerIds = new Set(
-          products.map(
-            (product) => product.farmerId,
-          ),
-        );
+        const farmerIds =
+          new Set(
+            products.map(
+              (product) =>
+                product.farmerId,
+            ),
+          );
 
         if (farmerIds.size > 1) {
           throw new BadRequestException(
@@ -104,22 +108,25 @@ export class OrdersService {
         }
 
         const farmerId =
-            products[0].farmerId;
+          products[0].farmerId;
 
         let totalPrice =
-            new Prisma.Decimal(0);
+          new Prisma.Decimal(0);
 
-        const orderItemsData: Prisma.OrderItemCreateWithoutOrderInput[] =
+        const orderItemsData:
+          Prisma.OrderItemCreateWithoutOrderInput[] =
             [];
 
         for (
-          const item of createOrderDto.items
+          const item of
+          createOrderDto.items
         ) {
-          const product = products.find(
-            (currentProduct) =>
+          const product =
+            products.find(
+              (currentProduct) =>
                 currentProduct.id ===
                 item.productId,
-          );
+            );
 
           if (!product) {
             throw new NotFoundException(
@@ -145,11 +152,12 @@ export class OrdersService {
             );
           }
 
-          totalPrice = totalPrice.plus(
-            product.price.mul(
-              item.quantity,
-            ),
-          );
+          totalPrice =
+            totalPrice.plus(
+              product.price.mul(
+                item.quantity,
+              ),
+            );
 
           orderItemsData.push({
             product: {
@@ -157,31 +165,36 @@ export class OrdersService {
                 id: product.id,
               },
             },
-            quantity: item.quantity,
-            price: product.price,
+            quantity:
+              item.quantity,
+            price:
+              product.price,
           });
         }
 
         for (
-          const item of createOrderDto.items
+          const item of
+          createOrderDto.items
         ) {
           const updatedResult =
-              await tx.product.updateMany({
-            where: {
-              id: item.productId,
-              status:
+            await tx.product.updateMany({
+              where: {
+                id:
+                  item.productId,
+                status:
                   ProductStatus.AVAILABLE,
-              quantity: {
-                gte: item.quantity,
-              },
-            },
-            data: {
-              quantity: {
-                decrement:
+                quantity: {
+                  gte:
                     item.quantity,
+                },
               },
-            },
-          });
+              data: {
+                quantity: {
+                  decrement:
+                    item.quantity,
+                },
+              },
+            });
 
           if (
             updatedResult.count === 0
@@ -192,52 +205,76 @@ export class OrdersService {
           }
 
           const updatedProduct =
-              await tx.product.findUnique({
-            where: {
-              id: item.productId,
-            },
-            select: {
-              quantity: true,
-            },
-          });
+            await tx.product.findUnique({
+              where: {
+                id:
+                  item.productId,
+              },
+              select: {
+                quantity: true,
+              },
+            });
 
           if (
-            updatedProduct?.quantity ===
-            0
+            updatedProduct
+              ?.quantity === 0
           ) {
             await tx.product.update({
               where: {
-                id: item.productId,
+                id:
+                  item.productId,
               },
               data: {
                 status:
-                    ProductStatus
-                        .OUT_OF_STOCK,
+                  ProductStatus
+                    .OUT_OF_STOCK,
               },
             });
           }
         }
 
         const createdOrder =
-            await tx.order.create({
-          data: {
-            customerId,
-            totalPrice,
-            orderItems: {
-              create: orderItemsData,
+          await tx.order.create({
+            data: {
+              customerId,
+              totalPrice,
+              orderItems: {
+                create:
+                  orderItemsData,
+              },
             },
-          },
-          include: this.orderInclude,
-        });
+            include:
+              this.orderInclude,
+          });
 
         await tx.notification.create({
           data: {
-            userId: farmerId,
-            title: 'New Order',
+            userId:
+              farmerId,
+
+            title:
+              'New Order',
+
             message:
-                'You have received a new order.',
-            type: 'ORDER',
-            isRead: false,
+              'You have received a new order.',
+
+            titleEn:
+              'New Order',
+
+            titleAr:
+              'طلب جديد',
+
+            messageEn:
+              'You have received a new order.',
+
+            messageAr:
+              'لقد استلمت طلبًا جديدًا.',
+
+            type:
+              'ORDER',
+
+            isRead:
+              false,
           },
         });
 
@@ -253,9 +290,11 @@ export class OrdersService {
       where: {
         customerId,
       },
-      include: this.orderInclude,
+      include:
+        this.orderInclude,
       orderBy: {
-        createdAt: 'desc',
+        createdAt:
+          'desc',
       },
     });
   }
@@ -273,18 +312,22 @@ export class OrdersService {
           },
         },
       },
-      include: this.orderInclude,
+      include:
+        this.orderInclude,
       orderBy: {
-        createdAt: 'desc',
+        createdAt:
+          'desc',
       },
     });
   }
 
   findAll() {
     return this.prisma.order.findMany({
-      include: this.orderInclude,
+      include:
+        this.orderInclude,
       orderBy: {
-        createdAt: 'desc',
+        createdAt:
+          'desc',
       },
     });
   }
@@ -295,12 +338,13 @@ export class OrdersService {
     userRole: UserRole,
   ) {
     const order =
-        await this.prisma.order.findUnique({
-      where: {
-        id,
-      },
-      include: this.orderInclude,
-    });
+      await this.prisma.order.findUnique({
+        where: {
+          id,
+        },
+        include:
+          this.orderInclude,
+      });
 
     if (!order) {
       throw new NotFoundException(
@@ -308,13 +352,18 @@ export class OrdersService {
       );
     }
 
-    if (userRole === UserRole.ADMIN) {
+    if (
+      userRole ===
+      UserRole.ADMIN
+    ) {
       return order;
     }
 
     if (
-      userRole === UserRole.CUSTOMER &&
-      order.customerId !== userId
+      userRole ===
+        UserRole.CUSTOMER &&
+      order.customerId !==
+        userId
     ) {
       throw new ForbiddenException(
         'You are not allowed to view this order',
@@ -322,14 +371,16 @@ export class OrdersService {
     }
 
     if (
-      userRole === UserRole.FARMER
+      userRole ===
+      UserRole.FARMER
     ) {
       const belongsToFarmer =
-          order.orderItems.some(
-        (item) =>
-            item.product.farmerId ===
+        order.orderItems.some(
+          (item) =>
+            item.product
+              .farmerId ===
             userId,
-      );
+        );
 
       if (!belongsToFarmer) {
         throw new ForbiddenException(
@@ -350,18 +401,18 @@ export class OrdersService {
     return this.prisma.$transaction(
       async (tx) => {
         const order =
-            await tx.order.findUnique({
-          where: {
-            id,
-          },
-          include: {
-            orderItems: {
-              include: {
-                product: true,
+          await tx.order.findUnique({
+            where: {
+              id,
+            },
+            include: {
+              orderItems: {
+                include: {
+                  product: true,
+                },
               },
             },
-          },
-        });
+          });
 
         if (!order) {
           throw new NotFoundException(
@@ -370,7 +421,8 @@ export class OrdersService {
         }
 
         if (
-          userRole === UserRole.CUSTOMER
+          userRole ===
+          UserRole.CUSTOMER
         ) {
           if (
             order.customerId !==
@@ -399,14 +451,16 @@ export class OrdersService {
             );
           }
         } else if (
-          userRole === UserRole.FARMER
+          userRole ===
+          UserRole.FARMER
         ) {
           const belongsToFarmer =
-              order.orderItems.every(
-            (item) =>
-                item.product.farmerId ===
+            order.orderItems.every(
+              (item) =>
+                item.product
+                  .farmerId ===
                 userId,
-          );
+            );
 
           if (!belongsToFarmer) {
             throw new ForbiddenException(
@@ -420,34 +474,50 @@ export class OrdersService {
         }
 
         if (
-          order.status === newStatus
+          order.status ===
+          newStatus
         ) {
           throw new BadRequestException(
             `Order status is already ${newStatus}`,
           );
         }
 
-        const farmerTransitions: Record<
-          OrderStatus,
-          OrderStatus[]
-        > = {
-          [OrderStatus.PENDING]: [
-            OrderStatus.CONFIRMED,
-            OrderStatus.CANCELLED,
-          ],
-          [OrderStatus.CONFIRMED]: [
-            OrderStatus.COMPLETED,
-            OrderStatus.CANCELLED,
-          ],
-          [OrderStatus.CANCELLED]: [],
-          [OrderStatus.COMPLETED]: [],
-        };
+        const farmerTransitions:
+          Record<
+            OrderStatus,
+            OrderStatus[]
+          > = {
+            [OrderStatus.PENDING]:
+              [
+                OrderStatus
+                  .CONFIRMED,
+                OrderStatus
+                  .CANCELLED,
+              ],
+
+            [OrderStatus.CONFIRMED]:
+              [
+                OrderStatus
+                  .COMPLETED,
+                OrderStatus
+                  .CANCELLED,
+              ],
+
+            [OrderStatus.CANCELLED]:
+              [],
+
+            [OrderStatus.COMPLETED]:
+              [],
+          };
 
         if (
-          userRole === UserRole.FARMER &&
+          userRole ===
+            UserRole.FARMER &&
           !farmerTransitions[
             order.status
-          ].includes(newStatus)
+          ].includes(
+            newStatus,
+          )
         ) {
           throw new BadRequestException(
             `Cannot change order status from ${order.status} to ${newStatus}`,
@@ -459,91 +529,187 @@ export class OrdersService {
           OrderStatus.CANCELLED
         ) {
           for (
-            const item of order.orderItems
+            const item of
+            order.orderItems
           ) {
             await tx.product.update({
               where: {
-                id: item.productId,
+                id:
+                  item.productId,
               },
               data: {
                 quantity: {
                   increment:
-                      item.quantity,
+                    item.quantity,
                 },
                 status:
-                    item.product.status ===
+                  item.product
+                      .status ===
                     ProductStatus
-                        .OUT_OF_STOCK
-                      ? ProductStatus
-                          .AVAILABLE
-                      : item.product.status,
+                      .OUT_OF_STOCK
+                    ? ProductStatus
+                        .AVAILABLE
+                    : item.product
+                        .status,
               },
             });
           }
         }
 
         const updatedOrder =
-    await tx.order.update({
-  where: {
-    id,
-  },
-  data: {
-    status: newStatus,
-  },
-  include: this.orderInclude,
-});
+          await tx.order.update({
+            where: {
+              id,
+            },
+            data: {
+              status:
+                newStatus,
+            },
+            include:
+              this.orderInclude,
+          });
 
-let notificationTitle: string;
-let notificationMessage: string;
+        let notificationTitleEn:
+          string;
 
-switch (newStatus) {
-  case OrderStatus.CONFIRMED:
-    notificationTitle =
-        'Order Confirmed';
-    notificationMessage =
-        'Your order has been confirmed by the farmer.';
-    break;
+        let notificationTitleAr:
+          string;
 
-  case OrderStatus.COMPLETED:
-    notificationTitle =
-        'Order Completed';
-    notificationMessage =
-        'Your order has been completed successfully.';
-    break;
+        let notificationMessageEn:
+          string;
 
-  case OrderStatus.CANCELLED:
-    notificationTitle =
-        'Order Cancelled';
+        let notificationMessageAr:
+          string;
 
-    if (userRole === UserRole.CUSTOMER) {
-      notificationMessage =
-          'Your order has been cancelled successfully.';
-    } else {
-      notificationMessage =
-          'Your order has been cancelled by the farmer.';
-    }
+        switch (newStatus) {
+          case OrderStatus.CONFIRMED:
+            notificationTitleEn =
+              'Order Confirmed';
 
-    break;
+            notificationTitleAr =
+              'تم تأكيد الطلب';
 
-  default:
-    notificationTitle =
-        'Order Updated';
-    notificationMessage =
-        `Your order status has been updated to ${newStatus}.`;
-}
+            notificationMessageEn =
+              'Your order has been confirmed by the farmer.';
 
-await tx.notification.create({
-  data: {
-    userId: order.customerId,
-    title: notificationTitle,
-    message: notificationMessage,
-    type: 'ORDER',
-    isRead: false,
-  },
-});
+            notificationMessageAr =
+              'تم تأكيد طلبك من قبل المزارع.';
 
-return updatedOrder;
-      },  
+            break;
+
+          case OrderStatus.COMPLETED:
+            notificationTitleEn =
+              'Order Completed';
+
+            notificationTitleAr =
+              'تم إكمال الطلب';
+
+            notificationMessageEn =
+              'Your order has been completed successfully.';
+
+            notificationMessageAr =
+              'تم إكمال طلبك بنجاح.';
+
+            break;
+
+          case OrderStatus.CANCELLED:
+            notificationTitleEn =
+              'Order Cancelled';
+
+            notificationTitleAr =
+              'تم إلغاء الطلب';
+
+            if (
+              userRole ===
+              UserRole.CUSTOMER
+            ) {
+              notificationMessageEn =
+                'Your order has been cancelled successfully.';
+
+              notificationMessageAr =
+                'تم إلغاء طلبك بنجاح.';
+            } else {
+              notificationMessageEn =
+                'Your order has been cancelled by the farmer.';
+
+              notificationMessageAr =
+                'تم إلغاء طلبك من قبل المزارع.';
+            }
+
+            break;
+
+          default:
+            notificationTitleEn =
+              'Order Updated';
+
+            notificationTitleAr =
+              'تم تحديث الطلب';
+
+            notificationMessageEn =
+              `Your order status has been updated to ${newStatus}.`;
+
+            notificationMessageAr =
+              `تم تحديث حالة طلبك إلى ${this.translateOrderStatusToArabic(
+                newStatus,
+              )}.`;
+        }
+
+        await tx.notification.create({
+          data: {
+            userId:
+              order.customerId,
+
+            // Keep old fields for
+            // backwards compatibility.
+            title:
+              notificationTitleEn,
+
+            message:
+              notificationMessageEn,
+
+            titleEn:
+              notificationTitleEn,
+
+            titleAr:
+              notificationTitleAr,
+
+            messageEn:
+              notificationMessageEn,
+
+            messageAr:
+              notificationMessageAr,
+
+            type:
+              'ORDER',
+
+            isRead:
+              false,
+          },
+        });
+
+        return updatedOrder;
+      },
     );
-  } 
+  }
+
+  private translateOrderStatusToArabic(
+    status: OrderStatus,
+  ): string {
+    switch (status) {
+      case OrderStatus.PENDING:
+        return 'قيد الانتظار';
+
+      case OrderStatus.CONFIRMED:
+        return 'مؤكد';
+
+      case OrderStatus.CANCELLED:
+        return 'ملغي';
+
+      case OrderStatus.COMPLETED:
+        return 'مكتمل';
+
+      default:
+        return status;
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -20,33 +21,47 @@ export class NotificationsController {
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  
   @Post()
   @UseGuards(JwtAuthGuard)
   create(
-    @Body() createNotificationDto: CreateNotificationDto,
+    @Body()
+    createNotificationDto: CreateNotificationDto,
   ) {
     return this.notificationsService.create(
       createNotificationDto,
     );
   }
 
+  @Post('backfill-translations')
+  @UseGuards(JwtAuthGuard)
+  backfillTranslations(
+    @CurrentUser()
+    user: any,
+  ) {
+    return this.notificationsService.backfillTranslations(
+      user.id,
+    );
+  }
+
   @Get('my')
   @UseGuards(JwtAuthGuard)
   findMyNotifications(
-    @CurrentUser() user: any,
+    @CurrentUser()
+    user: any,
   ) {
     return this.notificationsService.findMyNotifications(
       user.id,
     );
   }
 
-  
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   findOne(
-    @Param('id') id: string,
-    @CurrentUser() user: any,
+    @Param('id')
+    id: string,
+
+    @CurrentUser()
+    user: any,
   ) {
     return this.notificationsService.findOne(
       id,
@@ -54,16 +69,29 @@ export class NotificationsController {
     );
   }
 
-  
   @Patch(':id/read')
   @UseGuards(JwtAuthGuard)
   markAsRead(
-    @Param('id') id: string,
-    @CurrentUser() user: any,
+    @Param('id')
+    id: string,
+
+    @CurrentUser()
+    user: any,
   ) {
     return this.notificationsService.markAsRead(
       id,
       user.id,
+    );
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  remove(
+    @Param('id')
+    id: string,
+  ) {
+    return this.notificationsService.remove(
+      id,
     );
   }
 }

@@ -179,8 +179,14 @@ export class DiagnosesService {
     await this.createDiagnosisNotification({
       farmerId,
       diagnosisId: diagnosis.id,
-      plantName: detectedPlantName,
-      diseaseName,
+      plantNameEn:
+        detectedPlantName,
+      plantNameAr:
+        arabicTranslation.plantName,
+      diseaseNameEn:
+        diseaseName,
+      diseaseNameAr:
+        arabicTranslation.diseaseName,
       analysis,
     });
 
@@ -687,40 +693,49 @@ export class DiagnosesService {
     params: {
       farmerId: string;
       diagnosisId: string;
-      plantName: string;
-      diseaseName: string;
+      plantNameEn: string;
+      plantNameAr: string;
+      diseaseNameEn: string;
+      diseaseNameAr: string;
       analysis: PlantDiagnosisResult;
     },
   ) {
     const {
       farmerId,
       diagnosisId,
-      plantName,
-      diseaseName,
+      plantNameEn,
+      plantNameAr,
+      diseaseNameEn,
+      diseaseNameAr,
       analysis,
     } = params;
 
     const notification =
       this.buildNotificationData({
-        plantName,
-        diseaseName,
+        plantNameEn,
+        plantNameAr,
+        diseaseNameEn,
+        diseaseNameAr,
         analysis,
       });
 
     try {
-      await this.notificationsService
-          .create({
+      await this.notificationsService.create({
         userId:
           farmerId,
-
         diagnosisId,
-
         title:
-          notification.title,
-
+          notification.titleEn,
         message:
-          notification.message,
-
+          notification.messageEn,
+        titleEn:
+          notification.titleEn,
+        titleAr:
+          notification.titleAr,
+        messageEn:
+          notification.messageEn,
+        messageAr:
+          notification.messageAr,
         type:
           notification.type,
       });
@@ -734,57 +749,61 @@ export class DiagnosesService {
 
   private buildNotificationData(
     params: {
-      plantName: string;
-      diseaseName: string;
+      plantNameEn: string;
+      plantNameAr: string;
+      diseaseNameEn: string;
+      diseaseNameAr: string;
       analysis: PlantDiagnosisResult;
     },
   ) {
     const {
-      plantName,
-      diseaseName,
+      plantNameEn,
+      plantNameAr,
+      diseaseNameEn,
+      diseaseNameAr,
       analysis,
     } = params;
 
-    if (
-      !analysis.isPlant
-    ) {
+    if (!analysis.isPlant) {
       return {
-        title:
+        titleEn:
           'No Plant Detected',
-
-        message:
+        titleAr:
+          'لم يتم اكتشاف نبات',
+        messageEn:
           'The uploaded image does not appear to contain a plant. Please upload a clear plant image and try again.',
-
+        messageAr:
+          'لا يبدو أن الصورة المرفوعة تحتوي على نبات. يرجى رفع صورة واضحة للنبات والمحاولة مرة أخرى.',
         type:
           'DIAGNOSIS_WARNING',
       };
     }
 
-    if (
-      !analysis.isImageClear
-    ) {
+    if (!analysis.isImageClear) {
       return {
-        title:
+        titleEn:
           'Image Needs Retake',
-
-        message:
-          `The image of ${plantName} was not clear enough for a reliable assessment. Please take a clearer, well-lit photo.`,
-
+        titleAr:
+          'يجب إعادة التقاط الصورة',
+        messageEn:
+          `The image of ${plantNameEn} was not clear enough for a reliable assessment. Please take a clearer, well-lit photo.`,
+        messageAr:
+          `لم تكن صورة ${plantNameAr} واضحة بما يكفي لإجراء تقييم موثوق. يرجى التقاط صورة أوضح وبإضاءة جيدة.`,
         type:
           'DIAGNOSIS_WARNING',
       };
     }
 
-    if (
-      analysis.isHealthy
-    ) {
+    if (analysis.isHealthy) {
       return {
-        title:
+        titleEn:
           'Plant Appears Healthy',
-
-        message:
-          `${plantName} appears healthy. No clear disease was detected. Continue regular monitoring and preventive care.`,
-
+        titleAr:
+          'النبات يبدو سليمًا',
+        messageEn:
+          `${plantNameEn} appears healthy. No clear disease was detected. Continue regular monitoring and preventive care.`,
+        messageAr:
+          `يبدو أن ${plantNameAr} سليم. لم يتم اكتشاف مرض واضح. استمر في المراقبة المنتظمة والعناية الوقائية.`,
         type:
           'DIAGNOSIS_HEALTHY',
       };
@@ -795,12 +814,14 @@ export class DiagnosesService {
       'high'
     ) {
       return {
-        title:
+        titleEn:
           'High-Risk Plant Diagnosis',
-
-        message:
-          `${diseaseName} was detected in ${plantName} with ${analysis.confidence}% confidence. Immediate action and consultation with an agricultural specialist are recommended.`,
-
+        titleAr:
+          'تشخيص نباتي عالي الخطورة',
+        messageEn:
+          `${diseaseNameEn} was detected in ${plantNameEn} with ${analysis.confidence}% confidence. Immediate action and consultation with an agricultural specialist are recommended.`,
+        messageAr:
+          `تم اكتشاف ${diseaseNameAr} في ${plantNameAr} بنسبة ثقة ${analysis.confidence}%. يُنصح باتخاذ إجراء فوري واستشارة مختص زراعي.`,
         type:
           'DIAGNOSIS_HIGH_RISK',
       };
@@ -811,12 +832,14 @@ export class DiagnosesService {
       'moderate'
     ) {
       return {
-        title:
+        titleEn:
           'Plant Disease Detected',
-
-        message:
-          `${diseaseName} was detected in ${plantName} with ${analysis.confidence}% confidence. Follow the recommended treatment and monitor the plant closely.`,
-
+        titleAr:
+          'تم اكتشاف مرض نباتي',
+        messageEn:
+          `${diseaseNameEn} was detected in ${plantNameEn} with ${analysis.confidence}% confidence. Follow the recommended treatment and monitor the plant closely.`,
+        messageAr:
+          `تم اكتشاف ${diseaseNameAr} في ${plantNameAr} بنسبة ثقة ${analysis.confidence}%. اتبع العلاج الموصى به وراقب النبات بعناية.`,
         type:
           'DIAGNOSIS_MODERATE_RISK',
       };
@@ -826,24 +849,28 @@ export class DiagnosesService {
       analysis.needsExpertReview
     ) {
       return {
-        title:
+        titleEn:
           'Expert Review Recommended',
-
-        message:
-          `${diseaseName} may be affecting ${plantName}. An agricultural specialist should review this case before chemical treatment is applied.`,
-
+        titleAr:
+          'يوصى بمراجعة مختص',
+        messageEn:
+          `${diseaseNameEn} may be affecting ${plantNameEn}. An agricultural specialist should review this case before chemical treatment is applied.`,
+        messageAr:
+          `قد يكون ${diseaseNameAr} مؤثرًا على ${plantNameAr}. يُنصح بأن يراجع مختص زراعي هذه الحالة قبل استخدام أي علاج كيميائي.`,
         type:
           'DIAGNOSIS_EXPERT_REVIEW',
       };
     }
 
     return {
-      title:
+      titleEn:
         'Plant Diagnosis Completed',
-
-      message:
-        `${diseaseName} was detected in ${plantName} with ${analysis.confidence}% confidence. Review the diagnosis details for treatment and prevention guidance.`,
-
+      titleAr:
+        'اكتمل تشخيص النبات',
+      messageEn:
+        `${diseaseNameEn} was detected in ${plantNameEn} with ${analysis.confidence}% confidence. Review the diagnosis details for treatment and prevention guidance.`,
+      messageAr:
+        `تم اكتشاف ${diseaseNameAr} في ${plantNameAr} بنسبة ثقة ${analysis.confidence}%. راجع تفاصيل التشخيص للحصول على إرشادات العلاج والوقاية.`,
       type:
         'DIAGNOSIS_RESULT',
     };

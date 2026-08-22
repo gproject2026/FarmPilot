@@ -126,6 +126,45 @@ class NotificationProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> deleteNotification(
+    String notificationId,
+  ) async {
+    if (notificationId.isEmpty) {
+      return false;
+    }
+
+    errorMessage = null;
+
+    try {
+      await notificationService.deleteNotification(
+        notificationId,
+      );
+
+      notifications.removeWhere((notification) {
+        if (notification is! Map) {
+          return false;
+        }
+
+        final notificationMap =
+            Map<String, dynamic>.from(
+          notification,
+        );
+
+        return notificationMap['id']?.toString() ==
+            notificationId;
+      });
+
+      notifyListeners();
+
+      return true;
+    } catch (e) {
+      errorMessage = _cleanErrorMessage(e);
+      notifyListeners();
+
+      return false;
+    }
+  }
+
   void clearNotifications() {
     notifications = [];
     errorMessage = null;
