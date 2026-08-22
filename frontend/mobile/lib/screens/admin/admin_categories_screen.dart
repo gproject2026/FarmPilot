@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/category_provider.dart';
+import '../../providers/locale_provider.dart';
 
 class AdminCategoriesScreen extends StatefulWidget {
   const AdminCategoriesScreen({
@@ -15,6 +16,20 @@ class AdminCategoriesScreen extends StatefulWidget {
 
 class _AdminCategoriesScreenState
     extends State<AdminCategoriesScreen> {
+  bool get _isArabic =>
+      Localizations.localeOf(context).languageCode == 'ar';
+
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -102,8 +117,8 @@ class _AdminCategoriesScreenState
         return AlertDialog(
           title: Text(
             isEditing
-                ? 'Edit Category'
-                : 'Add Category',
+                ? (_isArabic ? 'تعديل التصنيف' : 'Edit Category')
+                : (_isArabic ? 'إضافة تصنيف' : 'Add Category'),
           ),
           content: SizedBox(
             width: 520,
@@ -225,8 +240,8 @@ class _AdminCategoriesScreenState
                   false,
                 );
               },
-              child: const Text(
-                'Cancel',
+              child: Text(
+                _isArabic ? 'إلغاء' : 'Cancel',
               ),
             ),
             ElevatedButton(
@@ -244,9 +259,11 @@ class _AdminCategoriesScreenState
                   ScaffoldMessenger.of(
                     dialogContext,
                   ).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text(
-                        'English and Arabic category names are required',
+                        _isArabic
+                            ? 'اسم التصنيف بالإنجليزية والعربية مطلوبان'
+                            : 'English and Arabic category names are required',
                       ),
                     ),
                   );
@@ -268,8 +285,8 @@ class _AdminCategoriesScreenState
               ),
               child: Text(
                 isEditing
-                    ? 'Save'
-                    : 'Add',
+                    ? (_isArabic ? 'حفظ' : 'Save')
+                    : (_isArabic ? 'إضافة' : 'Add'),
               ),
             ),
           ],
@@ -356,8 +373,12 @@ class _AdminCategoriesScreenState
         SnackBar(
           content: Text(
             isEditing
-                ? 'Category updated successfully'
-                : 'Category added successfully',
+                ? (_isArabic
+                    ? 'تم تحديث التصنيف بنجاح'
+                    : 'Category updated successfully')
+                : (_isArabic
+                    ? 'تمت إضافة التصنيف بنجاح'
+                    : 'Category added successfully'),
           ),
           backgroundColor:
               const Color(0xFF2F743F),
@@ -372,7 +393,9 @@ class _AdminCategoriesScreenState
       SnackBar(
         content: Text(
           provider.errorMessage ??
-              'Failed to save category',
+              (_isArabic
+                  ? 'فشل حفظ التصنيف'
+                  : 'Failed to save category'),
         ),
         backgroundColor:
             Colors.red,
@@ -402,13 +425,17 @@ class _AdminCategoriesScreenState
         dialogContext,
       ) {
         return AlertDialog(
-          title: const Text(
-            'Delete Category',
+          title: Text(
+            _isArabic ? 'حذف التصنيف' : 'Delete Category',
           ),
           content: Text(
             productCount > 0
-                ? '"$categoryName" contains $productCount product(s). It cannot be deleted while products are linked to it.'
-                : 'Are you sure you want to delete "$categoryName"?',
+                ? (_isArabic
+                    ? 'يحتوي "$categoryName" على $productCount منتج/منتجات، ولا يمكن حذفه ما دامت هناك منتجات مرتبطة به.'
+                    : '"$categoryName" contains $productCount product(s). It cannot be deleted while products are linked to it.')
+                : (_isArabic
+                    ? 'هل أنت متأكد من حذف "$categoryName"؟'
+                    : 'Are you sure you want to delete "$categoryName"?'),
           ),
           actions: [
             TextButton(
@@ -418,8 +445,8 @@ class _AdminCategoriesScreenState
                   false,
                 );
               },
-              child: const Text(
-                'Cancel',
+              child: Text(
+                _isArabic ? 'إلغاء' : 'Cancel',
               ),
             ),
             ElevatedButton(
@@ -439,8 +466,8 @@ class _AdminCategoriesScreenState
                 foregroundColor:
                     Colors.white,
               ),
-              child: const Text(
-                'Delete',
+              child: Text(
+                _isArabic ? 'حذف' : 'Delete',
               ),
             ),
           ],
@@ -471,12 +498,14 @@ class _AdminCategoriesScreenState
     if (success) {
       ScaffoldMessenger.of(context)
           .showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Category deleted successfully',
+            _isArabic
+                ? 'تم حذف التصنيف بنجاح'
+                : 'Category deleted successfully',
           ),
           backgroundColor:
-               Color(0xFF2F743F),
+              const Color(0xFF2F743F),
         ),
       );
 
@@ -488,7 +517,9 @@ class _AdminCategoriesScreenState
       SnackBar(
         content: Text(
           provider.errorMessage ??
-              'Failed to delete category',
+              (_isArabic
+                  ? 'فشل حذف التصنيف'
+                  : 'Failed to delete category'),
         ),
         backgroundColor:
             Colors.red,
@@ -563,6 +594,8 @@ class _AdminCategoriesScreenState
           Column(
             children: [
               _AdminCategoriesTopBar(
+                isArabic: _isArabic,
+                onChangeLanguage: _changeLanguage,
                 onBack: () =>
                     Navigator.pop(
                   context,
@@ -605,6 +638,7 @@ class _AdminCategoriesScreenState
                               ),
                               child:
                                   _AdminCategoriesHero(
+                                isArabic: _isArabic,
                                 totalCategories:
                                     categories
                                         .length,
@@ -646,9 +680,12 @@ class _AdminCategoriesScreenState
                               false,
                           child:
                               _AdminCategoriesErrorState(
+                            isArabic: _isArabic,
                             message:
                                 provider.errorMessage ??
-                                    'Failed to load categories',
+                                    (_isArabic
+                                        ? 'فشل تحميل التصنيفات'
+                                        : 'Failed to load categories'),
                             onRetry:
                                 _loadCategories,
                           ),
@@ -659,6 +696,7 @@ class _AdminCategoriesScreenState
                               false,
                           child:
                               _AdminCategoriesEmptyState(
+                            isArabic: _isArabic,
                             onAddCategory: () {
                               _openCategoryDialog();
                             },
@@ -706,6 +744,7 @@ class _AdminCategoriesScreenState
                                     );
 
                                     return _AdminCategoryCard(
+                                      isArabic: _isArabic,
                                       category:
                                           category,
                                       productCount:
@@ -781,11 +820,15 @@ const _adminCategoriesMuted =
 
 class _AdminCategoriesTopBar
     extends StatelessWidget {
+  final bool isArabic;
+  final ValueChanged<String> onChangeLanguage;
   final VoidCallback onBack;
   final Future<void> Function()?
       onRefresh;
 
   const _AdminCategoriesTopBar({
+    required this.isArabic,
+    required this.onChangeLanguage,
     required this.onBack,
     required this.onRefresh,
   });
@@ -828,7 +871,7 @@ class _AdminCategoriesTopBar
               icon: Icons
                   .arrow_back_rounded,
               tooltip:
-                  'Back',
+                  isArabic ? 'رجوع' : 'Back',
               onTap:
                   onBack,
             ),
@@ -860,13 +903,13 @@ class _AdminCategoriesTopBar
             const SizedBox(
               width: 10,
             ),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment
                         .start,
                 children: [
-                  Text(
+                  const Text(
                     'FarmPilot',
                     style:
                         TextStyle(
@@ -880,9 +923,11 @@ class _AdminCategoriesTopBar
                     ),
                   ),
                   Text(
-                    'Manage Categories',
+                    isArabic
+                        ? 'إدارة التصنيفات'
+                        : 'Manage Categories',
                     style:
-                        TextStyle(
+                        const TextStyle(
                       color:
                           Color(
                         0xCCFFFFFF,
@@ -894,11 +939,54 @@ class _AdminCategoriesTopBar
                 ],
               ),
             ),
-            _AdminCategoriesHeaderButton(
-              icon: Icons
-                  .refresh_rounded,
+            PopupMenuButton<String>(
               tooltip:
-                  'Refresh',
+                  isArabic ? 'تغيير اللغة' : 'Change Language',
+              color: Colors.white,
+              onSelected: onChangeLanguage,
+              icon: const Icon(
+                Icons.language_rounded,
+                color: Colors.white,
+              ),
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          color: !isArabic
+                              ? _adminCategoriesPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('English'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          color: isArabic
+                              ? _adminCategoriesPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('Arabic'),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+            ),
+            _AdminCategoriesHeaderButton(
+              icon: Icons.refresh_rounded,
+              tooltip:
+                  isArabic ? 'تحديث' : 'Refresh',
               onTap:
                   onRefresh,
             ),
@@ -965,12 +1053,14 @@ class _AdminCategoriesHeaderButton
 
 class _AdminCategoriesHero
     extends StatelessWidget {
+  final bool isArabic;
   final int totalCategories;
   final int totalProducts;
   final bool isLoading;
   final VoidCallback? onAddCategory;
 
   const _AdminCategoriesHero({
+    required this.isArabic,
     required this.totalCategories,
     required this.totalProducts,
     required this.isLoading,
@@ -1025,7 +1115,7 @@ class _AdminCategoriesHero
               const SizedBox(
                 width: 16,
               ),
-              const Expanded(
+              Expanded(
                 child:
                     Column(
                   crossAxisAlignment:
@@ -1033,9 +1123,11 @@ class _AdminCategoriesHero
                           .start,
                   children: [
                     Text(
-                      'Manage Categories',
+                      isArabic
+                          ? 'إدارة التصنيفات'
+                          : 'Manage Categories',
                       style:
-                          TextStyle(
+                          const TextStyle(
                         color:
                             _adminCategoriesText,
                         fontSize: 24,
@@ -1044,13 +1136,15 @@ class _AdminCategoriesHero
                                 .w800,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 4,
                     ),
                     Text(
-                      'Organize marketplace categories in English and Arabic.',
+                      isArabic
+                          ? 'تنظيم تصنيفات المتجر باللغتين العربية والإنجليزية.'
+                          : 'Organize marketplace categories in English and Arabic.',
                       style:
-                          TextStyle(
+                          const TextStyle(
                         color:
                             _adminCategoriesMuted,
                         fontSize: 13,
@@ -1073,13 +1167,13 @@ class _AdminCategoriesHero
             children: [
               _AdminCategoryStatChip(
                 label:
-                    'Categories',
+                    isArabic ? 'التصنيفات' : 'Categories',
                 value:
                     totalCategories,
               ),
               _AdminCategoryStatChip(
                 label:
-                    'Products',
+                    isArabic ? 'المنتجات' : 'Products',
                 value:
                     totalProducts,
               ),
@@ -1132,10 +1226,10 @@ class _AdminCategoriesHero
                             .add_rounded,
                       ),
                 label:
-                    const Text(
-                  'Add Category',
+                    Text(
+                  isArabic ? 'إضافة تصنيف' : 'Add Category',
                   style:
-                      TextStyle(
+                      const TextStyle(
                     fontWeight:
                         FontWeight
                             .w700,
@@ -1230,6 +1324,7 @@ class _AdminCategoryStatChip
 
 class _AdminCategoryCard
     extends StatelessWidget {
+  final bool isArabic;
   final Map<String, dynamic>
       category;
   final int productCount;
@@ -1237,6 +1332,7 @@ class _AdminCategoryCard
   final VoidCallback onDelete;
 
   const _AdminCategoryCard({
+    required this.isArabic,
     required this.category,
     required this.productCount,
     required this.onEdit,
@@ -1295,6 +1391,18 @@ class _AdminCategoryCard
             ? descriptionEn
             : fallbackDescription;
 
+    final displayNameAr =
+        nameAr.isNotEmpty
+            ? nameAr
+            : fallbackName.isNotEmpty
+                ? fallbackName
+                : 'تصنيف بدون اسم';
+
+    final displayDescriptionAr =
+        descriptionAr.isNotEmpty
+            ? descriptionAr
+            : fallbackDescription;
+
     return Container(
       padding:
           const EdgeInsets.all(
@@ -1347,50 +1455,24 @@ class _AdminCategoryCard
                           .start,
                   children: [
                     Text(
-                      displayNameEn,
-                      maxLines:
-                          1,
+                      isArabic
+                          ? displayNameAr
+                          : displayNameEn,
+                      maxLines: 1,
                       overflow:
-                          TextOverflow
-                              .ellipsis,
-                      style:
-                          const TextStyle(
+                          TextOverflow.ellipsis,
+                      textDirection:
+                          isArabic
+                              ? TextDirection.rtl
+                              : TextDirection.ltr,
+                      style: const TextStyle(
                         color:
                             _adminCategoriesText,
-                        fontSize:
-                            17,
+                        fontSize: 17,
                         fontWeight:
-                            FontWeight
-                                .w800,
+                            FontWeight.w800,
                       ),
                     ),
-                    if (nameAr
-                        .isNotEmpty) ...[
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      Text(
-                        nameAr,
-                        maxLines:
-                            1,
-                        overflow:
-                            TextOverflow
-                                .ellipsis,
-                        textDirection:
-                            TextDirection
-                                .rtl,
-                        style:
-                            const TextStyle(
-                          color:
-                              _adminCategoriesText,
-                          fontSize:
-                              14,
-                          fontWeight:
-                              FontWeight
-                                  .w700,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -1416,7 +1498,9 @@ class _AdminCategoryCard
                   ),
                 ),
                 child: Text(
-                  '$productCount ${productCount == 1 ? 'product' : 'products'}',
+                  isArabic
+                      ? '$productCount ${productCount == 1 ? 'منتج' : 'منتجات'}'
+                      : '$productCount ${productCount == 1 ? 'product' : 'products'}',
                   style:
                       const TextStyle(
                     color:
@@ -1434,101 +1518,37 @@ class _AdminCategoryCard
           const SizedBox(
             height: 16,
           ),
-          if (displayDescriptionEn
+          if ((isArabic
+                  ? displayDescriptionAr
+                  : displayDescriptionEn)
               .isNotEmpty)
             Container(
-              width:
-                  double.infinity,
-              padding:
-                  const EdgeInsets
-                      .all(
-                12,
-              ),
-              decoration:
-                  BoxDecoration(
-                color:
-                    const Color(
-                  0xFFFBFCF9,
-                ),
-                borderRadius:
-                    BorderRadius
-                        .circular(
-                  13,
-                ),
-                border:
-                    Border.all(
-                  color:
-                      const Color(
-                    0xFFE3E9DF,
-                  ),
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFBFCF9),
+                borderRadius: BorderRadius.circular(13),
+                border: Border.all(
+                  color: const Color(0xFFE3E9DF),
                 ),
               ),
               child: Text(
-                displayDescriptionEn,
+                isArabic
+                    ? displayDescriptionAr
+                    : displayDescriptionEn,
                 maxLines: 3,
-                overflow:
-                    TextOverflow
-                        .ellipsis,
-                style:
-                    const TextStyle(
-                  color:
-                      _adminCategoriesMuted,
-                  fontSize: 12,
-                  height: 1.4,
-                ),
-              ),
-            ),
-          if (descriptionAr
-              .isNotEmpty) ...[
-            const SizedBox(
-              height: 10,
-            ),
-            Container(
-              width:
-                  double.infinity,
-              padding:
-                  const EdgeInsets
-                      .all(
-                12,
-              ),
-              decoration:
-                  BoxDecoration(
-                color:
-                    const Color(
-                  0xFFFBFCF9,
-                ),
-                borderRadius:
-                    BorderRadius
-                        .circular(
-                  13,
-                ),
-                border:
-                    Border.all(
-                  color:
-                      const Color(
-                    0xFFE3E9DF,
-                  ),
-                ),
-              ),
-              child: Text(
-                descriptionAr,
-                maxLines: 3,
-                overflow:
-                    TextOverflow
-                        .ellipsis,
+                overflow: TextOverflow.ellipsis,
                 textDirection:
-                    TextDirection
-                        .rtl,
-                style:
-                    const TextStyle(
-                  color:
-                      _adminCategoriesMuted,
+                    isArabic
+                        ? TextDirection.rtl
+                        : TextDirection.ltr,
+                style: const TextStyle(
+                  color: _adminCategoriesMuted,
                   fontSize: 12,
                   height: 1.4,
                 ),
               ),
             ),
-          ],
           const Spacer(),
           Row(
             children: [
@@ -1567,10 +1587,10 @@ class _AdminCategoryCard
                     size: 18,
                   ),
                   label:
-                      const Text(
-                    'Edit',
+                      Text(
+                    isArabic ? 'تعديل' : 'Edit',
                     style:
-                        TextStyle(
+                        const TextStyle(
                       fontWeight:
                           FontWeight
                               .w700,
@@ -1587,10 +1607,13 @@ class _AdminCategoryCard
                 child:
                     IconButton(
                   tooltip:
-                      productCount >
-                              0
-                          ? 'Category contains products'
-                          : 'Delete Category',
+                      productCount > 0
+                          ? (isArabic
+                              ? 'التصنيف يحتوي على منتجات'
+                              : 'Category contains products')
+                          : (isArabic
+                              ? 'حذف التصنيف'
+                              : 'Delete Category'),
                   onPressed:
                       onDelete,
                   style:
@@ -1634,9 +1657,11 @@ class _AdminCategoryCard
 
 class _AdminCategoriesEmptyState
     extends StatelessWidget {
+  final bool isArabic;
   final VoidCallback onAddCategory;
 
   const _AdminCategoriesEmptyState({
+    required this.isArabic,
     required this.onAddCategory,
   });
 
@@ -1688,12 +1713,14 @@ class _AdminCategoriesEmptyState
             const SizedBox(
               height: 16,
             ),
-            const Text(
-              'No Categories Found',
+            Text(
+              isArabic
+                  ? 'لا توجد تصنيفات'
+                  : 'No Categories Found',
               textAlign:
                   TextAlign.center,
               style:
-                  TextStyle(
+                  const TextStyle(
                 color:
                     _adminCategoriesText,
                 fontSize: 20,
@@ -1705,12 +1732,14 @@ class _AdminCategoriesEmptyState
             const SizedBox(
               height: 8,
             ),
-            const Text(
-              'Add the first marketplace category to organize products.',
+            Text(
+              isArabic
+                  ? 'أضف أول تصنيف في المتجر لتنظيم المنتجات.'
+                  : 'Add the first marketplace category to organize products.',
               textAlign:
                   TextAlign.center,
               style:
-                  TextStyle(
+                  const TextStyle(
                 color:
                     _adminCategoriesMuted,
                 fontSize: 13,
@@ -1754,8 +1783,8 @@ class _AdminCategoriesEmptyState
                     .add_rounded,
               ),
               label:
-                  const Text(
-                'Add Category',
+                  Text(
+                isArabic ? 'إضافة تصنيف' : 'Add Category',
               ),
             ),
           ],
@@ -1767,11 +1796,13 @@ class _AdminCategoriesEmptyState
 
 class _AdminCategoriesErrorState
     extends StatelessWidget {
+  final bool isArabic;
   final String message;
   final Future<void> Function()
       onRetry;
 
   const _AdminCategoriesErrorState({
+    required this.isArabic,
     required this.message,
     required this.onRetry,
   });
@@ -1846,8 +1877,8 @@ class _AdminCategoriesErrorState
                     .refresh_rounded,
               ),
               label:
-                  const Text(
-                'Try Again',
+                  Text(
+                isArabic ? 'حاول مرة أخرى' : 'Try Again',
               ),
             ),
           ],
