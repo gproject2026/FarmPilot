@@ -1,10 +1,7 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '../../providers/diagnosis_provider.dart';
-
 class DiagnosisResultScreen
     extends StatefulWidget {
   final Map<String, dynamic> result;
@@ -25,222 +22,258 @@ class _DiagnosisResultScreenState
     extends State<DiagnosisResultScreen> {
   bool _showArabic = false;
 
-  Map<String, dynamic>? _translation;
-
   Map<String, dynamic> get _analysis {
     if (widget.result['analysis'] is Map) {
-      return Map<String, dynamic>.from(
-        widget.result['analysis'],
-      );
+      return Map<String, dynamic>.from(widget.result['analysis']);
     }
-
     return <String, dynamic>{};
   }
 
-  Future<void> _toggleLanguage() async {
-    if (_showArabic) {
-      setState(() {
-        _showArabic = false;
-      });
+  Map<String, dynamic> get _diagnosis {
+    if (widget.result['diagnosis'] is Map) {
+      return Map<String, dynamic>.from(widget.result['diagnosis']);
+    }
+    return <String, dynamic>{};
+  }
 
-      return;
+  void _toggleLanguage() {
+    setState(() => _showArabic = !_showArabic);
+  }
+
+  String _localizedString({
+    required Map<String, dynamic> analysis,
+    required String englishKey,
+    required String arabicKey,
+    required String legacyKey,
+    required String englishFallback,
+    required String arabicFallback,
+  }) {
+    final diagnosis = _diagnosis;
+    final preferredKey =
+        _showArabic ? arabicKey : englishKey;
+
+    String? readPreferred(
+      Map<String, dynamic> source,
+    ) {
+      final value =
+          source[preferredKey]
+              ?.toString()
+              .trim();
+
+      if (value != null &&
+          value.isNotEmpty) {
+        return value;
+      }
+
+      return null;
     }
 
-    if (_translation != null) {
-      setState(() {
-        _showArabic = true;
-      });
-
-      return;
+    final fromAnalysis =
+        readPreferred(analysis);
+    if (fromAnalysis != null) {
+      return fromAnalysis;
     }
 
-    final diagnosisProvider =
-        Provider.of<DiagnosisProvider>(
-      context,
-      listen: false,
+    final fromDiagnosis =
+        readPreferred(diagnosis);
+    if (fromDiagnosis != null) {
+      return fromDiagnosis;
+    }
+
+    if (!_showArabic) {
+      final analysisLegacy =
+          analysis[legacyKey]
+              ?.toString()
+              .trim();
+
+      if (analysisLegacy != null &&
+          analysisLegacy.isNotEmpty) {
+        return analysisLegacy;
+      }
+
+      final diagnosisLegacy =
+          diagnosis[legacyKey]
+              ?.toString()
+              .trim();
+
+      if (diagnosisLegacy != null &&
+          diagnosisLegacy.isNotEmpty) {
+        return diagnosisLegacy;
+      }
+    }
+
+    return _showArabic
+        ? arabicFallback
+        : englishFallback;
+  }
+
+  List<String> _localizedSymptoms(
+    Map<String, dynamic> analysis,
+  ) {
+    final diagnosis = _diagnosis;
+
+    final key = _showArabic
+        ? 'visibleSymptomsAr'
+        : 'visibleSymptomsEn';
+
+    final analysisLocalized =
+        _toStringList(
+      analysis[key],
     );
 
-    final analysis = _analysis;
+    if (analysisLocalized.isNotEmpty) {
+      return analysisLocalized;
+    }
 
-    final visibleSymptoms =
-        analysis['visibleSymptoms'] is List
-            ? List<dynamic>.from(
-                analysis['visibleSymptoms'],
+    final diagnosisLocalized =
+        _toStringList(
+      diagnosis[key],
+    );
+
+    if (diagnosisLocalized.isNotEmpty) {
+      return diagnosisLocalized;
+    }
+
+    if (!_showArabic) {
+      final analysisLegacy =
+          _toStringList(
+        analysis['visibleSymptoms'],
+      );
+
+      if (analysisLegacy.isNotEmpty) {
+        return analysisLegacy;
+      }
+
+      return _toStringList(
+        diagnosis['visibleSymptoms'],
+      );
+    }
+
+    return <String>[];
+  }
+
+  List<String> _toStringList(
+    dynamic value,
+  ) {
+    if (value is List) {
+      return value
+          .map(
+            (item) =>
+                item.toString().trim(),
+          )
+          .where(
+            (item) =>
+                item.isNotEmpty,
+          )
+          .toList();
+    }
+
+    if (value is String &&
+        value.trim().isNotEmpty) {
+      final raw = value.trim();
+
+      try {
+        final decoded =
+            jsonDecode(raw);
+
+        if (decoded is List) {
+          return decoded
+              .map(
+                (item) =>
+                    item
+                        .toString()
+                        .trim(),
               )
-                .map(
-                  (item) => item.toString(),
-                )
-                .toList()
-            : <String>[];
+              .where(
+                (item) =>
+                    item.isNotEmpty,
+              )
+              .toList();
+        }
+      } catch (_) {}
 
-    final translation =
-        await diagnosisProvider
-            .translateDiagnosisToArabic(
-      plantName:
-          analysis['plantName']
-                  ?.toString() ??
-              'Unknown Plant',
-      diseaseName:
-          analysis['diseaseName']
-                  ?.toString() ??
-              'Unknown Diagnosis',
-      visibleSymptoms:
-          visibleSymptoms,
-      description:
-          analysis['description']
-                  ?.toString() ??
-              'No description available.',
-      causes:
-          analysis['causes']
-                  ?.toString() ??
-              'No causes available.',
-      treatment:
-          analysis['treatment']
-                  ?.toString() ??
-              'No treatment available.',
-      prevention:
-          analysis['prevention']
-                  ?.toString() ??
-              'No prevention information available.',
-    );
-
-    if (!mounted) {
-      return;
+      return <String>[
+        raw,
+      ];
     }
 
-    if (translation == null) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              diagnosisProvider.errorMessage ??
-                  'Failed to translate diagnosis',
-            ),
-            backgroundColor:
-                Colors.red,
-          ),
-        );
-
-      return;
-    }
-
-    setState(() {
-      _translation = translation;
-      _showArabic = true;
-    });
+    return <String>[];
   }
 
   @override
   Widget build(BuildContext context) {
     final analysis = _analysis;
 
-    final originalPlantName =
-        analysis['plantName']?.toString() ?? 'Unknown Plant';
+    final plantName = _localizedString(
+      analysis: analysis,
+      englishKey: 'plantNameEn',
+      arabicKey: 'plantNameAr',
+      legacyKey: 'plantName',
+      englishFallback: 'Unknown Plant',
+      arabicFallback: 'نبات غير محدد',
+    );
 
-    final originalDiseaseName =
-        analysis['diseaseName']?.toString() ?? 'Unknown Diagnosis';
+    final diseaseName = _localizedString(
+      analysis: analysis,
+      englishKey: 'diseaseNameEn',
+      arabicKey: 'diseaseNameAr',
+      legacyKey: 'diseaseName',
+      englishFallback: 'Unknown Diagnosis',
+      arabicFallback: 'تشخيص غير محدد',
+    );
 
-    final originalDescription =
-        analysis['description']?.toString() ?? 'No description available.';
+    final description = _localizedString(
+      analysis: analysis,
+      englishKey: 'descriptionEn',
+      arabicKey: 'descriptionAr',
+      legacyKey: 'description',
+      englishFallback: 'No description available.',
+      arabicFallback: 'لا يوجد وصف متاح.',
+    );
 
-    final originalCauses =
-        analysis['causes']?.toString() ?? 'No causes available.';
+    final causes = _localizedString(
+      analysis: analysis,
+      englishKey: 'causesEn',
+      arabicKey: 'causesAr',
+      legacyKey: 'causes',
+      englishFallback: 'No causes available.',
+      arabicFallback: 'لا توجد أسباب متاحة.',
+    );
 
-    final originalTreatment =
-        analysis['treatment']?.toString() ?? 'No treatment available.';
+    final treatment = _localizedString(
+      analysis: analysis,
+      englishKey: 'treatmentEn',
+      arabicKey: 'treatmentAr',
+      legacyKey: 'treatment',
+      englishFallback: 'No treatment available.',
+      arabicFallback: 'لا يوجد علاج متاح.',
+    );
 
-    final originalPrevention =
-        analysis['prevention']?.toString() ??
-            'No prevention information available.';
+    final prevention = _localizedString(
+      analysis: analysis,
+      englishKey: 'preventionEn',
+      arabicKey: 'preventionAr',
+      legacyKey: 'prevention',
+      englishFallback: 'No prevention information available.',
+      arabicFallback: 'لا توجد معلومات وقاية متاحة.',
+    );
 
-    final originalVisibleSymptoms =
-        analysis['visibleSymptoms'] is List
-            ? List<dynamic>.from(
-                analysis['visibleSymptoms'],
-              ).map(
-                (item) => item.toString(),
-              ).toList()
-            : <String>[];
-
-    final plantName = _showArabic
-        ? _translatedString(
-            'plantName',
-            originalPlantName,
-          )
-        : originalPlantName;
-
-    final diseaseName = _showArabic
-        ? _translatedString(
-            'diseaseName',
-            originalDiseaseName,
-          )
-        : originalDiseaseName;
-
-    final description = _showArabic
-        ? _translatedString(
-            'description',
-            originalDescription,
-          )
-        : originalDescription;
-
-    final causes = _showArabic
-        ? _translatedString(
-            'causes',
-            originalCauses,
-          )
-        : originalCauses;
-
-    final treatment = _showArabic
-        ? _translatedString(
-            'treatment',
-            originalTreatment,
-          )
-        : originalTreatment;
-
-    final prevention = _showArabic
-        ? _translatedString(
-            'prevention',
-            originalPrevention,
-          )
-        : originalPrevention;
-
-    final visibleSymptoms = _showArabic
-        ? _translatedSymptoms(
-            originalVisibleSymptoms,
-          )
-        : originalVisibleSymptoms;
+    final visibleSymptoms = _localizedSymptoms(analysis);
 
     final severity =
         analysis['severity']?.toString().toLowerCase() ?? 'unknown';
 
     final confidenceValue =
-        double.tryParse(
-          analysis['confidence']?.toString() ?? '0',
-        ) ??
-        0;
+        double.tryParse(analysis['confidence']?.toString() ?? '0') ?? 0;
 
-    final confidence =
-        confidenceValue.clamp(0, 100).toDouble();
-
+    final confidence = confidenceValue.clamp(0, 100).toDouble();
     final isHealthy = analysis['isHealthy'] == true;
-
-    final needsExpertReview =
-        analysis['needsExpertReview'] == true;
-
-    final disclaimer =
-        widget.result['disclaimer']?.toString() ??
-            'This is a preliminary AI-assisted assessment and not a laboratory diagnosis.';
+    final needsExpertReview = analysis['needsExpertReview'] == true;
 
     final statusData = _getStatusData(
       isHealthy: isHealthy,
       severity: severity,
       isArabic: _showArabic,
-    );
-
-    final diagnosisProvider =
-        Provider.of<DiagnosisProvider>(
-      context,
     );
 
     return Directionality(
@@ -257,13 +290,8 @@ class _DiagnosisResultScreenState
               children: [
                 _DiagnosisResultTopBar(
                   isArabic: _showArabic,
-                  isTranslating:
-                      diagnosisProvider.isTranslating,
                   onBack: () => Navigator.pop(context),
-                  onToggleLanguage:
-                      diagnosisProvider.isTranslating
-                          ? null
-                          : _toggleLanguage,
+                  onToggleLanguage: _toggleLanguage,
                   onHome: () {
                     Navigator.of(context).popUntil(
                       (route) => route.isFirst,
@@ -352,11 +380,11 @@ class _DiagnosisResultScreenState
                               ),
                             ],
                             const SizedBox(height: 14),
-                            _buildDisclaimerCard(
-                              _showArabic
-                                  ? 'هذا تقييم أولي بمساعدة الذكاء الاصطناعي وليس تشخيصًا مخبريًا. يُنصح باستشارة مختص زراعي قبل استخدام المواد الكيميائية الخطرة.'
-                                  : disclaimer,
-                            ),
+                           _buildDisclaimerCard(
+                               _showArabic
+                                   ? 'هذا تقييم أولي بمساعدة الذكاء الاصطناعي وليس تشخيصًا مخبريًا. يُنصح باستشارة مختص زراعي قبل استخدام المواد الكيميائية الخطرة.'
+                                   : 'This is a preliminary AI-assisted assessment and not a laboratory diagnosis. Consult an agricultural specialist before using hazardous chemical treatments.',
+                             ),
                             const SizedBox(height: 24),
                             SizedBox(
                               height: 54,
@@ -402,53 +430,6 @@ class _DiagnosisResultScreenState
         ),
       ),
     );
-  }
-
-  String _translatedString(
-    String key,
-    String fallback,
-  ) {
-    final value =
-        _translation?[key]
-            ?.toString()
-            .trim();
-
-    if (value == null ||
-        value.isEmpty) {
-      return fallback;
-    }
-
-    return value;
-  }
-
-  List<String> _translatedSymptoms(
-    List<String> fallback,
-  ) {
-    final value =
-        _translation?[
-            'visibleSymptoms'];
-
-    if (value is! List) {
-      return fallback;
-    }
-
-    final symptoms =
-        value
-            .map(
-              (item) =>
-                  item.toString(),
-            )
-            .where(
-              (item) =>
-                  item.trim().isNotEmpty,
-            )
-            .toList();
-
-    if (symptoms.isEmpty) {
-      return fallback;
-    }
-
-    return symptoms;
   }
 
   Widget _buildImageCard() {
@@ -984,16 +965,15 @@ const _resultLight = Color(0xFFEAF3DF);
 const _resultText = Color(0xFF1D2C21);
 const _resultMuted = Color(0xFF6C786E);
 
-class _DiagnosisResultTopBar extends StatelessWidget {
+class _DiagnosisResultTopBar
+    extends StatelessWidget {
   final bool isArabic;
-  final bool isTranslating;
   final VoidCallback onBack;
-  final VoidCallback? onToggleLanguage;
+  final VoidCallback onToggleLanguage;
   final VoidCallback onHome;
 
   const _DiagnosisResultTopBar({
     required this.isArabic,
-    required this.isTranslating,
     required this.onBack,
     required this.onToggleLanguage,
     required this.onHome,
@@ -1002,7 +982,8 @@ class _DiagnosisResultTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration:
+          const BoxDecoration(
         gradient: LinearGradient(
           colors: [
             Color(0xFF123A22),
@@ -1011,7 +992,8 @@ class _DiagnosisResultTopBar extends StatelessWidget {
           ],
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(
+      padding:
+          const EdgeInsets.fromLTRB(
         18,
         12,
         18,
@@ -1022,24 +1004,36 @@ class _DiagnosisResultTopBar extends StatelessWidget {
         child: Row(
           children: [
             _ResultHeaderButton(
-              icon: Icons.arrow_back_rounded,
-              tooltip: isArabic ? 'رجوع' : 'Back',
+              icon:
+                  Icons.arrow_back_rounded,
+              tooltip:
+                  isArabic ? 'رجوع' : 'Back',
               onTap: onBack,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(
+              width: 12,
+            ),
             Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFFDDECB8),
-                borderRadius: BorderRadius.circular(13),
+              decoration:
+                  BoxDecoration(
+                color: const Color(
+                  0xFFDDECB8,
+                ),
+                borderRadius:
+                    BorderRadius.circular(
+                  13,
+                ),
               ),
               child: const Icon(
                 Icons.eco_rounded,
                 color: _resultDark,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(
+              width: 10,
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment:
@@ -1048,54 +1042,155 @@ class _DiagnosisResultTopBar extends StatelessWidget {
                   const Text(
                     'FarmPilot',
                     style: TextStyle(
-                      color: Colors.white,
+                      color:
+                          Colors.white,
                       fontSize: 19,
-                      fontWeight: FontWeight.w800,
+                      fontWeight:
+                          FontWeight.w800,
                     ),
                   ),
                   Text(
                     isArabic
                         ? 'نتيجة التشخيص'
                         : 'Diagnosis Result',
-                    style: const TextStyle(
-                      color: Color(0xCCFFFFFF),
+                    style:
+                        const TextStyle(
+                      color: Color(
+                        0xCCFFFFFF,
+                      ),
                       fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
-            TextButton.icon(
-              onPressed: onToggleLanguage,
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-              ),
-              icon: isTranslating
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+
+            Directionality(
+              textDirection:
+                  TextDirection.ltr,
+              child:
+                  PopupMenuButton<String>(
+                tooltip: isArabic
+                    ? 'تغيير اللغة'
+                    : 'Change Language',
+                position:
+                    PopupMenuPosition.under,
+                offset:
+                    const Offset(
+                  0,
+                  8,
+                ),
+                color:
+                    const Color(
+                  0xFFF8FAF4,
+                ),
+                elevation: 8,
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(
+                    16,
+                  ),
+                ),
+                onSelected: (
+                  language,
+                ) {
+                  if (language == 'ar' &&
+                      !isArabic) {
+                    onToggleLanguage();
+                  } else if (
+                      language == 'en' &&
+                      isArabic) {
+                    onToggleLanguage();
+                  }
+                },
+                itemBuilder: (
+                  context,
+                ) {
+                  return [
+                    PopupMenuItem<String>(
+                      value: 'en',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons
+                                .check_rounded,
+                            size: 20,
+                            color:
+                                !isArabic
+                                    ? _resultPrimary
+                                    : Colors
+                                        .transparent,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          const Text(
+                            'English',
+                          ),
+                        ],
                       ),
-                    )
-                  : const Icon(Icons.language_rounded),
-              label: Text(
-                isTranslating
-                    ? (isArabic
-                        ? 'جارٍ الترجمة'
-                        : 'Translating')
-                    : (isArabic ? 'English' : 'عربي'),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'ar',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons
+                                .check_rounded,
+                            size: 20,
+                            color:
+                                isArabic
+                                    ? _resultPrimary
+                                    : Colors
+                                        .transparent,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          const Text(
+                            'Arabic',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ];
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration:
+                      BoxDecoration(
+                    color: Colors.white
+                        .withValues(
+                      alpha: 0.10,
+                    ),
+                    borderRadius:
+                        BorderRadius.circular(
+                      14,
+                    ),
+                  ),
+                  alignment:
+                      Alignment.center,
+                  child: const Icon(
+                    Icons.language_rounded,
+                    color:
+                        Colors.white,
+                    size: 21,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(width: 4),
+
+            const SizedBox(
+              width: 10,
+            ),
             _ResultHeaderButton(
-              icon: Icons.home_outlined,
-              tooltip:
-                  isArabic ? 'الصفحة الرئيسية' : 'Farmer Dashboard',
+              icon:
+                  Icons.home_outlined,
+              tooltip: isArabic
+                  ? 'الصفحة الرئيسية'
+                  : 'Farmer Dashboard',
               onTap: onHome,
             ),
           ],
