@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../providers/product_provider.dart';
+import '../../providers/locale_provider.dart';
 
 class AdminProductsScreen extends StatefulWidget {
   const AdminProductsScreen({
@@ -17,6 +18,20 @@ class AdminProductsScreen extends StatefulWidget {
 class _AdminProductsScreenState
     extends State<AdminProductsScreen> {
   String _selectedStatus = 'ALL';
+
+  bool get _isArabic =>
+      Localizations.localeOf(context).languageCode == 'ar';
+
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
 
   
 
@@ -102,8 +117,10 @@ class _AdminProductsScreenState
             setDialogState,
           ) {
             return AlertDialog(
-              title: const Text(
-                'Change Product Status',
+              title: Text(
+                _isArabic
+                    ? 'تغيير حالة المنتج'
+                    : 'Change Product Status',
               ),
               content: Column(
                 mainAxisSize:
@@ -127,29 +144,31 @@ class _AdminProductsScreenState
                     initialValue:
                         selectedStatus,
                     decoration:
-                        const InputDecoration(
-                      labelText: 'Status',
+                        InputDecoration(
+                      labelText:
+                          _isArabic ? 'الحالة' : 'Status',
                       border:
-                          OutlineInputBorder(),
+                          const OutlineInputBorder(),
                     ),
-                    items: const [
+                    items: [
                       DropdownMenuItem(
                         value: 'AVAILABLE',
                         child: Text(
-                          'Available',
+                          _isArabic ? 'متاح' : 'Available',
                         ),
                       ),
                       DropdownMenuItem(
-                        value:
-                            'OUT_OF_STOCK',
+                        value: 'OUT_OF_STOCK',
                         child: Text(
-                          'Out of Stock',
+                          _isArabic
+                              ? 'نفد من المخزون'
+                              : 'Out of Stock',
                         ),
                       ),
                       DropdownMenuItem(
                         value: 'HIDDEN',
                         child: Text(
-                          'Hidden',
+                          _isArabic ? 'مخفي' : 'Hidden',
                         ),
                       ),
                     ],
@@ -177,8 +196,8 @@ class _AdminProductsScreenState
                       dialogContext,
                     );
                   },
-                  child: const Text(
-                    'Cancel',
+                  child: Text(
+                    _isArabic ? 'إلغاء' : 'Cancel',
                   ),
                 ),
                 ElevatedButton(
@@ -195,8 +214,8 @@ class _AdminProductsScreenState
                     foregroundColor:
                         Colors.white,
                   ),
-                  child: const Text(
-                    'Save',
+                  child: Text(
+                    _isArabic ? 'حفظ' : 'Save',
                   ),
                 ),
               ],
@@ -235,10 +254,16 @@ class _AdminProductsScreenState
         SnackBar(
           content: Text(
             newStatus == 'HIDDEN'
-                ? 'Product hidden successfully'
+                ? (_isArabic
+                    ? 'تم إخفاء المنتج بنجاح'
+                    : 'Product hidden successfully')
                 : newStatus == 'AVAILABLE'
-                    ? 'Product is now available'
-                    : 'Product marked as out of stock',
+                    ? (_isArabic
+                        ? 'المنتج متاح الآن'
+                        : 'Product is now available')
+                    : (_isArabic
+                        ? 'تم تحديد المنتج كنافد من المخزون'
+                        : 'Product marked as out of stock'),
           ),
           backgroundColor: const Color(0xFF2F743F),
           behavior: SnackBarBehavior.floating,
@@ -256,7 +281,9 @@ class _AdminProductsScreenState
       SnackBar(
         content: Text(
           productProvider.errorMessage ??
-              'Failed to update product status',
+              (_isArabic
+                  ? 'فشل تحديث حالة المنتج'
+                  : 'Failed to update product status'),
         ),
         backgroundColor: Colors.red,
       ),
@@ -283,11 +310,13 @@ class _AdminProductsScreenState
   ) {
     switch (status) {
       case 'AVAILABLE':
-        return 'AVAILABLE';
+        return _isArabic ? 'متاح' : 'AVAILABLE';
       case 'OUT_OF_STOCK':
-        return 'OUT OF STOCK';
+        return _isArabic
+            ? 'نفد من المخزون'
+            : 'OUT OF STOCK';
       case 'HIDDEN':
-        return 'HIDDEN';
+        return _isArabic ? 'مخفي' : 'HIDDEN';
       default:
         return status;
     }
@@ -339,6 +368,8 @@ class _AdminProductsScreenState
           Column(
             children: [
               _AdminProductsTopBar(
+                isArabic: _isArabic,
+                onChangeLanguage: _changeLanguage,
                 onBack: () =>
                     Navigator.pop(context),
                 onRefresh:
@@ -378,6 +409,7 @@ class _AdminProductsScreenState
                               ),
                               child:
                                   _AdminProductsHero(
+                                isArabic: _isArabic,
                                 totalCount:
                                     allProducts
                                         .length,
@@ -419,6 +451,7 @@ class _AdminProductsScreenState
                               ),
                               child:
                                   _AdminProductsFilter(
+                                isArabic: _isArabic,
                                 selectedStatus:
                                     _selectedStatus,
                                 onSelected:
@@ -458,10 +491,13 @@ class _AdminProductsScreenState
                               false,
                           child:
                               _AdminProductsErrorState(
+                            isArabic: _isArabic,
                             message:
                                 productProvider
                                         .errorMessage ??
-                                    'Failed to load products',
+                                    (_isArabic
+                                        ? 'فشل تحميل المنتجات'
+                                        : 'Failed to load products'),
                             onRetry:
                                 _loadProducts,
                           ),
@@ -473,6 +509,7 @@ class _AdminProductsScreenState
                               false,
                           child:
                               _AdminProductsEmptyState(
+                            isArabic: _isArabic,
                             selectedStatus:
                                 _selectedStatus,
                           ),
@@ -519,6 +556,7 @@ class _AdminProductsScreenState
                                     );
 
                                     return _AdminProductCard(
+                                      isArabic: _isArabic,
                                       product:
                                           product,
                                       imageUrl:
@@ -606,11 +644,15 @@ const _adminProductsMuted =
 
 class _AdminProductsTopBar
     extends StatelessWidget {
+  final bool isArabic;
+  final ValueChanged<String> onChangeLanguage;
   final VoidCallback onBack;
   final Future<void> Function()?
       onRefresh;
 
   const _AdminProductsTopBar({
+    required this.isArabic,
+    required this.onChangeLanguage,
     required this.onBack,
     required this.onRefresh,
   });
@@ -653,7 +695,7 @@ class _AdminProductsTopBar
               icon: Icons
                   .arrow_back_rounded,
               tooltip:
-                  'Back',
+                  isArabic ? 'رجوع' : 'Back',
               onTap:
                   onBack,
             ),
@@ -685,13 +727,13 @@ class _AdminProductsTopBar
             const SizedBox(
               width: 10,
             ),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment
                         .start,
                 children: [
-                  Text(
+                  const Text(
                     'FarmPilot',
                     style:
                         TextStyle(
@@ -705,9 +747,11 @@ class _AdminProductsTopBar
                     ),
                   ),
                   Text(
-                    'Manage Products',
+                    isArabic
+                        ? 'إدارة المنتجات'
+                        : 'Manage Products',
                     style:
-                        TextStyle(
+                        const TextStyle(
                       color:
                           Color(
                         0xCCFFFFFF,
@@ -719,11 +763,54 @@ class _AdminProductsTopBar
                 ],
               ),
             ),
-            _AdminProductsHeaderButton(
-              icon: Icons
-                  .refresh_rounded,
+            PopupMenuButton<String>(
               tooltip:
-                  'Refresh',
+                  isArabic ? 'تغيير اللغة' : 'Change Language',
+              color: Colors.white,
+              onSelected: onChangeLanguage,
+              icon: const Icon(
+                Icons.language_rounded,
+                color: Colors.white,
+              ),
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          color: !isArabic
+                              ? _adminProductsPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('English'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          color: isArabic
+                              ? _adminProductsPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('Arabic'),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+            ),
+            _AdminProductsHeaderButton(
+              icon: Icons.refresh_rounded,
+              tooltip:
+                  isArabic ? 'تحديث' : 'Refresh',
               onTap:
                   onRefresh,
             ),
@@ -795,12 +882,14 @@ class _AdminProductsHeaderButton
 
 class _AdminProductsHero
     extends StatelessWidget {
+  final bool isArabic;
   final int totalCount;
   final int availableCount;
   final int outOfStockCount;
   final int hiddenCount;
 
   const _AdminProductsHero({
+    required this.isArabic,
     required this.totalCount,
     required this.availableCount,
     required this.outOfStockCount,
@@ -857,7 +946,7 @@ class _AdminProductsHero
               const SizedBox(
                 width: 16,
               ),
-              const Expanded(
+              Expanded(
                 child:
                     Column(
                   crossAxisAlignment:
@@ -865,9 +954,11 @@ class _AdminProductsHero
                           .start,
                   children: [
                     Text(
-                      'Manage Products',
+                      isArabic
+                          ? 'إدارة المنتجات'
+                          : 'Manage Products',
                       style:
-                          TextStyle(
+                          const TextStyle(
                         color:
                             _adminProductsText,
                         fontSize:
@@ -877,13 +968,15 @@ class _AdminProductsHero
                                 .w800,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 4,
                     ),
                     Text(
-                      'Review marketplace products and control their visibility and availability.',
+                      isArabic
+                          ? 'مراجعة منتجات المتجر والتحكم في ظهورها وتوفرها.'
+                          : 'Review marketplace products and control their visibility and availability.',
                       style:
-                          TextStyle(
+                          const TextStyle(
                         color:
                             _adminProductsMuted,
                         fontSize:
@@ -905,25 +998,25 @@ class _AdminProductsHero
             children: [
               _AdminProductsStatChip(
                 label:
-                    'Total',
+                    isArabic ? 'الإجمالي' : 'Total',
                 value:
                     totalCount,
               ),
               _AdminProductsStatChip(
                 label:
-                    'Available',
+                    isArabic ? 'متاح' : 'Available',
                 value:
                     availableCount,
               ),
               _AdminProductsStatChip(
                 label:
-                    'Out of Stock',
+                    isArabic ? 'نفد من المخزون' : 'Out of Stock',
                 value:
                     outOfStockCount,
               ),
               _AdminProductsStatChip(
                 label:
-                    'Hidden',
+                    isArabic ? 'مخفي' : 'Hidden',
                 value:
                     hiddenCount,
               ),
@@ -1019,11 +1112,13 @@ class _AdminProductsStatChip
 
 class _AdminProductsFilter
     extends StatelessWidget {
+  final bool isArabic;
   final String selectedStatus;
   final ValueChanged<String>
       onSelected;
 
   const _AdminProductsFilter({
+    required this.isArabic,
     required this.selectedStatus,
     required this.onSelected,
   });
@@ -1050,12 +1145,19 @@ class _AdminProductsFilter
                 selectedStatus ==
                     status;
 
-            final label =
-                status ==
-                        'ALL'
+            final label = isArabic
+                ? status == 'ALL'
+                    ? 'جميع المنتجات'
+                    : status == 'AVAILABLE'
+                        ? 'متاح'
+                        : status == 'OUT_OF_STOCK'
+                            ? 'نفد من المخزون'
+                            : status == 'HIDDEN'
+                                ? 'مخفي'
+                                : status
+                : status == 'ALL'
                     ? 'All Products'
-                    : status ==
-                            'OUT_OF_STOCK'
+                    : status == 'OUT_OF_STOCK'
                         ? 'Out of Stock'
                         : _adminProductsTitleCase(
                             status,
@@ -1141,6 +1243,7 @@ typedef _ChangeProductStatus =
 
 class _AdminProductCard
     extends StatelessWidget {
+  final bool isArabic;
   final Map<String, dynamic>
       product;
   final String? imageUrl;
@@ -1152,6 +1255,7 @@ class _AdminProductCard
       onChangeStatus;
 
   const _AdminProductCard({
+    required this.isArabic,
     required this.product,
     required this.imageUrl,
     required this.statusColor,
@@ -1168,10 +1272,27 @@ class _AdminProductCard
                 ?.toString() ??
             '';
 
-    final productName =
-        product['name']
-                ?.toString() ??
-            'Unnamed Product';
+    final productName = isArabic
+        ? (product['nameAr']
+                    ?.toString()
+                    .trim()
+                    .isNotEmpty ==
+                true
+            ? product['nameAr']
+                .toString()
+            : product['name']
+                    ?.toString() ??
+                'منتج بدون اسم')
+        : (product['nameEn']
+                    ?.toString()
+                    .trim()
+                    .isNotEmpty ==
+                true
+            ? product['nameEn']
+                .toString()
+            : product['name']
+                    ?.toString() ??
+                'Unnamed Product');
 
     final status =
         product['status']
@@ -1204,17 +1325,34 @@ class _AdminProductCard
     final farmerName =
         farmer['fullName']
                 ?.toString() ??
-            'Unknown Farmer';
+            (isArabic ? 'مزارع غير معروف' : 'Unknown Farmer');
 
     final farmerEmail =
         farmer['email']
                 ?.toString() ??
             '';
 
-    final categoryName =
-        category['name']
-                ?.toString() ??
-            'No Category';
+    final categoryName = isArabic
+        ? (category['nameAr']
+                    ?.toString()
+                    .trim()
+                    .isNotEmpty ==
+                true
+            ? category['nameAr']
+                .toString()
+            : category['name']
+                    ?.toString() ??
+                'بدون تصنيف')
+        : (category['nameEn']
+                    ?.toString()
+                    .trim()
+                    .isNotEmpty ==
+                true
+            ? category['nameEn']
+                .toString()
+            : category['name']
+                    ?.toString() ??
+                'No Category');
 
     final color =
         statusColor(
@@ -1371,7 +1509,7 @@ class _AdminProductCard
             icon: Icons
                 .payments_outlined,
             label:
-                'Price',
+                isArabic ? 'السعر' : 'Price',
             value:
                 '${product['price'] ?? '-'} ₪',
           ),
@@ -1379,7 +1517,7 @@ class _AdminProductCard
             icon: Icons
                 .inventory_outlined,
             label:
-                'Quantity',
+                isArabic ? 'الكمية' : 'Quantity',
             value:
                 '${product['quantity'] ?? '-'} ${product['unit'] ?? ''}',
           ),
@@ -1387,7 +1525,7 @@ class _AdminProductCard
             icon: Icons
                 .category_outlined,
             label:
-                'Category',
+                isArabic ? 'التصنيف' : 'Category',
             value:
                 categoryName,
           ),
@@ -1395,7 +1533,7 @@ class _AdminProductCard
             icon: Icons
                 .agriculture_outlined,
             label:
-                'Farmer',
+                isArabic ? 'المزارع' : 'Farmer',
             value:
                 farmerName,
           ),
@@ -1405,7 +1543,7 @@ class _AdminProductCard
               icon: Icons
                   .email_outlined,
               label:
-                  'Email',
+                  isArabic ? 'البريد الإلكتروني' : 'Email',
               value:
                   farmerEmail,
             ),
@@ -1464,10 +1602,10 @@ class _AdminProductCard
                     .edit_note_outlined,
               ),
               label:
-                  const Text(
-                'Change Status',
+                  Text(
+                isArabic ? 'تغيير الحالة' : 'Change Status',
                 style:
-                    TextStyle(
+                    const TextStyle(
                   fontWeight:
                       FontWeight
                           .w700,
@@ -1568,9 +1706,11 @@ class _AdminProductInfoRow
 
 class _AdminProductsEmptyState
     extends StatelessWidget {
+  final bool isArabic;
   final String selectedStatus;
 
   const _AdminProductsEmptyState({
+    required this.isArabic,
     required this.selectedStatus,
   });
 
@@ -1578,8 +1718,17 @@ class _AdminProductsEmptyState
   Widget build(
     BuildContext context,
   ) {
-    final text =
-        selectedStatus == 'ALL'
+    final text = isArabic
+        ? selectedStatus == 'ALL'
+            ? 'لا توجد منتجات'
+            : selectedStatus == 'AVAILABLE'
+                ? 'لا توجد منتجات متاحة'
+                : selectedStatus == 'OUT_OF_STOCK'
+                    ? 'لا توجد منتجات نافدة من المخزون'
+                    : selectedStatus == 'HIDDEN'
+                        ? 'لا توجد منتجات مخفية'
+                        : 'لا توجد منتجات'
+        : selectedStatus == 'ALL'
             ? 'No Products Found'
             : 'No ${selectedStatus == 'OUT_OF_STOCK' ? 'Out of Stock' : _adminProductsTitleCase(selectedStatus)} Products Found';
 
@@ -1650,11 +1799,13 @@ class _AdminProductsEmptyState
 
 class _AdminProductsErrorState
     extends StatelessWidget {
+  final bool isArabic;
   final String message;
   final Future<void> Function()
       onRetry;
 
   const _AdminProductsErrorState({
+    required this.isArabic,
     required this.message,
     required this.onRetry,
   });
@@ -1729,8 +1880,8 @@ class _AdminProductsErrorState
                     .refresh_rounded,
               ),
               label:
-                  const Text(
-                'Try Again',
+                  Text(
+                isArabic ? 'حاول مرة أخرى' : 'Try Again',
               ),
             ),
           ],
