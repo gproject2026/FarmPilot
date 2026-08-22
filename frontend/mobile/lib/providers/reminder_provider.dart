@@ -38,8 +38,10 @@ class ReminderProvider extends ChangeNotifier {
 
   Future<bool> createReminder({
     required String token,
+    required String title,
+    String? cropName,
     String? cropId,
-    required String type,
+    String type = 'OTHER',
     required DateTime reminderDate,
   }) async {
     _setLoading(true);
@@ -49,6 +51,8 @@ class ReminderProvider extends ChangeNotifier {
       final newReminder =
           await _reminderService.createReminder(
         token: token,
+        title: title,
+        cropName: cropName,
         cropId: cropId,
         type: type,
         reminderDate: reminderDate,
@@ -69,6 +73,8 @@ class ReminderProvider extends ChangeNotifier {
   Future<bool> updateReminder({
     required String token,
     required String reminderId,
+    String? title,
+    String? cropName,
     String? cropId,
     String? type,
     DateTime? reminderDate,
@@ -82,6 +88,8 @@ class ReminderProvider extends ChangeNotifier {
           await _reminderService.updateReminder(
         token: token,
         reminderId: reminderId,
+        title: title,
+        cropName: cropName,
         cropId: cropId,
         type: type,
         reminderDate: reminderDate,
@@ -170,14 +178,21 @@ class ReminderProvider extends ChangeNotifier {
     );
   }
 
-  void _setLoading(bool value) {
+  void _setLoading(
+    bool value,
+  ) {
     _isLoading = value;
     notifyListeners();
   }
 
-  String _cleanError(Object error) {
+  String _cleanError(
+    Object error,
+  ) {
     return error
         .toString()
-        .replaceFirst('Exception: ', '');
+        .replaceFirst(
+          'Exception: ',
+          '',
+        );
   }
 }

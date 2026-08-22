@@ -46,8 +46,10 @@ class ReminderService {
 
   Future<ReminderModel> createReminder({
     required String token,
+    required String title,
+    String? cropName,
     String? cropId,
-    required String type,
+    String type = 'OTHER',
     required DateTime reminderDate,
   }) async {
     final response = await http.post(
@@ -56,9 +58,18 @@ class ReminderService {
       ),
       headers: _headers(token),
       body: jsonEncode({
-        if (cropId != null && cropId.isNotEmpty)
+        'title': title.trim(),
+
+        if (cropName != null &&
+            cropName.trim().isNotEmpty)
+          'cropName': cropName.trim(),
+
+        if (cropId != null &&
+            cropId.isNotEmpty)
           'cropId': cropId,
+
         'type': type,
+
         'reminderDate':
             reminderDate.toUtc().toIso8601String(),
       }),
@@ -84,19 +95,39 @@ class ReminderService {
   Future<ReminderModel> updateReminder({
     required String token,
     required String reminderId,
+    String? title,
+    String? cropName,
     String? cropId,
     String? type,
     DateTime? reminderDate,
     bool? status,
   }) async {
-    final body = <String, dynamic>{
-      'cropId': ?cropId,
-      'type': ?type,
-      if (reminderDate != null)
-        'reminderDate':
-            reminderDate.toUtc().toIso8601String(),
-      'status': ?status,
-    };
+    final body = <String, dynamic>{};
+
+    if (title != null) {
+      body['title'] = title.trim();
+    }
+
+    if (cropName != null) {
+      body['cropName'] = cropName.trim();
+    }
+
+    if (cropId != null) {
+      body['cropId'] = cropId;
+    }
+
+    if (type != null) {
+      body['type'] = type;
+    }
+
+    if (reminderDate != null) {
+      body['reminderDate'] =
+          reminderDate.toUtc().toIso8601String();
+    }
+
+    if (status != null) {
+      body['status'] = status;
+    }
 
     final response = await http.patch(
       Uri.parse(
@@ -162,8 +193,7 @@ class ReminderService {
         responseBody,
       );
 
-      if (decodedBody
-          is Map<String, dynamic>) {
+      if (decodedBody is Map<String, dynamic>) {
         final message =
             decodedBody['message'];
 

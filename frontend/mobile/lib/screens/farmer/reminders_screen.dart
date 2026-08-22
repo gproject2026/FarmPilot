@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../models/reminder_model.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/crop_provider.dart';
 import '../../providers/reminder_provider.dart';
 
 class RemindersScreen extends StatefulWidget {
@@ -16,6 +15,18 @@ class RemindersScreen extends StatefulWidget {
 
 class _RemindersScreenState
     extends State<RemindersScreen> {
+  bool _isArabic = false;
+
+  void _setLanguage(bool isArabic) {
+    if (_isArabic == isArabic) {
+      return;
+    }
+
+    setState(() {
+      _isArabic = isArabic;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -37,23 +48,20 @@ class _RemindersScreenState
       return;
     }
 
-    await Future.wait([
-      context
-          .read<ReminderProvider>()
-          .fetchReminders(
-            token: token,
-          ),
-      context
-          .read<CropProvider>()
-          .getMyCrops(token),
-    ]);
+    await context
+        .read<ReminderProvider>()
+        .fetchReminders(
+          token: token,
+        );
   }
 
   Future<void> _openAddReminderDialog() async {
     final created = await showDialog<bool>(
       context: context,
       builder: (_) =>
-          const _AddReminderDialog(),
+          _AddReminderDialog(
+        isArabic: _isArabic,
+      ),
     );
 
     if (!mounted) {
@@ -62,9 +70,11 @@ class _RemindersScreenState
 
     if (created == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Reminder added successfully',
+            _isArabic
+                ? 'تمت إضافة التذكير بنجاح'
+                : 'Reminder added successfully',
           ),
         ),
       );
@@ -103,7 +113,9 @@ class _RemindersScreenState
         SnackBar(
           content: Text(
             errorMessage ??
-                'Unable to update reminder',
+                (_isArabic
+                    ? 'تعذر تحديث التذكير'
+                    : 'Unable to update reminder'),
           ),
         ),
       );
@@ -118,11 +130,15 @@ class _RemindersScreenState
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(
-            'Delete Reminder',
+          title: Text(
+            _isArabic
+                ? 'حذف التذكير'
+                : 'Delete Reminder',
           ),
-          content: const Text(
-            'Are you sure you want to delete this reminder?',
+          content: Text(
+            _isArabic
+                ? 'هل أنت متأكد أنك تريد حذف هذا التذكير؟'
+                : 'Are you sure you want to delete this reminder?',
           ),
           actions: [
             TextButton(
@@ -132,7 +148,9 @@ class _RemindersScreenState
                   false,
                 );
               },
-              child: const Text('Cancel'),
+              child: Text(
+                _isArabic ? 'إلغاء' : 'Cancel',
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -141,9 +159,9 @@ class _RemindersScreenState
                   true,
                 );
               },
-              child: const Text(
-                'Delete',
-                style: TextStyle(
+              child: Text(
+                _isArabic ? 'حذف' : 'Delete',
+                style: const TextStyle(
                   color: Colors.red,
                 ),
               ),
@@ -182,9 +200,13 @@ class _RemindersScreenState
       SnackBar(
         content: Text(
           success
-              ? 'Reminder deleted successfully'
+              ? (_isArabic
+                  ? 'تم حذف التذكير بنجاح'
+                  : 'Reminder deleted successfully')
               : reminderProvider.errorMessage ??
-                  'Unable to delete reminder',
+                  (_isArabic
+                      ? 'تعذر حذف التذكير'
+                      : 'Unable to delete reminder'),
         ),
       ),
     );
@@ -192,9 +214,12 @@ class _RemindersScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAF4),
-      body: Consumer<ReminderProvider>(
+    return Directionality(
+      textDirection:
+          _isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8FAF4),
+        body: Consumer<ReminderProvider>(
         builder: (context, reminderProvider, child) {
           final reminders = reminderProvider.reminders;
           final completedCount =
@@ -209,6 +234,8 @@ class _RemindersScreenState
               Column(
                 children: [
                   _RemindersTopBar(
+                    isArabic: _isArabic,
+                    onLanguageChanged: _setLanguage,
                     onBack: () => Navigator.pop(context),
                     onRefresh:
                         reminderProvider.isLoading ? null : _loadData,
@@ -234,6 +261,7 @@ class _RemindersScreenState
                                     18,
                                   ),
                                   child: _RemindersHero(
+                                    isArabic: _isArabic,
                                     totalCount: reminders.length,
                                     pendingCount: pendingCount,
                                     completedCount: completedCount,
@@ -262,6 +290,7 @@ class _RemindersScreenState
                             SliverFillRemaining(
                               hasScrollBody: false,
                               child: _ErrorView(
+                                isArabic: _isArabic,
                                 message: reminderProvider.errorMessage!,
                                 onRetry: _loadData,
                               ),
@@ -270,6 +299,7 @@ class _RemindersScreenState
                             SliverFillRemaining(
                               hasScrollBody: false,
                               child: _EmptyRemindersView(
+                                isArabic: _isArabic,
                                 onAddReminder: _openAddReminderDialog,
                               ),
                             )
@@ -297,6 +327,7 @@ class _RemindersScreenState
                                         final reminder = reminders[index];
 
                                         return _ReminderCard(
+                                          isArabic: _isArabic,
                                           reminder: reminder,
                                           onStatusChanged: () {
                                             _toggleStatus(reminder);
@@ -328,6 +359,7 @@ class _RemindersScreenState
             ],
           );
         },
+        ),
       ),
     );
   }
@@ -340,10 +372,14 @@ const _reminderText = Color(0xFF1D2C21);
 const _reminderMuted = Color(0xFF6C786E);
 
 class _RemindersTopBar extends StatelessWidget {
+  final bool isArabic;
+  final ValueChanged<bool> onLanguageChanged;
   final VoidCallback onBack;
   final Future<void> Function()? onRefresh;
 
   const _RemindersTopBar({
+    required this.isArabic,
+    required this.onLanguageChanged,
     required this.onBack,
     required this.onRefresh,
   });
@@ -360,14 +396,19 @@ class _RemindersTopBar extends StatelessWidget {
           ],
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
+      padding: const EdgeInsets.fromLTRB(
+        18,
+        12,
+        18,
+        14,
+      ),
       child: SafeArea(
         bottom: false,
         child: Row(
           children: [
             _ReminderHeaderButton(
               icon: Icons.arrow_back_rounded,
-              tooltip: 'Back',
+              tooltip: isArabic ? 'رجوع' : 'Back',
               onTap: onBack,
             ),
             const SizedBox(width: 12),
@@ -384,11 +425,11 @@ class _RemindersTopBar extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'FarmPilot',
                     style: TextStyle(
                       color: Colors.white,
@@ -397,8 +438,8 @@ class _RemindersTopBar extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Reminders',
-                    style: TextStyle(
+                    isArabic ? 'التذكيرات' : 'Reminders',
+                    style: const TextStyle(
                       color: Color(0xCCFFFFFF),
                       fontSize: 12,
                     ),
@@ -406,9 +447,77 @@ class _RemindersTopBar extends StatelessWidget {
                 ],
               ),
             ),
+
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: PopupMenuButton<String>(
+                tooltip:
+                    isArabic ? 'تغيير اللغة' : 'Change Language',
+                position: PopupMenuPosition.under,
+                offset: const Offset(0, 8),
+                color: const Color(0xFFF8FAF4),
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onSelected: (language) {
+                  onLanguageChanged(language == 'ar');
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _reminderPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('English'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _reminderPrimary
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        const Text('Arabic'),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.language_rounded,
+                    color: Colors.white,
+                    size: 21,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 10),
             _ReminderHeaderButton(
               icon: Icons.refresh_rounded,
-              tooltip: 'Refresh',
+              tooltip: isArabic ? 'تحديث' : 'Refresh',
               onTap: onRefresh,
             ),
           ],
@@ -457,6 +566,7 @@ class _ReminderHeaderButton extends StatelessWidget {
 }
 
 class _RemindersHero extends StatelessWidget {
+  final bool isArabic;
   final int totalCount;
   final int pendingCount;
   final int completedCount;
@@ -464,6 +574,7 @@ class _RemindersHero extends StatelessWidget {
   final VoidCallback? onAddReminder;
 
   const _RemindersHero({
+    required this.isArabic,
     required this.totalCount,
     required this.pendingCount,
     required this.completedCount,
@@ -495,22 +606,24 @@ class _RemindersHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Reminders',
-                      style: TextStyle(
+                      isArabic ? 'التذكيرات' : 'Reminders',
+                      style: const TextStyle(
                         color: _reminderText,
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Organize irrigation, fertilization and other farm tasks.',
-                      style: TextStyle(
+                      isArabic
+                          ? 'نظّم مهام الري والتسميد وباقي مهام المزرعة.'
+                          : 'Organize irrigation, fertilization and other farm tasks.',
+                      style: const TextStyle(
                         color: _reminderMuted,
                         fontSize: 13,
                         height: 1.4,
@@ -528,15 +641,15 @@ class _RemindersHero extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               _ReminderCountChip(
-                label: 'Total',
+                label: isArabic ? 'الإجمالي' : 'Total',
                 value: totalCount,
               ),
               _ReminderCountChip(
-                label: 'Pending',
+                label: isArabic ? 'قيد الانتظار' : 'Pending',
                 value: pendingCount,
               ),
               _ReminderCountChip(
-                label: 'Completed',
+                label: isArabic ? 'مكتمل' : 'Completed',
                 value: completedCount,
               ),
               ElevatedButton.icon(
@@ -564,9 +677,9 @@ class _RemindersHero extends StatelessWidget {
                         ),
                       )
                     : const Icon(Icons.add_rounded),
-                label: const Text(
-                  'Add Reminder',
-                  style: TextStyle(
+                label: Text(
+                  isArabic ? 'إضافة تذكير' : 'Add Reminder',
+                  style: const TextStyle(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -631,11 +744,13 @@ class _ReminderCountChip extends StatelessWidget {
 }
 
 class _ReminderCard extends StatelessWidget {
+  final bool isArabic;
   final ReminderModel reminder;
   final VoidCallback onStatusChanged;
   final VoidCallback onDelete;
 
   const _ReminderCard({
+    required this.isArabic,
     required this.reminder,
     required this.onStatusChanged,
     required this.onDelete,
@@ -646,6 +761,11 @@ class _ReminderCard extends StatelessWidget {
     final isCompleted = reminder.status;
     final typeColor = _getReminderTypeColor(reminder.type);
     final typeIcon = _getReminderTypeIcon(reminder.type);
+
+    final localizedCropName =
+        reminder.getCropName(
+      isArabic: isArabic,
+    );
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -674,7 +794,9 @@ class _ReminderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      reminder.formattedType,
+                      reminder.getTitle(
+                        isArabic: isArabic,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -713,7 +835,9 @@ class _ReminderCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
-                  isCompleted ? 'Completed' : 'Pending',
+                  isCompleted
+                      ? (isArabic ? 'مكتمل' : 'Completed')
+                      : (isArabic ? 'قيد الانتظار' : 'Pending'),
                   style: TextStyle(
                     color: isCompleted
                         ? const Color(0xFF3F8A50)
@@ -726,8 +850,8 @@ class _ReminderCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (reminder.cropName != null &&
-              reminder.cropName!.trim().isNotEmpty)
+          if (localizedCropName != null &&
+              localizedCropName.trim().isNotEmpty)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(
@@ -751,7 +875,7 @@ class _ReminderCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      reminder.cropName!,
+                      localizedCropName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -778,17 +902,19 @@ class _ReminderCard extends StatelessWidget {
                   color: const Color(0xFFE3E9DF),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.eco_outlined,
                     size: 18,
                     color: _reminderMuted,
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
-                    'General farm reminder',
-                    style: TextStyle(
+                    isArabic
+                        ? 'تذكير عام للمزرعة'
+                        : 'General farm reminder',
+                    style: const TextStyle(
                       color: _reminderMuted,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -823,7 +949,13 @@ class _ReminderCard extends StatelessWidget {
                     size: 18,
                   ),
                   label: Text(
-                    isCompleted ? 'Mark Pending' : 'Mark Completed',
+                    isCompleted
+                        ? (isArabic
+                            ? 'إعادة إلى الانتظار'
+                            : 'Mark Pending')
+                        : (isArabic
+                            ? 'تحديد كمكتمل'
+                            : 'Mark Completed'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -837,7 +969,7 @@ class _ReminderCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 child: IconButton(
-                  tooltip: 'Delete Reminder',
+                  tooltip: isArabic ? 'حذف التذكير' : 'Delete Reminder',
                   onPressed: onDelete,
                   style: IconButton.styleFrom(
                     backgroundColor: const Color(0xFFFFF3F3),
@@ -883,7 +1015,11 @@ Color _getReminderTypeColor(String type) {
 
 class _AddReminderDialog
     extends StatefulWidget {
-  const _AddReminderDialog();
+  final bool isArabic;
+
+  const _AddReminderDialog({
+    required this.isArabic,
+  });
 
   @override
   State<_AddReminderDialog> createState() =>
@@ -892,13 +1028,25 @@ class _AddReminderDialog
 
 class _AddReminderDialogState
     extends State<_AddReminderDialog> {
-  String _selectedType = 'IRRIGATION';
-  String? _selectedCropId;
+  bool get isArabic => widget.isArabic;
+
+  final TextEditingController _titleController =
+      TextEditingController();
+
+  final TextEditingController _cropNameController =
+      TextEditingController();
 
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
 
   bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _cropNameController.dispose();
+    super.dispose();
+  }
 
   Future<void> _selectDate() async {
     final result = await showDatePicker(
@@ -933,12 +1081,34 @@ class _AddReminderDialogState
   }
 
   Future<void> _saveReminder() async {
+    final title =
+        _titleController.text.trim();
+
+    final cropName =
+        _cropNameController.text.trim();
+
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isArabic
+                ? 'يرجى كتابة عنوان التذكير'
+                : 'Please enter a reminder title',
+          ),
+        ),
+      );
+
+      return;
+    }
+
     if (_selectedDate == null ||
         _selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Please select date and time',
+            isArabic
+                ? 'يرجى اختيار التاريخ والوقت'
+                : 'Please select date and time',
           ),
         ),
       );
@@ -971,8 +1141,10 @@ class _AddReminderDialogState
         .read<ReminderProvider>()
         .createReminder(
           token: token,
-          cropId: _selectedCropId,
-          type: _selectedType,
+          title: title,
+          cropName:
+              cropName.isEmpty ? null : cropName,
+          type: 'OTHER',
           reminderDate: reminderDate,
         );
 
@@ -995,7 +1167,9 @@ class _AddReminderDialogState
         SnackBar(
           content: Text(
             errorMessage ??
-                'Unable to add reminder',
+                (isArabic
+                    ? 'تعذر إضافة التذكير'
+                    : 'Unable to add reminder'),
           ),
         ),
       );
@@ -1004,11 +1178,11 @@ class _AddReminderDialogState
 
   @override
   Widget build(BuildContext context) {
-    final cropProvider = context.watch<CropProvider>();
-    final crops = cropProvider.crops;
-
-    return Dialog(
-      insetPadding: const EdgeInsets.all(24),
+    return Directionality(
+      textDirection:
+          isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Dialog(
+        insetPadding: const EdgeInsets.all(24),
       backgroundColor: Colors.transparent,
       child: Container(
         width: 560,
@@ -1037,22 +1211,24 @@ class _AddReminderDialogState
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Add Reminder',
-                          style: TextStyle(
+                          isArabic ? 'إضافة تذكير' : 'Add Reminder',
+                          style: const TextStyle(
                             color: _reminderText,
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          'Schedule a farm task and optionally link it to a crop.',
-                          style: TextStyle(
+                          isArabic
+                              ? 'اكتب التذكير واسم المحصول وحدد التاريخ والوقت.'
+                              : 'Enter the reminder and crop name, then choose the date and time.',
+                          style: const TextStyle(
                             color: _reminderMuted,
                             fontSize: 12,
                           ),
@@ -1061,7 +1237,7 @@ class _AddReminderDialogState
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Close',
+                    tooltip: isArabic ? 'إغلاق' : 'Close',
                     onPressed: _isSaving
                         ? null
                         : () => Navigator.pop(context, false),
@@ -1070,100 +1246,58 @@ class _AddReminderDialogState
                 ],
               ),
               const SizedBox(height: 24),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedType,
-                decoration: _reminderFieldDecoration(
-                  label: 'Reminder Type',
-                  icon: Icons.notifications_active_outlined,
+              TextField(
+                controller: _titleController,
+                enabled: !_isSaving,
+                textInputAction:
+                    TextInputAction.next,
+                decoration:
+                    _reminderFieldDecoration(
+                  label: isArabic
+                      ? 'عنوان التذكير'
+                      : 'Reminder Title',
+                  icon:
+                      Icons.notifications_active_outlined,
+                ).copyWith(
+                  hintText: isArabic
+                      ? 'مثال: رش الأشجار'
+                      : 'Example: Spray the trees',
                 ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'IRRIGATION',
-                    child: Text('Irrigation'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'FERTILIZATION',
-                    child: Text('Fertilization'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'OTHER',
-                    child: Text('Other'),
-                  ),
-                ],
-                onChanged: _isSaving
-                    ? null
-                    : (value) {
-                        if (value == null) {
-                          return;
-                        }
-
-                        setState(() {
-                          _selectedType = value;
-                        });
-                      },
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String?>(
-                initialValue: _selectedCropId,
-                isExpanded: true,
-                decoration: _reminderFieldDecoration(
-                  label: 'Crop (Optional)',
+              TextField(
+                controller:
+                    _cropNameController,
+                enabled: !_isSaving,
+                textInputAction:
+                    TextInputAction.done,
+                decoration:
+                    _reminderFieldDecoration(
+                  label: isArabic
+                      ? 'اسم المحصول (اختياري)'
+                      : 'Crop Name (Optional)',
                   icon: Icons.eco_outlined,
+                ).copyWith(
+                  hintText: isArabic
+                      ? 'مثال: الطماطم'
+                      : 'Example: Tomato',
                 ),
-                items: [
-                  const DropdownMenuItem<String?>(
-                    value: null,
-                    child: Text('No specific crop'),
-                  ),
-                  ...crops.map(
-                    (crop) {
-                      final cropId = crop['id']?.toString() ?? '';
-                      final cropName =
-                          crop['cropName']?.toString() ?? 'Unnamed Crop';
-
-                      return DropdownMenuItem<String?>(
-                        value: cropId,
-                        child: Text(
-                          cropName,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-                onChanged: _isSaving
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _selectedCropId = value;
-                        });
-                      },
               ),
-              if (crops.isEmpty) ...[
-                const SizedBox(height: 8),
-                const Text(
-                  'No crops available. You can still create a general reminder.',
-                  style: TextStyle(
-                    color: _reminderMuted,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
               const SizedBox(height: 16),
               _ReminderPickerTile(
                 icon: Icons.calendar_month_outlined,
-                label: 'Date',
+                label: isArabic ? 'التاريخ' : 'Date',
                 value: _selectedDate == null
-                    ? 'Select date'
+                    ? (isArabic ? 'اختر التاريخ' : 'Select date')
                     : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
                 onTap: _isSaving ? null : _selectDate,
               ),
               const SizedBox(height: 12),
               _ReminderPickerTile(
                 icon: Icons.access_time_rounded,
-                label: 'Time',
+                label: isArabic ? 'الوقت' : 'Time',
                 value: _selectedTime == null
-                    ? 'Select time'
+                    ? (isArabic ? 'اختر الوقت' : 'Select time')
                     : _selectedTime!.format(context),
                 onTap: _isSaving ? null : _selectTime,
               ),
@@ -1185,7 +1319,7 @@ class _AddReminderDialogState
                           borderRadius: BorderRadius.circular(13),
                         ),
                       ),
-                      child: const Text('Cancel'),
+                      child: Text(isArabic ? 'إلغاء' : 'Cancel'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1213,7 +1347,9 @@ class _AddReminderDialogState
                             )
                           : const Icon(Icons.save_outlined),
                       label: Text(
-                        _isSaving ? 'Saving...' : 'Save Reminder',
+                        _isSaving
+                            ? (isArabic ? 'جارٍ الحفظ...' : 'Saving...')
+                            : (isArabic ? 'حفظ التذكير' : 'Save Reminder'),
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                         ),
@@ -1224,6 +1360,7 @@ class _AddReminderDialogState
               ),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -1356,9 +1493,11 @@ InputDecoration _reminderFieldDecoration({
 }
 
 class _EmptyRemindersView extends StatelessWidget {
+  final bool isArabic;
   final VoidCallback onAddReminder;
 
   const _EmptyRemindersView({
+    required this.isArabic,
     required this.onAddReminder,
   });
 
@@ -1389,20 +1528,22 @@ class _EmptyRemindersView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'No reminders yet',
+            Text(
+              isArabic ? 'لا توجد تذكيرات بعد' : 'No reminders yet',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: _reminderText,
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Add a reminder for irrigation, fertilization, or another farm task.',
+            Text(
+              isArabic
+                  ? 'أضف تذكيرًا للري أو التسميد أو أي مهمة أخرى في المزرعة.'
+                  : 'Add a reminder for irrigation, fertilization, or another farm task.',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: _reminderMuted,
                 fontSize: 13,
                 height: 1.45,
@@ -1424,7 +1565,7 @@ class _EmptyRemindersView extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Add Reminder'),
+              label: Text(isArabic ? 'إضافة تذكير' : 'Add Reminder'),
             ),
           ],
         ),
@@ -1434,10 +1575,12 @@ class _EmptyRemindersView extends StatelessWidget {
 }
 
 class _ErrorView extends StatelessWidget {
+  final bool isArabic;
   final String message;
   final Future<void> Function() onRetry;
 
   const _ErrorView({
+    required this.isArabic,
     required this.message,
     required this.onRetry,
   });
@@ -1478,7 +1621,7 @@ class _ErrorView extends StatelessWidget {
                 elevation: 0,
               ),
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
+              label: Text(isArabic ? 'حاول مرة أخرى' : 'Try Again'),
             ),
           ],
         ),

@@ -256,13 +256,24 @@ model Favorite {
 }
 
 model Reminder {
-  id           String       @id @default(uuid()) @db.Uuid
-  farmerId     String       @map("farmer_id") @db.Uuid
-  cropId       String?      @map("crop_id") @db.Uuid
-  type         ReminderType
-  reminderDate DateTime     @map("reminder_date")
-  status       Boolean      @default(false)
-  createdAt    DateTime     @default(now()) @map("created_at")
+  id       String @id @default(uuid()) @db.Uuid
+  farmerId String @map("farmer_id") @db.Uuid
+
+  title   String? @db.VarChar(100)
+  titleEn String? @map("title_en") @db.VarChar(100)
+  titleAr String? @map("title_ar") @db.VarChar(100)
+
+  cropName   String? @map("crop_name") @db.VarChar(100)
+  cropNameEn String? @map("crop_name_en") @db.VarChar(100)
+  cropNameAr String? @map("crop_name_ar") @db.VarChar(100)
+
+  cropId String? @map("crop_id") @db.Uuid
+
+  type ReminderType @default(OTHER)
+
+  reminderDate DateTime @map("reminder_date")
+  status       Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
 
   farmer User  @relation(fields: [farmerId], references: [id])
   crop   Crop? @relation(fields: [cropId], references: [id])

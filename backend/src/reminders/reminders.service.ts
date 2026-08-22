@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { GeminiService } from '../ai/gemini.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 import { CreateReminderDto } from './dto/create-reminder.dto';
@@ -13,6 +14,7 @@ import { UpdateReminderDto } from './dto/update-reminder.dto';
 export class RemindersService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly geminiService: GeminiService,
   ) {}
 
   async create(
@@ -26,11 +28,97 @@ export class RemindersService {
       );
     }
 
+    const title =
+      createReminderDto.title?.trim() ?? '';
+
+    const cropName =
+      createReminderDto.cropName?.trim() ?? '';
+
+    let titleEn: string | null = null;
+    let titleAr: string | null = null;
+
+    let cropNameEn: string | null = null;
+    let cropNameAr: string | null = null;
+
+    if (title.length > 0) {
+      const isArabic =
+        this.containsArabic(title);
+
+      if (isArabic) {
+        titleAr = title;
+
+        cropNameAr =
+          cropName.length > 0
+            ? cropName
+            : null;
+
+        const translation =
+          await this.geminiService
+              .translateReminderContent({
+            title,
+            cropName,
+            targetLanguage: 'en',
+          });
+
+        titleEn =
+          translation.title.trim();
+
+        cropNameEn =
+          translation.cropName.trim().length > 0
+            ? translation.cropName.trim()
+            : null;
+      } else {
+        titleEn = title;
+
+        cropNameEn =
+          cropName.length > 0
+            ? cropName
+            : null;
+
+        const translation =
+          await this.geminiService
+              .translateReminderContent({
+            title,
+            cropName,
+            targetLanguage: 'ar',
+          });
+
+        titleAr =
+          translation.title.trim();
+
+        cropNameAr =
+          translation.cropName.trim().length > 0
+            ? translation.cropName.trim()
+            : null;
+      }
+    }
+
     return this.prisma.reminder.create({
       data: {
         farmerId,
-        cropId: createReminderDto.cropId,
-        type: createReminderDto.type,
+
+        title:
+          title.length > 0
+            ? title
+            : null,
+
+        titleEn,
+        titleAr,
+
+        cropName:
+          cropName.length > 0
+            ? cropName
+            : null,
+
+        cropNameEn,
+        cropNameAr,
+
+        cropId:
+          createReminderDto.cropId,
+
+        type:
+          createReminderDto.type,
+
         reminderDate: new Date(
           createReminderDto.reminderDate,
         ),
@@ -41,7 +129,9 @@ export class RemindersService {
     });
   }
 
-  findAll(farmerId: string) {
+  findAll(
+    farmerId: string,
+  ) {
     return this.prisma.reminder.findMany({
       where: {
         farmerId,
@@ -75,7 +165,9 @@ export class RemindersService {
       );
     }
 
-    if (reminder.farmerId !== farmerId) {
+    if (
+      reminder.farmerId !== farmerId
+    ) {
       throw new ForbiddenException(
         'You are not allowed to access this reminder',
       );
@@ -102,7 +194,9 @@ export class RemindersService {
       );
     }
 
-    if (reminder.farmerId !== farmerId) {
+    if (
+      reminder.farmerId !== farmerId
+    ) {
       throw new ForbiddenException(
         'You are not allowed to update this reminder',
       );
@@ -115,20 +209,141 @@ export class RemindersService {
       );
     }
 
+    let title:
+      | string
+      | null
+      | undefined;
+
+    let titleEn:
+      | string
+      | null
+      | undefined;
+
+    let titleAr:
+      | string
+      | null
+      | undefined;
+
+    let cropName:
+      | string
+      | null
+      | undefined;
+
+    let cropNameEn:
+      | string
+      | null
+      | undefined;
+
+    let cropNameAr:
+      | string
+      | null
+      | undefined;
+
+    const shouldTranslate =
+      updateReminderDto.title !== undefined ||
+      updateReminderDto.cropName !== undefined;
+
+    if (shouldTranslate) {
+      title =
+        updateReminderDto.title !== undefined
+          ? updateReminderDto.title.trim() ||
+            null
+          : reminder.title;
+
+      cropName =
+        updateReminderDto.cropName !== undefined
+          ? updateReminderDto.cropName.trim() ||
+            null
+          : reminder.cropName;
+
+      if (title) {
+        const isArabic =
+          this.containsArabic(title);
+
+        if (isArabic) {
+          titleAr = title;
+          cropNameAr = cropName;
+
+          const translation =
+            await this.geminiService
+                .translateReminderContent({
+              title,
+              cropName:
+                cropName ?? '',
+              targetLanguage: 'en',
+            });
+
+          titleEn =
+            translation.title.trim();
+
+          cropNameEn =
+            translation.cropName
+                    .trim()
+                    .length >
+                0
+              ? translation.cropName.trim()
+              : null;
+        } else {
+          titleEn = title;
+          cropNameEn = cropName;
+
+          const translation =
+            await this.geminiService
+                .translateReminderContent({
+              title,
+              cropName:
+                cropName ?? '',
+              targetLanguage: 'ar',
+            });
+
+          titleAr =
+            translation.title.trim();
+
+          cropNameAr =
+            translation.cropName
+                    .trim()
+                    .length >
+                0
+              ? translation.cropName.trim()
+              : null;
+        }
+      } else {
+        titleEn = null;
+        titleAr = null;
+
+        cropNameEn = cropName;
+        cropNameAr = cropName;
+      }
+    }
+
     return this.prisma.reminder.update({
       where: {
         id,
       },
       data: {
-        cropId: updateReminderDto.cropId,
-        type: updateReminderDto.type,
+        title,
+        titleEn,
+        titleAr,
+
+        cropName,
+        cropNameEn,
+        cropNameAr,
+
+        cropId:
+          updateReminderDto.cropId,
+
+        type:
+          updateReminderDto.type,
+
         reminderDate:
           updateReminderDto.reminderDate
             ? new Date(
                 updateReminderDto.reminderDate,
               )
             : undefined,
-        status: updateReminderDto.status,
+
+        status:
+          updateReminderDto.status,
       },
       include: {
         crop: true,
@@ -153,7 +368,9 @@ export class RemindersService {
       );
     }
 
-    if (reminder.farmerId !== farmerId) {
+    if (
+      reminder.farmerId !== farmerId
+    ) {
       throw new ForbiddenException(
         'You are not allowed to delete this reminder',
       );
@@ -183,10 +400,20 @@ export class RemindersService {
       );
     }
 
-    if (crop.farmerId !== farmerId) {
+    if (
+      crop.farmerId !== farmerId
+    ) {
       throw new ForbiddenException(
         'You cannot use this crop',
       );
     }
+  }
+
+  private containsArabic(
+    value: string,
+  ): boolean {
+    return /[\u0600-\u06FF]/.test(
+      value,
+    );
   }
 }

@@ -39,6 +39,11 @@ export interface ProductTranslationResult {
   description: string;
 }
 
+export interface ReminderTranslationResult {
+  title: string;
+  cropName: string;
+}
+
 @Injectable()
 export class GeminiService {
   private readonly ai: GoogleGenAI;
@@ -186,6 +191,122 @@ export class GeminiService {
     } catch {
       throw new InternalServerErrorException(
         'Gemini returned an invalid product translation response',
+      );
+    }
+  }
+
+  async translateReminderContent(params: {
+    title: string;
+    cropName?: string;
+    targetLanguage: 'ar' | 'en';
+  }): Promise<ReminderTranslationResult> {
+    const {
+      title,
+      cropName,
+      targetLanguage,
+    } = params;
+
+    const targetLanguageName =
+      targetLanguage === 'ar'
+        ? 'Arabic'
+        : 'English';
+
+    const prompt = [
+      `Translate the following farm reminder content into clear, natural ${targetLanguageName}.`,
+      'Preserve the original meaning accurately.',
+      'Do not add information that was not provided.',
+      'Keep the reminder title short and natural.',
+      'Translate the crop name naturally when it has a common equivalent.',
+      'Keep scientific names, codes, and proper nouns unchanged when appropriate.',
+      `Return all translated text in ${targetLanguageName}.`,
+      '',
+      `Reminder title: ${title}`,
+      `Crop name: ${cropName?.trim() || ''}`,
+    ].join('\n');
+
+    let responseText:
+      | string
+      | undefined;
+
+    try {
+      const response =
+        await this.ai.models.generateContent({
+          model: this.modelName,
+          contents: prompt,
+          config: {
+            responseMimeType:
+              'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                title: {
+                  type: Type.STRING,
+                },
+                cropName: {
+                  type: Type.STRING,
+                },
+              },
+              required: [
+                'title',
+                'cropName',
+              ],
+            },
+          },
+        });
+
+      responseText =
+        response.text;
+    } catch (error) {
+      console.error(
+        'Gemini reminder translation error:',
+        error,
+      );
+
+      throw new BadGatewayException(
+        'Gemini could not translate the reminder content',
+      );
+    }
+
+    if (!responseText) {
+      throw new InternalServerErrorException(
+        'Gemini did not return a reminder translation',
+      );
+    }
+
+    try {
+      const result =
+        JSON.parse(
+          responseText,
+        ) as ReminderTranslationResult;
+
+      const translatedTitle =
+        result.title
+          ?.toString()
+          .trim();
+
+      const translatedCropName =
+        result.cropName
+          ?.toString()
+          .trim();
+
+      if (
+        !translatedTitle ||
+        translatedTitle.length === 0
+      ) {
+        throw new Error(
+          'Invalid translated reminder title',
+        );
+      }
+
+      return {
+        title:
+          translatedTitle,
+        cropName:
+          translatedCropName ?? '',
+      };
+    } catch {
+      throw new InternalServerErrorException(
+        'Gemini returned an invalid reminder translation response',
       );
     }
   }
