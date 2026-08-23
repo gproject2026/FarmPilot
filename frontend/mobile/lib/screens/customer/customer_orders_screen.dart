@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/locale_provider.dart';
 
 const Color _ordersDarkGreen = Color(0xFF173F24);
 const Color _ordersPrimaryGreen = Color(0xFF2F6B3D);
@@ -24,6 +25,20 @@ class CustomerOrdersScreen extends StatefulWidget {
 
 class _CustomerOrdersScreenState
     extends State<CustomerOrdersScreen> {
+  bool get _isArabic =>
+      Localizations.localeOf(context).languageCode == 'ar';
+
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -81,27 +96,26 @@ class _CustomerOrdersScreenState
               24,
             ),
           ),
-          title:
-              const Row(
+          title: Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.cancel_outlined,
-                color:
-                    Color(
-                  0xFFB44F4F,
-                ),
+                color: Color(0xFFB44F4F),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 10,
               ),
               Text(
-                'Cancel Order',
+                _isArabic
+                    ? 'إلغاء الطلب'
+                    : 'Cancel Order',
               ),
             ],
           ),
-          content:
-              const Text(
-            'Are you sure you want to cancel this order?',
+          content: Text(
+            _isArabic
+                ? 'هل أنت متأكد من إلغاء هذا الطلب؟'
+                : 'Are you sure you want to cancel this order?',
           ),
           actions: [
             TextButton(
@@ -111,9 +125,8 @@ class _CustomerOrdersScreenState
                   false,
                 );
               },
-              child:
-                  const Text(
-                'No',
+              child: Text(
+                _isArabic ? 'لا' : 'No',
               ),
             ),
             ElevatedButton(
@@ -140,9 +153,10 @@ class _CustomerOrdersScreenState
                   ),
                 ),
               ),
-              child:
-                  const Text(
-                'Yes, Cancel',
+              child: Text(
+                _isArabic
+                    ? 'نعم، إلغاء الطلب'
+                    : 'Yes, Cancel',
               ),
             ),
           ],
@@ -189,9 +203,11 @@ class _CustomerOrdersScreenState
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Order cancelled successfully',
+              _isArabic
+                  ? 'تم إلغاء الطلب بنجاح'
+                  : 'Order cancelled successfully',
             ),
             backgroundColor:
                 _ordersPrimaryGreen,
@@ -205,7 +221,9 @@ class _CustomerOrdersScreenState
             content: Text(
               orderProvider
                       .errorMessage ??
-                  'Failed to cancel order',
+                  (_isArabic
+                      ? 'فشل إلغاء الطلب'
+                      : 'Failed to cancel order'),
             ),
             backgroundColor:
                 Colors.red,
@@ -292,6 +310,7 @@ class _CustomerOrdersScreenState
                             false,
                         child:
                             _ErrorView(
+                          isArabic: _isArabic,
                           message:
                               orderProvider
                                   .errorMessage!,
@@ -307,6 +326,7 @@ class _CustomerOrdersScreenState
                             false,
                         child:
                             _EmptyOrdersView(
+                          isArabic: _isArabic,
                           onRefresh:
                               _loadOrders,
                         ),
@@ -346,6 +366,7 @@ class _CustomerOrdersScreenState
                                     index];
 
                             return _OrderCard(
+                              isArabic: _isArabic,
                               order:
                                   order,
                               isLoading:
@@ -426,7 +447,7 @@ class _CustomerOrdersScreenState
             _HeaderButton(
               icon:
                   Icons.arrow_back_rounded,
-              tooltip: 'Back',
+              tooltip: _isArabic ? 'رجوع' : 'Back',
               onTap: () {
                 Navigator.pop(
                   context,
@@ -459,13 +480,13 @@ class _CustomerOrdersScreenState
             const SizedBox(
               width: 10,
             ),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment
                         .start,
                 children: [
-                  Text(
+                  const Text(
                     'FarmPilot',
                     style:
                         TextStyle(
@@ -480,9 +501,9 @@ class _CustomerOrdersScreenState
                     height: 2,
                   ),
                   Text(
-                    'My Orders',
+                    _isArabic ? 'طلباتي' : 'My Orders',
                     style:
-                        TextStyle(
+                        const TextStyle(
                       color:
                           Color(
                         0xCCFFFFFF,
@@ -493,10 +514,72 @@ class _CustomerOrdersScreenState
                 ],
               ),
             ),
+            PopupMenuButton<String>(
+              tooltip: '',
+              offset: const Offset(0, 50),
+              color: Colors.white,
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              onSelected: _changeLanguage,
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'en',
+                  child: Row(
+                    children: [
+                      if (!_isArabic) ...[
+                        const Icon(
+                          Icons.check_rounded,
+                          color: _ordersPrimaryGreen,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      const Text('English'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'ar',
+                  child: Row(
+                    children: [
+                      if (_isArabic) ...[
+                        const Icon(
+                          Icons.check_rounded,
+                          color: _ordersPrimaryGreen,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      const Text('العربية'),
+                    ],
+                  ),
+                ),
+              ],
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(
+                    alpha: 0.10,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.language_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             _HeaderButton(
               icon:
                   Icons.refresh_rounded,
-              tooltip: 'Refresh',
+              tooltip:
+                  _isArabic ? 'تحديث' : 'Refresh',
               onTap:
                   orderProvider
                           .isLoading
@@ -620,16 +703,16 @@ class _CustomerOrdersScreenState
               const SizedBox(
                 width: 16,
               ),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment:
                       CrossAxisAlignment
                           .start,
                   children: [
                     Text(
-                      'My Orders',
+                      _isArabic ? 'طلباتي' : 'My Orders',
                       style:
-                          TextStyle(
+                          const TextStyle(
                         color:
                             _ordersTextPrimary,
                         fontSize: 24,
@@ -638,13 +721,15 @@ class _CustomerOrdersScreenState
                                 .w800,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 4,
                     ),
                     Text(
-                      'Track your purchases and review the status of each order.',
+                      _isArabic
+                          ? 'تابع مشترياتك وراجع حالة كل طلب.'
+                          : 'Track your purchases and review the status of each order.',
                       style:
-                          TextStyle(
+                          const TextStyle(
                         color:
                             _ordersTextSecondary,
                         fontSize: 13,
@@ -664,7 +749,7 @@ class _CustomerOrdersScreenState
             children: [
               _MiniStat(
                 label:
-                    'Total Orders',
+                    _isArabic ? 'إجمالي الطلبات' : 'Total Orders',
                 value:
                     totalOrders
                         .toString(),
@@ -680,7 +765,7 @@ class _CustomerOrdersScreenState
               ),
               _MiniStat(
                 label:
-                    'Pending',
+                    _isArabic ? 'قيد الانتظار' : 'Pending',
                 value:
                     pendingOrders
                         .toString(),
@@ -849,11 +934,13 @@ class _MiniStat
 
 class _OrderCard
     extends StatelessWidget {
+  final bool isArabic;
   final OrderModel order;
   final bool isLoading;
   final VoidCallback onCancel;
 
   const _OrderCard({
+    required this.isArabic,
     required this.order,
     required this.isLoading,
     required this.onCancel,
@@ -960,7 +1047,9 @@ class _OrderCard
                           .start,
                   children: [
                     Text(
-                      'Order #${_shortOrderId(order.id)}',
+                      isArabic
+                          ? 'طلب رقم #${_shortOrderId(order.id)}'
+                          : 'Order #${_shortOrderId(order.id)}',
                       style:
                           const TextStyle(
                         color:
@@ -1006,6 +1095,7 @@ class _OrderCard
                 width: 10,
               ),
               _StatusBadge(
+                isArabic: isArabic,
                 status:
                     order.status,
               ),
@@ -1046,6 +1136,7 @@ class _OrderCard
                       .map(
                 (item) {
                   return _OrderItemRow(
+                    isArabic: isArabic,
                     item: item,
                   );
                 },
@@ -1057,8 +1148,8 @@ class _OrderCard
           ),
           Row(
             children: [
-              const Text(
-                'Total',
+              Text(
+                isArabic ? 'الإجمالي' : 'Total',
                 style:
                     TextStyle(
                   color:
@@ -1100,9 +1191,10 @@ class _OrderCard
                     const Icon(
                   Icons.cancel_outlined,
                 ),
-                label:
-                    const Text(
-                  'Cancel Order',
+                label: Text(
+                  isArabic
+                      ? 'إلغاء الطلب'
+                      : 'Cancel Order',
                 ),
                 style:
                     OutlinedButton.styleFrom(
@@ -1195,9 +1287,11 @@ class _OrderCard
 
 class _OrderItemRow
     extends StatelessWidget {
+  final bool isArabic;
   final OrderItemModel item;
 
   const _OrderItemRow({
+    required this.isArabic,
     required this.item,
   });
 
@@ -1206,9 +1300,9 @@ class _OrderItemRow
     BuildContext context,
   ) {
     final productName =
-        item.product.name.isEmpty
-            ? 'Product'
-            : item.product.name;
+        item.product.localizedName(
+      isArabic,
+    );
 
     final unit =
         item.product.unit.isEmpty
@@ -1276,7 +1370,9 @@ class _OrderItemRow
                   height: 4,
                 ),
                 Text(
-                  'Quantity: ${item.quantity}$unit',
+                  isArabic
+                      ? 'الكمية: ${item.quantity}$unit'
+                      : 'Quantity: ${item.quantity}$unit',
                   style:
                       const TextStyle(
                     color:
@@ -1308,9 +1404,11 @@ class _OrderItemRow
 
 class _StatusBadge
     extends StatelessWidget {
+  final bool isArabic;
   final String status;
 
   const _StatusBadge({
+    required this.isArabic,
     required this.status,
   });
 
@@ -1359,6 +1457,7 @@ class _StatusBadge
           Text(
             _statusLabel(
               status,
+              isArabic,
             ),
             style: TextStyle(
               color: color,
@@ -1442,27 +1541,30 @@ class _StatusBadge
 
   String _statusLabel(
     String value,
+    bool isArabic,
   ) {
     switch (value) {
       case 'CONFIRMED':
-        return 'Confirmed';
+        return isArabic ? 'مؤكد' : 'Confirmed';
       case 'COMPLETED':
-        return 'Completed';
+        return isArabic ? 'مكتمل' : 'Completed';
       case 'CANCELLED':
-        return 'Cancelled';
+        return isArabic ? 'ملغي' : 'Cancelled';
       case 'PENDING':
       default:
-        return 'Pending';
+        return isArabic ? 'قيد الانتظار' : 'Pending';
     }
   }
 }
 
 class _EmptyOrdersView
     extends StatelessWidget {
+  final bool isArabic;
   final Future<void> Function()
       onRefresh;
 
   const _EmptyOrdersView({
+    required this.isArabic,
     required this.onRefresh,
   });
 
@@ -1527,22 +1629,24 @@ class _EmptyOrdersView
                 ],
               ),
               child:
-                  const Column(
+                  Column(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons
                         .receipt_long_outlined,
                     size: 72,
                     color:
                         _ordersPrimaryGreen,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
                   Text(
-                    'No orders yet',
+                    isArabic
+                        ? 'لا توجد طلبات بعد'
+                        : 'No orders yet',
                     style:
-                        TextStyle(
+                        const TextStyle(
                       color:
                           _ordersTextPrimary,
                       fontSize: 21,
@@ -1550,15 +1654,17 @@ class _EmptyOrdersView
                           FontWeight.w800,
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 8,
                   ),
                   Text(
-                    'Your orders will appear here after you complete a purchase.',
+                    isArabic
+                        ? 'ستظهر طلباتك هنا بعد إتمام عملية شراء.'
+                        : 'Your orders will appear here after you complete a purchase.',
                     textAlign:
                         TextAlign.center,
                     style:
-                        TextStyle(
+                        const TextStyle(
                       color:
                           _ordersTextSecondary,
                       fontSize: 14,
@@ -1577,11 +1683,13 @@ class _EmptyOrdersView
 
 class _ErrorView
     extends StatelessWidget {
+  final bool isArabic;
   final String message;
   final Future<void> Function()
       onRetry;
 
   const _ErrorView({
+    required this.isArabic,
     required this.message,
     required this.onRetry,
   });
@@ -1675,9 +1783,10 @@ class _ErrorView
                     const Icon(
                   Icons.refresh_rounded,
                 ),
-                label:
-                    const Text(
-                  'Try Again',
+                label: Text(
+                  isArabic
+                      ? 'حاول مرة أخرى'
+                      : 'Try Again',
                 ),
               ),
             ],

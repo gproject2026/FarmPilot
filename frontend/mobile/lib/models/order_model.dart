@@ -112,13 +112,21 @@ class OrderProduct {
   final String id;
   final String farmerId;
   final String categoryId;
+
   final String name;
+  final String? nameEn;
+  final String? nameAr;
+
   final String description;
+  final String? descriptionEn;
+  final String? descriptionAr;
+
   final double price;
   final int quantity;
   final String unit;
   final String? imageUrl;
   final String status;
+
   final OrderFarmer farmer;
   final OrderCategory category;
 
@@ -127,7 +135,11 @@ class OrderProduct {
     required this.farmerId,
     required this.categoryId,
     required this.name,
+    this.nameEn,
+    this.nameAr,
     required this.description,
+    this.descriptionEn,
+    this.descriptionAr,
     required this.price,
     required this.quantity,
     required this.unit,
@@ -143,7 +155,11 @@ class OrderProduct {
       farmerId: json['farmerId']?.toString() ?? '',
       categoryId: json['categoryId']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
+      nameEn: json['nameEn']?.toString(),
+      nameAr: json['nameAr']?.toString(),
       description: json['description']?.toString() ?? '',
+      descriptionEn: json['descriptionEn']?.toString(),
+      descriptionAr: json['descriptionAr']?.toString(),
       price: double.tryParse(json['price'].toString()) ?? 0.0,
       quantity: int.tryParse(json['quantity'].toString()) ?? 0,
       unit: json['unit']?.toString() ?? '',
@@ -156,6 +172,23 @@ class OrderProduct {
         json['category'] as Map<String, dynamic>? ?? {},
       ),
     );
+  }
+
+  String localizedName(bool isArabic) {
+    final preferred =
+        isArabic ? nameAr?.trim() : nameEn?.trim();
+
+    if (preferred != null && preferred.isNotEmpty) {
+      return preferred;
+    }
+
+    final fallback = name.trim();
+
+    if (fallback.isNotEmpty) {
+      return fallback;
+    }
+
+    return isArabic ? 'منتج' : 'Product';
   }
 }
 
@@ -185,19 +218,31 @@ class OrderFarmer {
 class OrderCategory {
   final String id;
   final String name;
+  final String? nameEn;
+  final String? nameAr;
   final String description;
+  final String? descriptionEn;
+  final String? descriptionAr;
 
   OrderCategory({
     required this.id,
     required this.name,
+    this.nameEn,
+    this.nameAr,
     required this.description,
+    this.descriptionEn,
+    this.descriptionAr,
   });
 
   factory OrderCategory.fromJson(Map<String, dynamic> json) {
     return OrderCategory(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
+      nameEn: json['nameEn']?.toString(),
+      nameAr: json['nameAr']?.toString(),
       description: json['description']?.toString() ?? '',
+      descriptionEn: json['descriptionEn']?.toString(),
+      descriptionAr: json['descriptionAr']?.toString(),
     );
   }
 }

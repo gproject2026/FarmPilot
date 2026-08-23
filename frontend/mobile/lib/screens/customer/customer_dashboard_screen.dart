@@ -363,17 +363,67 @@ class _CustomerDashboardScreenState
                 ),
               ),
             ),
-            _HeaderIconButton(
-              icon:
-                  Icons.language_rounded,
-              onTap: () {
-                _showLanguageMenu(
-                  isArabic:
-                      isArabic,
-                  l10n:
-                      l10n,
-                );
+            PopupMenuButton<String>(
+              tooltip: '',
+              offset: const Offset(0, 50),
+              color: Colors.white,
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              onSelected: (languageCode) {
+                _changeLanguage(languageCode);
               },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'en',
+                  child: Row(
+                    children: [
+                      if (!isArabic) ...[
+                        const Icon(
+                          Icons.check_rounded,
+                          color: _primaryGreen,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      Text(l10n.english),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'ar',
+                  child: Row(
+                    children: [
+                      if (isArabic) ...[
+                        const Icon(
+                          Icons.check_rounded,
+                          color: _primaryGreen,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      Text(l10n.arabic),
+                    ],
+                  ),
+                ),
+              ],
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(
+                    alpha: 0.10,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.language_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
             ),
             const SizedBox(
               width:
@@ -1052,82 +1102,7 @@ class _CustomerDashboardScreenState
     );
   }
 
-  void _showLanguageMenu({
-    required bool isArabic,
-    required AppLocalizations l10n,
-  }) {
-    showModalBottomSheet<void>(
-      context:
-          context,
-      showDragHandle:
-          true,
-      builder:
-          (sheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding:
-                const EdgeInsets.all(
-              20,
-            ),
-            child: Column(
-              mainAxisSize:
-                  MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading:
-                      Icon(
-                    Icons.check,
-                    color:
-                        !isArabic
-                            ? _primaryGreen
-                            : Colors
-                                .transparent,
-                  ),
-                  title:
-                      Text(
-                    l10n.english,
-                  ),
-                  onTap: () {
-                    Navigator.pop(
-                      sheetContext,
-                    );
 
-                    _changeLanguage(
-                      'en',
-                    );
-                  },
-                ),
-                ListTile(
-                  leading:
-                      Icon(
-                    Icons.check,
-                    color:
-                        isArabic
-                            ? _primaryGreen
-                            : Colors
-                                .transparent,
-                  ),
-                  title:
-                      Text(
-                    l10n.arabic,
-                  ),
-                  onTap: () {
-                    Navigator.pop(
-                      sheetContext,
-                    );
-
-                    _changeLanguage(
-                      'ar',
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
 
 class _HeaderIconButton
