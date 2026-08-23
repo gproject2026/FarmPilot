@@ -827,6 +827,22 @@ class _NotificationCard
 
   @override
   Widget build(BuildContext context) {
+    final authProvider =
+        Provider.of<AuthProvider>(
+      context,
+      listen: false,
+    );
+
+    final role =
+        authProvider.userData?['role']
+                ?.toString()
+                .trim()
+                .toUpperCase() ??
+            '';
+
+    final isCustomer =
+        role == 'CUSTOMER';
+
     final id =
         notification['id']?.toString() ?? '';
 
@@ -852,17 +868,31 @@ class _NotificationCard
             ?.toString()
             .trim();
 
+    final customerFallbackTitle =
+        isArabic && isCustomer
+            ? _legacyCustomerTitleArabic(
+                fallbackTitle,
+              )
+            : fallbackTitle;
+
+    final customerFallbackMessage =
+        isArabic && isCustomer
+            ? _legacyCustomerMessageArabic(
+                fallbackMessage,
+              )
+            : fallbackMessage;
+
     final title =
         localizedTitle != null &&
                 localizedTitle.isNotEmpty
             ? localizedTitle
-            : fallbackTitle;
+            : customerFallbackTitle;
 
     final message =
         localizedMessage != null &&
                 localizedMessage.isNotEmpty
             ? localizedMessage
-            : fallbackMessage;
+            : customerFallbackMessage;
 
     final type =
         notification['type']?.toString() ?? '';
@@ -1230,6 +1260,71 @@ class _NotificationCard
         ),
       ),
     );
+  }
+
+  String _legacyCustomerTitleArabic(
+    String title,
+  ) {
+    final normalized =
+        title.trim().toLowerCase();
+
+    const translations =
+        <String, String>{
+      'new order': 'طلب جديد',
+      'order confirmed': 'تم تأكيد الطلب',
+      'order completed': 'تم إكمال الطلب',
+      'order cancelled': 'تم إلغاء الطلب',
+      'order canceled': 'تم إلغاء الطلب',
+      'order pending': 'الطلب قيد الانتظار',
+      'new review': 'تقييم جديد',
+      'irrigation reminder': 'تذكير بالري',
+      'fertilization reminder': 'تذكير بالتسميد',
+      'reminder': 'تذكير',
+      'notification': 'إشعار',
+    };
+
+    return translations[normalized] ??
+        title;
+  }
+
+  String _legacyCustomerMessageArabic(
+    String message,
+  ) {
+    final normalized =
+        message.trim().toLowerCase();
+
+    const exactTranslations =
+        <String, String>{
+      'you have received a new order.':
+          'لقد استلمت طلبًا جديدًا.',
+      'you have received a new order':
+          'لقد استلمت طلبًا جديدًا.',
+      'your order has been confirmed by the farmer.':
+          'تم تأكيد طلبك من قبل المزارع.',
+      'your order has been confirmed by the farmer':
+          'تم تأكيد طلبك من قبل المزارع.',
+      'your order has been completed successfully.':
+          'تم إكمال طلبك بنجاح.',
+      'your order has been completed successfully':
+          'تم إكمال طلبك بنجاح.',
+      'your order has been cancelled.':
+          'تم إلغاء طلبك.',
+      'your order has been cancelled':
+          'تم إلغاء طلبك.',
+      'your order has been canceled.':
+          'تم إلغاء طلبك.',
+      'your order has been canceled':
+          'تم إلغاء طلبك.',
+    };
+
+    final exact =
+        exactTranslations[normalized];
+
+    if (exact != null) {
+      return exact;
+    }
+
+    return message;
   }
 
   IconData _getNotificationIcon(

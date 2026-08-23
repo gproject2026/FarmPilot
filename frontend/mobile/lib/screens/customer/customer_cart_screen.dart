@@ -5,6 +5,7 @@ import '../../core/constants/app_constants.dart';
 import '../../models/cart_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../providers/order_provider.dart';
 import 'customer_orders_screen.dart';
 
@@ -15,6 +16,84 @@ const Color _cartBackground = Color(0xFFF8FAF4);
 const Color _cartTextPrimary = Color(0xFF1D2C21);
 const Color _cartTextSecondary = Color(0xFF68756B);
 
+String _localizedCartProductName(
+  String name,
+  bool isArabic,
+) {
+  if (!isArabic) {
+    return name;
+  }
+
+  final key =
+      name.trim().toLowerCase();
+
+  const translations = <String, String>{
+    'orange': 'برتقال',
+    'fresh mint': 'نعناع طازج',
+    'fresh parsley': 'بقدونس طازج',
+    'fresh rosemary': 'إكليل الجبل الطازج',
+    'mountain sidr honey': 'عسل سدر جبلي',
+    'watermelon': 'بطيخ',
+    'cabbage': 'ملفوف',
+    'apples': 'تفاح',
+    'apple': 'تفاح',
+    'limon': 'ليمون',
+    'lemon': 'ليمون',
+    'tomato': 'طماطم',
+    'tomatoes': 'طماطم',
+    'strawberry': 'فراولة',
+    'strawberries': 'فراولة',
+    'cauliflower': 'قرنبيط',
+    'carrots': 'جزر',
+    'carrot': 'جزر',
+    'cucumber': 'خيار',
+    'cucumbers': 'خيار',
+    'lettuce': 'خس',
+    'potato': 'بطاطا',
+    'potatoes': 'بطاطا',
+    'onion': 'بصل',
+    'onions': 'بصل',
+    'garlic': 'ثوم',
+    'pepper': 'فلفل',
+    'peppers': 'فلفل',
+    'corn': 'ذرة',
+    'grapes': 'عنب',
+    'grape': 'عنب',
+  };
+
+  return translations[key] ?? name;
+}
+
+String _localizedCartUnit(
+  String unit,
+  bool isArabic,
+) {
+  if (!isArabic) {
+    return unit;
+  }
+
+  switch (unit.trim().toLowerCase()) {
+    case 'kg':
+      return 'كغ';
+    case 'g':
+    case 'gram':
+    case 'grams':
+      return 'غ';
+    case 'l':
+    case 'liter':
+    case 'litre':
+      return 'لتر';
+    case 'piece':
+    case 'pieces':
+    case 'pc':
+    case 'pcs':
+      return 'قطعة';
+    default:
+      return unit;
+  }
+}
+
+
 class CustomerCartScreen extends StatelessWidget {
   const CustomerCartScreen({super.key});
 
@@ -22,6 +101,11 @@ class CustomerCartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
     final orderProvider = Provider.of<OrderProvider>(context);
+
+    final isArabic =
+        Localizations.localeOf(context)
+                .languageCode ==
+            'ar';
 
     return Scaffold(
       backgroundColor: _cartBackground,
@@ -36,12 +120,15 @@ class CustomerCartScreen extends StatelessWidget {
                   context: context,
                   cartProvider: cartProvider,
                   orderProvider: orderProvider,
+                  isArabic: isArabic,
                 ),
               ),
               if (cartProvider.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
-                  child: _EmptyCart(),
+                  child: _EmptyCart(
+                    isArabic: isArabic,
+                  ),
                 )
               else
                 SliverToBoxAdapter(
@@ -65,12 +152,14 @@ class CustomerCartScreen extends StatelessWidget {
                                     child: _buildItemsSection(
                                       cartProvider: cartProvider,
                                       orderProvider: orderProvider,
+                                      isArabic: isArabic,
                                     ),
                                   ),
                                   const SizedBox(width: 24),
                                   SizedBox(
                                     width: 360,
                                     child: _CartSummary(
+                                      isArabic: isArabic,
                                       totalQuantity: cartProvider.totalQuantity,
                                       totalPrice: cartProvider.totalPrice,
                                       isLoading: orderProvider.isLoading,
@@ -84,9 +173,11 @@ class CustomerCartScreen extends StatelessWidget {
                                   _buildItemsSection(
                                     cartProvider: cartProvider,
                                     orderProvider: orderProvider,
+                                    isArabic: isArabic,
                                   ),
                                   const SizedBox(height: 20),
                                   _CartSummary(
+                                    isArabic: isArabic,
                                     totalQuantity: cartProvider.totalQuantity,
                                     totalPrice: cartProvider.totalPrice,
                                     isLoading: orderProvider.isLoading,
@@ -109,6 +200,7 @@ class CustomerCartScreen extends StatelessWidget {
     required BuildContext context,
     required CartProvider cartProvider,
     required OrderProvider orderProvider,
+    required bool isArabic,
   }) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
@@ -136,7 +228,7 @@ class CustomerCartScreen extends StatelessWidget {
           children: [
             _HeaderButton(
               icon: Icons.arrow_back_rounded,
-              tooltip: 'Back',
+              tooltip: isArabic ? 'رجوع' : 'Back',
               onTap: () => Navigator.pop(context),
             ),
             const SizedBox(width: 12),
@@ -154,11 +246,11 @@ class CustomerCartScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'FarmPilot',
                     style: TextStyle(
                       color: Colors.white,
@@ -168,8 +260,8 @@ class CustomerCartScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 2),
                   Text(
-                    'Shopping Cart',
-                    style: TextStyle(
+                    isArabic ? 'سلة التسوق' : 'Shopping Cart',
+                    style: const TextStyle(
                       color: Color(0xCCFFFFFF),
                       fontSize: 12,
                     ),
@@ -177,10 +269,93 @@ class CustomerCartScreen extends StatelessWidget {
                 ],
               ),
             ),
+            PopupMenuButton<String>(
+              tooltip:
+                  isArabic
+                      ? 'تغيير اللغة'
+                      : 'Change Language',
+              offset: const Offset(0, 48),
+              position: PopupMenuPosition.under,
+              color: const Color(0xFFF8FAF4),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              onSelected: (languageCode) {
+                Provider.of<LocaleProvider>(
+                  context,
+                  listen: false,
+                ).setLocale(
+                  Locale(languageCode),
+                );
+              },
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _cartPrimaryGreen
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          isArabic
+                              ? 'الإنجليزية'
+                              : 'English',
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _cartPrimaryGreen
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          isArabic
+                              ? 'العربية'
+                              : 'Arabic',
+                        ),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color:
+                      Colors.white.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.language_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             if (!cartProvider.isEmpty)
               _HeaderButton(
                 icon: Icons.delete_sweep_outlined,
-                tooltip: 'Clear cart',
+                tooltip: isArabic ? 'تفريغ السلة' : 'Clear cart',
                 onTap: orderProvider.isLoading
                     ? null
                     : () => _showClearCartDialog(
@@ -197,15 +372,19 @@ class CustomerCartScreen extends StatelessWidget {
   Widget _buildItemsSection({
     required CartProvider cartProvider,
     required OrderProvider orderProvider,
+    required bool isArabic,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeading(
+        _SectionHeading(
           icon: Icons.shopping_cart_outlined,
-          title: 'Your Cart',
+          title:
+              isArabic ? 'سلتك' : 'Your Cart',
           subtitle:
-              'Review your products and adjust quantities before checkout.',
+              isArabic
+                  ? 'راجع منتجاتك وعدّل الكميات قبل إتمام الشراء.'
+                  : 'Review your products and adjust quantities before checkout.',
         ),
         const SizedBox(height: 16),
         ...List.generate(
@@ -220,6 +399,7 @@ class CustomerCartScreen extends StatelessWidget {
               ),
               child: _CartItemCard(
                 item: item,
+                isArabic: isArabic,
                 isLoading: orderProvider.isLoading,
               ),
             );
@@ -230,6 +410,9 @@ class CustomerCartScreen extends StatelessWidget {
   }
 
   Future<void> _checkout(BuildContext context) async {
+    final isArabic =
+        Localizations.localeOf(context).languageCode == 'ar';
+
     final authProvider = Provider.of<AuthProvider>(
       context,
       listen: false,
@@ -249,9 +432,11 @@ class CustomerCartScreen extends StatelessWidget {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'You must log in before creating an order',
+              isArabic
+                  ? 'يجب تسجيل الدخول قبل إنشاء طلب'
+                  : 'You must log in before creating an order',
             ),
             backgroundColor: Colors.red,
           ),
@@ -263,8 +448,12 @@ class CustomerCartScreen extends StatelessWidget {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
-            content: Text('Your cart is empty'),
+          SnackBar(
+            content: Text(
+              isArabic
+                  ? 'سلة التسوق فارغة'
+                  : 'Your cart is empty',
+            ),
           ),
         );
       return;
@@ -294,8 +483,12 @@ class CustomerCartScreen extends StatelessWidget {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
-            content: Text('Order created successfully'),
+          SnackBar(
+            content: Text(
+              isArabic
+                  ? 'تم إنشاء الطلب بنجاح'
+                  : 'Order created successfully',
+            ),
             backgroundColor: _cartPrimaryGreen,
           ),
         );
@@ -312,7 +505,9 @@ class CustomerCartScreen extends StatelessWidget {
           SnackBar(
             content: Text(
               orderProvider.errorMessage ??
-                  'Failed to create order',
+                  (isArabic
+                      ? 'فشل إنشاء الطلب'
+                      : 'Failed to create order'),
             ),
             backgroundColor: Colors.red,
           ),
@@ -327,31 +522,41 @@ class CustomerCartScreen extends StatelessWidget {
     final result = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final isArabic =
+            Localizations.localeOf(context).languageCode == 'ar';
+
         return AlertDialog(
           backgroundColor: const Color(0xFFFFFEFA),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.shopping_bag_outlined,
                 color: _cartPrimaryGreen,
               ),
-              SizedBox(width: 10),
-              Text('Confirm Order'),
+              const SizedBox(width: 10),
+              Text(
+                isArabic
+                    ? 'تأكيد الطلب'
+                    : 'Confirm Order',
+              ),
             ],
           ),
           content: Text(
-            'Create this order with a total of '
-            '${totalPrice.toStringAsFixed(2)} ₪?',
+            isArabic
+                ? 'هل تريد إنشاء هذا الطلب بإجمالي '
+                    '${totalPrice.toStringAsFixed(2)} ₪؟'
+                : 'Create this order with a total of '
+                    '${totalPrice.toStringAsFixed(2)} ₪?',
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop(false);
               },
-              child: const Text('Cancel'),
+              child: Text(isArabic ? 'إلغاء' : 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -365,7 +570,7 @@ class CustomerCartScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Create Order'),
+              child: Text(isArabic ? 'إنشاء الطلب' : 'Create Order'),
             ),
           ],
         );
@@ -382,39 +587,50 @@ class CustomerCartScreen extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
+        final isArabic =
+            Localizations.localeOf(context)
+                    .languageCode ==
+                'ar';
+
         return AlertDialog(
           backgroundColor: const Color(0xFFFFFEFA),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.delete_sweep_outlined,
                 color: Colors.red,
               ),
-              SizedBox(width: 10),
-              Text('Clear Cart'),
+              const SizedBox(width: 10),
+              Text(
+                isArabic
+                    ? 'تفريغ السلة'
+                    : 'Clear Cart',
+              ),
             ],
           ),
-          content: const Text(
-            'Are you sure you want to remove all products from the cart?',
+          content: Text(
+            isArabic
+                ? 'هل أنت متأكد من إزالة جميع المنتجات من السلة؟'
+                : 'Are you sure you want to remove all products from the cart?',
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
-              child: const Text('Cancel'),
+              child: Text(isArabic ? 'إلغاء' : 'Cancel'),
             ),
             TextButton(
               onPressed: () {
                 cartProvider.clearCart();
                 Navigator.of(dialogContext).pop();
               },
-              child: const Text(
-                'Clear',
-                style: TextStyle(
+              child: Text(
+                isArabic ? 'تفريغ' : 'Clear',
+                style: const TextStyle(
                   color: Colors.red,
                 ),
               ),
@@ -526,10 +742,12 @@ class _SectionHeading extends StatelessWidget {
 
 class _CartItemCard extends StatelessWidget {
   final CartItem item;
+  final bool isArabic;
   final bool isLoading;
 
   const _CartItemCard({
     required this.item,
+    required this.isArabic,
     required this.isLoading,
   });
 
@@ -581,7 +799,20 @@ class _CartItemCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _ProductInfo(item: item),
+                      child: _ProductInfo(
+                        item: item,
+                        isArabic: isArabic,
+                        displayName:
+                            _localizedCartProductName(
+                          item.name,
+                          isArabic,
+                        ),
+                        displayUnit:
+                            _localizedCartUnit(
+                          item.unit,
+                          isArabic,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -604,7 +835,20 @@ class _CartItemCard extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _ProductInfo(item: item),
+                child: _ProductInfo(
+                  item: item,
+                  isArabic: isArabic,
+                  displayName:
+                      _localizedCartProductName(
+                    item.name,
+                    isArabic,
+                  ),
+                  displayUnit:
+                      _localizedCartUnit(
+                    item.unit,
+                    isArabic,
+                  ),
+                ),
               ),
               const SizedBox(width: 18),
               SizedBox(
@@ -671,7 +915,7 @@ class _CartItemCard extends StatelessWidget {
                     item.productId,
                   );
                 },
-          tooltip: 'Remove product',
+          tooltip: isArabic ? 'إزالة المنتج' : 'Remove product',
           style: IconButton.styleFrom(
             backgroundColor: const Color(0xFFFCE7E7),
             foregroundColor: const Color(0xFFB44F4F),
@@ -687,9 +931,15 @@ class _CartItemCard extends StatelessWidget {
 
 class _ProductInfo extends StatelessWidget {
   final CartItem item;
+  final bool isArabic;
+  final String displayName;
+  final String displayUnit;
 
   const _ProductInfo({
     required this.item,
+    required this.isArabic,
+    required this.displayName,
+    required this.displayUnit,
   });
 
   @override
@@ -698,7 +948,7 @@ class _ProductInfo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          item.name,
+          displayName,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -710,7 +960,7 @@ class _ProductInfo extends StatelessWidget {
         const SizedBox(height: 7),
         Text(
           '${item.price.toStringAsFixed(2)} ₪'
-          '${item.unit.isEmpty ? '' : ' / ${item.unit}'}',
+          '${displayUnit.isEmpty ? '' : ' / $displayUnit'}',
           style: const TextStyle(
             color: _cartTextSecondary,
             fontSize: 13,
@@ -727,7 +977,7 @@ class _ProductInfo extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
           ),
           child: Text(
-            'Subtotal: '
+            '${isArabic ? 'المجموع الفرعي' : 'Subtotal'}: '
             '${item.totalPrice.toStringAsFixed(2)} ₪',
             style: const TextStyle(
               color: _cartPrimaryGreen,
@@ -856,12 +1106,14 @@ class _QuantityButton extends StatelessWidget {
 }
 
 class _CartSummary extends StatelessWidget {
+  final bool isArabic;
   final int totalQuantity;
   final double totalPrice;
   final bool isLoading;
   final VoidCallback onCheckout;
 
   const _CartSummary({
+    required this.isArabic,
     required this.totalQuantity,
     required this.totalPrice,
     required this.isLoading,
@@ -896,17 +1148,17 @@ class _CartSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.receipt_long_outlined,
                 color: _cartPrimaryGreen,
                 size: 22,
               ),
-              SizedBox(width: 9),
+              const SizedBox(width: 9),
               Text(
-                'Order Summary',
-                style: TextStyle(
+                isArabic ? 'ملخص الطلب' : 'Order Summary',
+                style: const TextStyle(
                   color: _cartTextPrimary,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -916,7 +1168,7 @@ class _CartSummary extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _SummaryRow(
-            label: 'Total products',
+            label: isArabic ? 'إجمالي المنتجات' : 'Total products',
             value: totalQuantity.toString(),
           ),
           const SizedBox(height: 12),
@@ -925,7 +1177,7 @@ class _CartSummary extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _SummaryRow(
-            label: 'Total price',
+            label: isArabic ? 'السعر الإجمالي' : 'Total price',
             value: '${totalPrice.toStringAsFixed(2)} ₪',
             emphasize: true,
           ),
@@ -959,8 +1211,12 @@ class _CartSummary extends StatelessWidget {
                     ),
               label: Text(
                 isLoading
-                    ? 'Creating Order...'
-                    : 'Checkout',
+                    ? (isArabic
+                        ? 'جارٍ إنشاء الطلب...'
+                        : 'Creating Order...')
+                    : (isArabic
+                        ? 'إتمام الشراء'
+                        : 'Checkout'),
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                 ),
@@ -1018,7 +1274,11 @@ class _SummaryRow extends StatelessWidget {
 }
 
 class _EmptyCart extends StatelessWidget {
-  const _EmptyCart();
+  final bool isArabic;
+
+  const _EmptyCart({
+    required this.isArabic,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1061,19 +1321,23 @@ class _EmptyCart extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 18),
-              const Text(
-                'Your cart is empty',
-                style: TextStyle(
+              Text(
+                isArabic
+                    ? 'سلة التسوق فارغة'
+                    : 'Your cart is empty',
+                style: const TextStyle(
                   color: _cartTextPrimary,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Add products from the marketplace to create an order.',
+              Text(
+                isArabic
+                    ? 'أضف منتجات من السوق لإنشاء طلب.'
+                    : 'Add products from the marketplace to create an order.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: _cartTextSecondary,
                   fontSize: 14,
                   height: 1.5,
@@ -1099,8 +1363,10 @@ class _EmptyCart extends StatelessWidget {
                 icon: const Icon(
                   Icons.storefront_outlined,
                 ),
-                label: const Text(
-                  'Back to Marketplace',
+                label: Text(
+                  isArabic
+                      ? 'العودة إلى السوق'
+                      : 'Back to Marketplace',
                 ),
               ),
             ],
