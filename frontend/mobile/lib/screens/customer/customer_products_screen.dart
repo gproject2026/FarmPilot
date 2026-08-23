@@ -6,6 +6,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../models/cart_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/favorite_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../providers/product_provider.dart';
 import 'customer_cart_screen.dart';
 import 'customer_favorites_screen.dart';
@@ -104,6 +105,367 @@ class _CustomerProductsScreenState
     );
   }
 
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
+
+  String _localizedProductName(
+    Map<String, dynamic> product,
+    bool isArabic,
+  ) {
+    final name =
+        product['name']?.toString().trim() ?? '';
+    final nameEn =
+        product['nameEn']?.toString().trim() ?? '';
+    final nameAr =
+        product['nameAr']?.toString().trim() ?? '';
+
+    if (isArabic) {
+      if (nameAr.isNotEmpty) {
+        return nameAr;
+      }
+
+      if (name.isNotEmpty) {
+        return name;
+      }
+
+      if (nameEn.isNotEmpty) {
+        return nameEn;
+      }
+
+      return 'منتج';
+    }
+
+    if (nameEn.isNotEmpty) {
+      return nameEn;
+    }
+
+    if (name.isNotEmpty) {
+      return name;
+    }
+
+    if (nameAr.isNotEmpty) {
+      return nameAr;
+    }
+
+    return 'Product';
+  }
+
+  String _localizedDescription(
+    Map<String, dynamic> product,
+    bool isArabic,
+  ) {
+    final description =
+        product['description']
+                ?.toString()
+                .trim() ??
+            '';
+    final descriptionEn =
+        product['descriptionEn']
+                ?.toString()
+                .trim() ??
+            '';
+    final descriptionAr =
+        product['descriptionAr']
+                ?.toString()
+                .trim() ??
+            '';
+
+    if (isArabic) {
+      if (descriptionAr.isNotEmpty) {
+        return descriptionAr;
+      }
+
+      if (description.isNotEmpty) {
+        return description;
+      }
+
+      return descriptionEn;
+    }
+
+    if (descriptionEn.isNotEmpty) {
+      return descriptionEn;
+    }
+
+    if (description.isNotEmpty) {
+      return description;
+    }
+
+    return descriptionAr;
+  }
+
+  String _localizedCategoryName(
+    dynamic category,
+    bool isArabic,
+  ) {
+    if (category is! Map) {
+      return '';
+    }
+
+    final name =
+        category['name']?.toString().trim() ?? '';
+    final nameEn =
+        category['nameEn']?.toString().trim() ?? '';
+    final nameAr =
+        category['nameAr']?.toString().trim() ?? '';
+
+    if (isArabic) {
+      if (nameAr.isNotEmpty) {
+        return nameAr;
+      }
+
+      if (name.isNotEmpty) {
+        return name;
+      }
+
+      return nameEn;
+    }
+
+    if (nameEn.isNotEmpty) {
+      return nameEn;
+    }
+
+    if (name.isNotEmpty) {
+      return name;
+    }
+
+    return nameAr;
+  }
+
+  String _resolveImageUrl(
+    String imageUrl,
+  ) {
+    final trimmedUrl =
+        imageUrl.trim();
+
+    if (trimmedUrl.isEmpty) {
+      return '';
+    }
+
+    if (trimmedUrl.startsWith(
+          'http://localhost:3000',
+        ) ||
+        trimmedUrl.startsWith(
+          'http://127.0.0.1:3000',
+        )) {
+      return trimmedUrl.replaceFirst(
+        RegExp(
+          r'http://(localhost|127\.0\.0\.1):3000',
+        ),
+        AppConstants.baseUrl,
+      );
+    }
+
+    if (trimmedUrl.startsWith(
+          'http://',
+        ) ||
+        trimmedUrl.startsWith(
+          'https://',
+        )) {
+      return trimmedUrl;
+    }
+
+    final normalizedPath =
+        trimmedUrl.startsWith('/')
+            ? trimmedUrl
+            : '/$trimmedUrl';
+
+    return '${AppConstants.baseUrl}$normalizedPath';
+  }
+
+  Future<void> _openImagePreview({
+    required String imageUrl,
+    required String productName,
+  }) async {
+    final isArabic =
+        Localizations.localeOf(context)
+                .languageCode ==
+            'ar';
+
+    await showDialog<void>(
+      context: context,
+      barrierColor:
+          Colors.black.withValues(
+        alpha: 0.82,
+      ),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor:
+              Colors.transparent,
+          insetPadding:
+              const EdgeInsets.all(
+            24,
+          ),
+          child: Container(
+            constraints:
+                const BoxConstraints(
+              maxWidth: 1100,
+              maxHeight: 760,
+            ),
+            decoration:
+                BoxDecoration(
+              color:
+                  const Color(
+                0xFF101410,
+              ),
+              borderRadius:
+                  BorderRadius.circular(
+                24,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color:
+                      Colors.black.withValues(
+                    alpha: 0.35,
+                  ),
+                  blurRadius:
+                      30,
+                  offset:
+                      const Offset(
+                    0,
+                    12,
+                  ),
+                ),
+              ],
+            ),
+            clipBehavior:
+                Clip.antiAlias,
+            child: Column(
+              mainAxisSize:
+                  MainAxisSize.min,
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.fromLTRB(
+                    20,
+                    16,
+                    12,
+                    12,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          productName,
+                          maxLines:
+                              1,
+                          overflow:
+                              TextOverflow.ellipsis,
+                          style:
+                              const TextStyle(
+                            color:
+                                Colors.white,
+                            fontSize:
+                                18,
+                            fontWeight:
+                                FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip:
+                            isArabic
+                                ? 'إغلاق'
+                                : 'Close',
+                        onPressed:
+                            () {
+                          Navigator.pop(
+                            dialogContext,
+                          );
+                        },
+                        style:
+                            IconButton.styleFrom(
+                          backgroundColor:
+                              Colors.white.withValues(
+                            alpha:
+                                0.10,
+                          ),
+                          foregroundColor:
+                              Colors.white,
+                        ),
+                        icon:
+                            const Icon(
+                          Icons.close_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child:
+                      InteractiveViewer(
+                    minScale:
+                        1,
+                    maxScale:
+                        4,
+                    child:
+                        Center(
+                      child:
+                          Image.network(
+                        imageUrl,
+                        fit:
+                            BoxFit.contain,
+                        errorBuilder:
+                            (
+                          context,
+                          error,
+                          stackTrace,
+                        ) {
+                          return const Padding(
+                            padding:
+                                EdgeInsets.all(
+                              48,
+                            ),
+                            child:
+                                Icon(
+                              Icons.broken_image_outlined,
+                              size:
+                                  72,
+                              color:
+                                  Colors.white70,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.fromLTRB(
+                    16,
+                    10,
+                    16,
+                    16,
+                  ),
+                  child: Text(
+                    isArabic
+                        ? 'استخدم التكبير والسحب لمعاينة الصورة.'
+                        : 'Pinch or drag to zoom and inspect the image.',
+                    style:
+                        const TextStyle(
+                      color:
+                          Colors.white70,
+                      fontSize:
+                          12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(
     BuildContext context,
@@ -149,6 +511,8 @@ class _CustomerProductsScreenState
                   child: _buildHeader(
                     l10n:
                         l10n,
+                    isArabic:
+                        isArabic,
                     cartProvider:
                         cartProvider,
                     productProvider:
@@ -230,11 +594,60 @@ class _CustomerProductsScreenState
                                 .products[index],
                           );
 
+                          final localizedName =
+                              _localizedProductName(
+                            product,
+                            isArabic,
+                          );
+
+                          final localizedDescription =
+                              _localizedDescription(
+                            product,
+                            isArabic,
+                          );
+
+                          final localizedCategoryName =
+                              _localizedCategoryName(
+                            product['category'],
+                            isArabic,
+                          );
+
+                          final rawImageUrl =
+                              product['imageUrl']
+                                  ?.toString();
+
+                          final resolvedImageUrl =
+                              rawImageUrl != null &&
+                                      rawImageUrl
+                                          .trim()
+                                          .isNotEmpty
+                                  ? _resolveImageUrl(
+                                      rawImageUrl,
+                                    )
+                                  : null;
+
                           return _ProductCard(
                             product:
                                 product,
                             isArabic:
                                 isArabic,
+                            localizedName:
+                                localizedName,
+                            localizedDescription:
+                                localizedDescription,
+                            localizedCategoryName:
+                                localizedCategoryName,
+                            onImageTap:
+                                resolvedImageUrl == null
+                                    ? null
+                                    : () {
+                                        _openImagePreview(
+                                          imageUrl:
+                                              resolvedImageUrl,
+                                          productName:
+                                              localizedName,
+                                        );
+                                      },
                           );
                         },
                         childCount:
@@ -253,6 +666,7 @@ class _CustomerProductsScreenState
 
   Widget _buildHeader({
     required AppLocalizations l10n,
+    required bool isArabic,
     required CartProvider cartProvider,
     required ProductProvider productProvider,
   }) {
@@ -403,6 +817,130 @@ class _CustomerProductsScreenState
                   ),
                 ],
               ),
+            ),
+            PopupMenuButton<String>(
+              tooltip:
+                  isArabic
+                      ? 'تغيير اللغة'
+                      : 'Change Language',
+              offset:
+                  const Offset(
+                0,
+                48,
+              ),
+              position:
+                  PopupMenuPosition.under,
+              color:
+                  const Color(
+                0xFFF8FAF4,
+              ),
+              elevation:
+                  8,
+              shape:
+                  RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                  16,
+                ),
+              ),
+              onSelected:
+                  _changeLanguage,
+              itemBuilder:
+                  (context) {
+                return [
+                  PopupMenuItem<String>(
+                    value:
+                        'en',
+                    child:
+                        Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size:
+                              20,
+                          color:
+                              !isArabic
+                                  ? _marketPrimaryGreen
+                                  : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width:
+                              10,
+                        ),
+                        Text(
+                          isArabic
+                              ? 'الإنجليزية'
+                              : 'English',
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value:
+                        'ar',
+                    child:
+                        Row(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size:
+                              20,
+                          color:
+                              isArabic
+                                  ? _marketPrimaryGreen
+                                  : Colors.transparent,
+                        ),
+                        const SizedBox(
+                          width:
+                              10,
+                        ),
+                        Text(
+                          isArabic
+                              ? 'العربية'
+                              : 'Arabic',
+                        ),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child:
+                  Container(
+                width:
+                    44,
+                height:
+                    44,
+                decoration:
+                    BoxDecoration(
+                  color:
+                      Colors.white.withValues(
+                    alpha:
+                        0.10,
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(
+                    14,
+                  ),
+                ),
+                alignment:
+                    Alignment.center,
+                child:
+                    const Icon(
+                  Icons.language_rounded,
+                  color:
+                      Colors.white,
+                  size:
+                      21,
+                ),
+              ),
+            ),
+            const SizedBox(
+              width:
+                  8,
             ),
             _HeaderActionButton(
               tooltip:
@@ -763,10 +1301,18 @@ class _ProductCard
     extends StatelessWidget {
   final Map<String, dynamic> product;
   final bool isArabic;
+  final String localizedName;
+  final String localizedDescription;
+  final String localizedCategoryName;
+  final VoidCallback? onImageTap;
 
   const _ProductCard({
     required this.product,
     required this.isArabic,
+    required this.localizedName,
+    required this.localizedDescription,
+    required this.localizedCategoryName,
+    required this.onImageTap,
   });
 
   @override
@@ -777,15 +1323,10 @@ class _ProductCard
         AppLocalizations.of(context)!;
 
     final name =
-        product['name']?.toString() ??
-            (isArabic
-                ? 'منتج'
-                : 'Product');
+        localizedName;
 
     final description =
-        product['description']
-                ?.toString() ??
-            '';
+        localizedDescription;
 
     final unit =
         product['unit']?.toString() ??
@@ -821,11 +1362,7 @@ class _ProductCard
             '';
 
     final categoryName =
-        product['category'] is Map
-            ? product['category']['name']
-                    ?.toString() ??
-                ''
-            : '';
+        localizedCategoryName;
 
     final farmerName =
         product['farmer'] is Map
@@ -935,51 +1472,99 @@ class _ProductCard
                     width:
                         double.infinity,
                     child:
-                        Container(
+                        Material(
                       color:
                           const Color(
                         0xFFF0F5EB,
                       ),
                       child:
-                          imageUrl != null &&
-                                  imageUrl
-                                      .isNotEmpty
-                              ? Image.network(
-                                  _buildImageUrl(
-                                    imageUrl,
-                                  ),
-                                  fit:
-                                      BoxFit.cover,
-                                  errorBuilder:
-                                      (
-                                    context,
-                                    error,
-                                    stackTrace,
-                                  ) {
-                                    return const Center(
-                                      child:
-                                          Icon(
-                                        Icons.image_not_supported_outlined,
-                                        size:
-                                            52,
-                                        color:
-                                            Color(
-                                          0xFF9AA59B,
-                                        ),
+                          InkWell(
+                        onTap:
+                            onImageTap,
+                        child:
+                            Stack(
+                          fit:
+                              StackFit.expand,
+                          children: [
+                            if (imageUrl != null &&
+                                imageUrl
+                                    .isNotEmpty)
+                              Image.network(
+                                _buildImageUrl(
+                                  imageUrl,
+                                ),
+                                fit:
+                                    BoxFit.cover,
+                                errorBuilder:
+                                    (
+                                  context,
+                                  error,
+                                  stackTrace,
+                                ) {
+                                  return const Center(
+                                    child:
+                                        Icon(
+                                      Icons.image_not_supported_outlined,
+                                      size:
+                                          52,
+                                      color:
+                                          Color(
+                                        0xFF9AA59B,
                                       ),
-                                    );
-                                  },
-                                )
-                              : const Center(
-                                  child:
-                                      Icon(
-                                    Icons.eco_outlined,
-                                    size:
-                                        58,
+                                    ),
+                                  );
+                                },
+                              )
+                            else
+                              const Center(
+                                child:
+                                    Icon(
+                                  Icons.eco_outlined,
+                                  size:
+                                      58,
+                                  color:
+                                      _marketPrimaryGreen,
+                                ),
+                              ),
+                            if (imageUrl != null &&
+                                imageUrl
+                                    .isNotEmpty)
+                              PositionedDirectional(
+                                end:
+                                    12,
+                                bottom:
+                                    12,
+                                child:
+                                    Container(
+                                  padding:
+                                      const EdgeInsets.all(
+                                    8,
+                                  ),
+                                  decoration:
+                                      BoxDecoration(
                                     color:
-                                        _marketPrimaryGreen,
+                                        Colors.black.withValues(
+                                      alpha:
+                                          0.42,
+                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(
+                                      12,
+                                    ),
+                                  ),
+                                  child:
+                                      const Icon(
+                                    Icons.zoom_out_map_rounded,
+                                    size:
+                                        18,
+                                    color:
+                                        Colors.white,
                                   ),
                                 ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   if (categoryName

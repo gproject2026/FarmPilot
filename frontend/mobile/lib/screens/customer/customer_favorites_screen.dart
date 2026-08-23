@@ -5,6 +5,7 @@ import '../../core/constants/app_constants.dart';
 import '../../models/cart_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/favorite_provider.dart';
+import '../../providers/locale_provider.dart';
 import 'customer_cart_screen.dart';
 
 const _darkGreen = Color(0xFF173F24);
@@ -63,6 +64,245 @@ class _CustomerFavoritesScreenState
     );
   }
 
+  bool get _isArabic =>
+      Localizations.localeOf(context).languageCode == 'ar';
+
+  void _changeLanguage(
+    String languageCode,
+  ) {
+    Provider.of<LocaleProvider>(
+      context,
+      listen: false,
+    ).setLocale(
+      Locale(languageCode),
+    );
+  }
+
+  String _localizedProductName(
+    Map<String, dynamic> product,
+  ) {
+    final name =
+        product['name']?.toString().trim() ?? '';
+    final nameEn =
+        product['nameEn']?.toString().trim() ?? '';
+    final nameAr =
+        product['nameAr']?.toString().trim() ?? '';
+
+    if (_isArabic) {
+      if (nameAr.isNotEmpty) return nameAr;
+      if (name.isNotEmpty) return name;
+      if (nameEn.isNotEmpty) return nameEn;
+      return 'منتج';
+    }
+
+    if (nameEn.isNotEmpty) return nameEn;
+    if (name.isNotEmpty) return name;
+    if (nameAr.isNotEmpty) return nameAr;
+    return 'Product';
+  }
+
+  String _localizedDescription(
+    Map<String, dynamic> product,
+  ) {
+    final description =
+        product['description']?.toString().trim() ?? '';
+    final descriptionEn =
+        product['descriptionEn']?.toString().trim() ?? '';
+    final descriptionAr =
+        product['descriptionAr']?.toString().trim() ?? '';
+
+    if (_isArabic) {
+      if (descriptionAr.isNotEmpty) return descriptionAr;
+      if (description.isNotEmpty) return description;
+      return descriptionEn;
+    }
+
+    if (descriptionEn.isNotEmpty) return descriptionEn;
+    if (description.isNotEmpty) return description;
+    return descriptionAr;
+  }
+
+  String _localizedCategoryName(
+    dynamic category,
+  ) {
+    if (category is! Map) {
+      return '';
+    }
+
+    final name =
+        category['name']?.toString().trim() ?? '';
+    final nameEn =
+        category['nameEn']?.toString().trim() ?? '';
+    final nameAr =
+        category['nameAr']?.toString().trim() ?? '';
+
+    if (_isArabic) {
+      if (nameAr.isNotEmpty) return nameAr;
+      if (name.isNotEmpty) return name;
+      return nameEn;
+    }
+
+    if (nameEn.isNotEmpty) return nameEn;
+    if (name.isNotEmpty) return name;
+    return nameAr;
+  }
+
+  String _resolveImageUrl(
+    String imageUrl,
+  ) {
+    final trimmed = imageUrl.trim();
+
+    if (trimmed.isEmpty) {
+      return '';
+    }
+
+    if (trimmed.startsWith(
+          'http://localhost:3000',
+        ) ||
+        trimmed.startsWith(
+          'http://127.0.0.1:3000',
+        )) {
+      return trimmed.replaceFirst(
+        RegExp(
+          r'http://(localhost|127\.0\.0\.1):3000',
+        ),
+        AppConstants.baseUrl,
+      );
+    }
+
+    if (trimmed.startsWith('http://') ||
+        trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+
+    final normalized =
+        trimmed.startsWith('/')
+            ? trimmed
+            : '/$trimmed';
+
+    return '${AppConstants.baseUrl}$normalized';
+  }
+
+  Future<void> _openImagePreview({
+    required String imageUrl,
+    required String productName,
+  }) async {
+    await showDialog<void>(
+      context: context,
+      barrierColor:
+          Colors.black.withValues(alpha: 0.82),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: Container(
+            constraints: const BoxConstraints(
+              maxWidth: 1100,
+              maxHeight: 760,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF101410),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    20,
+                    16,
+                    12,
+                    12,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          productName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip:
+                            _isArabic ? 'إغلاق' : 'Close',
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+                        },
+                        style: IconButton.styleFrom(
+                          backgroundColor:
+                              Colors.white.withValues(alpha: 0.10),
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: InteractiveViewer(
+                    minScale: 1,
+                    maxScale: 4,
+                    child: Center(
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.contain,
+                        errorBuilder: (
+                          context,
+                          error,
+                          stackTrace,
+                        ) {
+                          return const Padding(
+                            padding: EdgeInsets.all(48),
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              size: 72,
+                              color: Colors.white70,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    16,
+                    10,
+                    16,
+                    16,
+                  ),
+                  child: Text(
+                    _isArabic
+                        ? 'استخدم التكبير والسحب لمعاينة الصورة.'
+                        : 'Pinch or drag to zoom and inspect the image.',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final favoriteProvider =
@@ -87,6 +327,7 @@ class _CustomerFavoritesScreenState
                   child: _buildHeader(
                     favoriteProvider,
                     cartProvider,
+                    isArabic: _isArabic,
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -99,6 +340,7 @@ class _CustomerFavoritesScreenState
                     ),
                     child: _buildIntroCard(
                       favoriteProvider,
+                      isArabic: _isArabic,
                     ),
                   ),
                 ),
@@ -113,9 +355,11 @@ class _CustomerFavoritesScreenState
                     ),
                   )
                 else if (favoriteProvider.favorites.isEmpty)
-                  const SliverFillRemaining(
+                  SliverFillRemaining(
                     hasScrollBody: false,
-                    child: _EmptyFavorites(),
+                    child: _EmptyFavorites(
+                      isArabic: _isArabic,
+                    ),
                   )
                 else
                   SliverPadding(
@@ -146,11 +390,58 @@ class _CustomerFavoritesScreenState
                             return const SizedBox.shrink();
                           }
 
+                          final product =
+                              Map<String, dynamic>.from(
+                            productData,
+                          );
+
+                          final localizedName =
+                              _localizedProductName(
+                            product,
+                          );
+
+                          final localizedDescription =
+                              _localizedDescription(
+                            product,
+                          );
+
+                          final localizedCategoryName =
+                              _localizedCategoryName(
+                            product['category'],
+                          );
+
+                          final rawImageUrl =
+                              product['imageUrl']?.toString();
+
+                          final resolvedImageUrl =
+                              rawImageUrl != null &&
+                                      rawImageUrl
+                                          .trim()
+                                          .isNotEmpty
+                                  ? _resolveImageUrl(
+                                      rawImageUrl,
+                                    )
+                                  : null;
+
                           return _FavoriteProductCard(
-                            product:
-                                Map<String, dynamic>.from(
-                              productData,
-                            ),
+                            product: product,
+                            isArabic: _isArabic,
+                            localizedName: localizedName,
+                            localizedDescription:
+                                localizedDescription,
+                            localizedCategoryName:
+                                localizedCategoryName,
+                            onImageTap:
+                                resolvedImageUrl == null
+                                    ? null
+                                    : () {
+                                        _openImagePreview(
+                                          imageUrl:
+                                              resolvedImageUrl,
+                                          productName:
+                                              localizedName,
+                                        );
+                                      },
                           );
                         },
                         childCount:
@@ -168,8 +459,9 @@ class _CustomerFavoritesScreenState
 
   Widget _buildHeader(
     FavoriteProvider favoriteProvider,
-    CartProvider cartProvider,
-  ) {
+    CartProvider cartProvider, {
+    required bool isArabic,
+  }) {
     return Container(
       padding: const EdgeInsets.fromLTRB(
         20,
@@ -201,7 +493,7 @@ class _CustomerFavoritesScreenState
           children: [
             _HeaderButton(
               icon: Icons.arrow_back_rounded,
-              tooltip: 'Back',
+              tooltip: isArabic ? 'رجوع' : 'Back',
               onTap: () => Navigator.pop(context),
             ),
             const SizedBox(width: 12),
@@ -219,11 +511,11 @@ class _CustomerFavoritesScreenState
               ),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'FarmPilot',
                     style: TextStyle(
                       color: Colors.white,
@@ -233,8 +525,8 @@ class _CustomerFavoritesScreenState
                   ),
                   SizedBox(height: 2),
                   Text(
-                    'My Favorites',
-                    style: TextStyle(
+                    isArabic ? 'المفضلة' : 'My Favorites',
+                    style: const TextStyle(
                       color: Color(0xCCFFFFFF),
                       fontSize: 12,
                     ),
@@ -242,12 +534,88 @@ class _CustomerFavoritesScreenState
                 ],
               ),
             ),
+            PopupMenuButton<String>(
+              tooltip:
+                  isArabic
+                      ? 'تغيير اللغة'
+                      : 'Change Language',
+              offset: const Offset(0, 48),
+              position: PopupMenuPosition.under,
+              color: const Color(0xFFF8FAF4),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              onSelected: _changeLanguage,
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'en',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: !isArabic
+                              ? _primaryGreen
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          isArabic
+                              ? 'الإنجليزية'
+                              : 'English',
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'ar',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_rounded,
+                          size: 20,
+                          color: isArabic
+                              ? _primaryGreen
+                              : Colors.transparent,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          isArabic
+                              ? 'العربية'
+                              : 'Arabic',
+                        ),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color:
+                      Colors.white.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.language_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             Stack(
               clipBehavior: Clip.none,
               children: [
                 _HeaderButton(
                   icon: Icons.shopping_cart_outlined,
-                  tooltip: 'Shopping Cart',
+                  tooltip: isArabic ? 'سلة التسوق' : 'Shopping Cart',
                   onTap: _openCart,
                 ),
                 if (cartProvider.totalQuantity > 0)
@@ -286,7 +654,7 @@ class _CustomerFavoritesScreenState
             const SizedBox(width: 8),
             _HeaderButton(
               icon: Icons.refresh_rounded,
-              tooltip: 'Refresh',
+              tooltip: isArabic ? 'تحديث' : 'Refresh',
               onTap: favoriteProvider.isLoading
                   ? null
                   : _loadFavorites,
@@ -298,8 +666,9 @@ class _CustomerFavoritesScreenState
   }
 
   Widget _buildIntroCard(
-    FavoriteProvider favoriteProvider,
-  ) {
+    FavoriteProvider favoriteProvider, {
+    required bool isArabic,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
@@ -344,22 +713,24 @@ class _CustomerFavoritesScreenState
             ),
           ),
           const SizedBox(width: 16),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'My Favorites',
-                  style: TextStyle(
+                  isArabic ? 'المفضلة' : 'My Favorites',
+                  style: const TextStyle(
                     color: _textPrimary,
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Keep your favorite farm products in one place for quick access.',
-                  style: TextStyle(
+                  isArabic
+                      ? 'احتفظ بمنتجاتك الزراعية المفضلة في مكان واحد للوصول السريع.'
+                      : 'Keep your favorite farm products in one place for quick access.',
+                  style: const TextStyle(
                     color: _textSecondary,
                     fontSize: 13,
                     height: 1.45,
@@ -378,7 +749,9 @@ class _CustomerFavoritesScreenState
               borderRadius: BorderRadius.circular(18),
             ),
             child: Text(
-              '${favoriteProvider.favorites.length} saved',
+              isArabic
+                  ? '${favoriteProvider.favorites.length} محفوظ'
+                  : '${favoriteProvider.favorites.length} saved',
               style: const TextStyle(
                 color: _primaryGreen,
                 fontSize: 12,
@@ -433,17 +806,26 @@ class _HeaderButton extends StatelessWidget {
 
 class _FavoriteProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
+  final bool isArabic;
+  final String localizedName;
+  final String localizedDescription;
+  final String localizedCategoryName;
+  final VoidCallback? onImageTap;
 
   const _FavoriteProductCard({
     required this.product,
+    required this.isArabic,
+    required this.localizedName,
+    required this.localizedDescription,
+    required this.localizedCategoryName,
+    required this.onImageTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final name =
-        product['name']?.toString() ?? 'Product';
+    final name = localizedName;
     final description =
-        product['description']?.toString() ?? '';
+        localizedDescription;
     final unit =
         product['unit']?.toString() ?? '';
     final imageUrl =
@@ -466,11 +848,7 @@ class _FavoriteProductCard extends StatelessWidget {
             0.0;
 
     final categoryName =
-        product['category'] is Map
-            ? product['category']['name']
-                    ?.toString() ??
-                ''
-            : '';
+        localizedCategoryName;
 
     final farmerName =
         product['farmer'] is Map
@@ -515,35 +893,64 @@ class _FavoriteProductCard extends StatelessWidget {
               SizedBox(
                 height: 175,
                 width: double.infinity,
-                child: Container(
+                child: Material(
                   color: const Color(0xFFF0F5EB),
-                  child: imageUrl != null &&
-                          imageUrl.isNotEmpty
-                      ? Image.network(
-                          _buildImageUrl(imageUrl),
-                          fit: BoxFit.cover,
-                          errorBuilder: (
-                            context,
-                            error,
-                            stackTrace,
-                          ) {
-                            return const Center(
-                              child: Icon(
-                                Icons
-                                    .image_not_supported_outlined,
-                                size: 52,
-                                color: Color(0xFF9AA59B),
-                              ),
-                            );
-                          },
-                        )
-                      : const Center(
-                          child: Icon(
-                            Icons.eco_outlined,
-                            size: 58,
-                            color: _primaryGreen,
+                  child: InkWell(
+                    onTap: onImageTap,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (imageUrl != null &&
+                            imageUrl.isNotEmpty)
+                          Image.network(
+                            _buildImageUrl(imageUrl),
+                            fit: BoxFit.cover,
+                            errorBuilder: (
+                              context,
+                              error,
+                              stackTrace,
+                            ) {
+                              return const Center(
+                                child: Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 52,
+                                  color: Color(0xFF9AA59B),
+                                ),
+                              );
+                            },
+                          )
+                        else
+                          const Center(
+                            child: Icon(
+                              Icons.eco_outlined,
+                              size: 58,
+                              color: _primaryGreen,
+                            ),
                           ),
-                        ),
+                        if (imageUrl != null &&
+                            imageUrl.isNotEmpty)
+                          PositionedDirectional(
+                            end: 12,
+                            bottom: 12,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(
+                                  alpha: 0.42,
+                                ),
+                                borderRadius:
+                                    BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.zoom_out_map_rounded,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               if (categoryName.isNotEmpty)
@@ -582,7 +989,7 @@ class _FavoriteProductCard extends StatelessWidget {
                   shape: const CircleBorder(),
                   elevation: 2,
                   child: IconButton(
-                    tooltip: 'Remove from favorites',
+                    tooltip: isArabic ? 'إزالة من المفضلة' : 'Remove from favorites',
                     onPressed: productId.isEmpty
                         ? null
                         : () async {
@@ -610,10 +1017,13 @@ class _FavoriteProductCard extends StatelessWidget {
                                 SnackBar(
                                   content: Text(
                                     success
-                                        ? '$name removed from favorites'
-                                        : provider
-                                                .errorMessage ??
-                                            'Failed to remove favorite',
+                                        ? (isArabic
+                                            ? 'تمت إزالة $name من المفضلة'
+                                            : '$name removed from favorites')
+                                        : provider.errorMessage ??
+                                            (isArabic
+                                                ? 'فشل إزالة المنتج من المفضلة'
+                                                : 'Failed to remove favorite'),
                                   ),
                                   backgroundColor:
                                       success
@@ -680,7 +1090,7 @@ class _FavoriteProductCard extends StatelessWidget {
                         const SizedBox(width: 5),
                         Expanded(
                           child: Text(
-                            'Farmer: $farmerName',
+                            '${isArabic ? 'المزارع' : 'Farmer'}: $farmerName',
                             maxLines: 1,
                             overflow:
                                 TextOverflow.ellipsis,
@@ -730,8 +1140,10 @@ class _FavoriteProductCard extends StatelessWidget {
                         ),
                         child: Text(
                           isAvailable
-                              ? 'Available: $quantity'
-                              : 'Out of stock',
+                               ? '${isArabic ? 'متاح' : 'Available'}: $quantity'
+                               : (isArabic
+                                   ? 'نفد من المخزون'
+                                   : 'Out of stock'),
                           style: TextStyle(
                             color: isAvailable
                                 ? _primaryGreen
@@ -774,7 +1186,9 @@ class _FavoriteProductCard extends StatelessWidget {
                                 ..showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      '$name added to cart',
+                                      isArabic
+                                          ? 'تمت إضافة $name إلى السلة'
+                                          : '$name added to cart',
                                     ),
                                     backgroundColor:
                                         _primaryGreen,
@@ -805,9 +1219,9 @@ class _FavoriteProductCard extends StatelessWidget {
                         Icons.add_shopping_cart_rounded,
                         size: 18,
                       ),
-                      label: const Text(
-                        'Add to Cart',
-                        style: TextStyle(
+                      label: Text(
+                         isArabic ? 'أضف إلى السلة' : 'Add to Cart',
+                         style: const TextStyle(
                           fontWeight:
                               FontWeight.w700,
                         ),
@@ -859,7 +1273,11 @@ class _FavoriteProductCard extends StatelessWidget {
 }
 
 class _EmptyFavorites extends StatelessWidget {
-  const _EmptyFavorites();
+  final bool isArabic;
+
+  const _EmptyFavorites({
+    required this.isArabic,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -885,28 +1303,32 @@ class _EmptyFavorites extends StatelessWidget {
               ),
             ],
           ),
-          child: const Column(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 Icons.favorite_border_rounded,
                 size: 72,
                 color: Color(0xFFB15B72),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
-                'No favorite products yet',
-                style: TextStyle(
+                isArabic
+                    ? 'لا توجد منتجات مفضلة بعد'
+                    : 'No favorite products yet',
+                style: const TextStyle(
                   color: _textPrimary,
                   fontSize: 21,
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                'Add products from the marketplace and they will appear here.',
+                isArabic
+                    ? 'أضف منتجات من السوق وستظهر هنا.'
+                    : 'Add products from the marketplace and they will appear here.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: _textSecondary,
                   fontSize: 14,
                   height: 1.5,
