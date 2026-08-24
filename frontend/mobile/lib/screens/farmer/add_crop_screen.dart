@@ -38,6 +38,36 @@ const _cropTypeOptions = <_CropTypeOption>[
   _CropTypeOption(value: 'OTHER', english: 'Other', arabic: 'أخرى'),
 ];
 
+class _AreaUnitOption {
+  final String value;
+  final String english;
+  final String arabic;
+
+  const _AreaUnitOption({
+    required this.value,
+    required this.english,
+    required this.arabic,
+  });
+}
+
+const _areaUnitOptions = <_AreaUnitOption>[
+  _AreaUnitOption(
+    value: 'm2',
+    english: 'Square meter (m²)',
+    arabic: 'متر مربع (م²)',
+  ),
+  _AreaUnitOption(
+    value: 'dunum',
+    english: 'Dunum',
+    arabic: 'دونم',
+  ),
+  _AreaUnitOption(
+    value: 'hectare',
+    english: 'Hectare',
+    arabic: 'هكتار',
+  ),
+];
+
 class AddCropScreen extends StatefulWidget {
   final Map<String, dynamic>? crop;
 
@@ -57,11 +87,18 @@ class _AddCropScreenState extends State<AddCropScreen> {
   final _irrigationController = TextEditingController();
   final _fertilizationController = TextEditingController();
   final _notesController = TextEditingController();
+  final _areaController = TextEditingController();
 
   DateTime? _plantingDate;
   bool _isSaving = false;
   String? _selectedCropType;
+  String _selectedAreaUnit = 'm2';
   String? _lastLanguageCode;
+
+  double? _expectedYieldMin;
+  double? _expectedYieldMax;
+  String? _yieldUnit;
+  String? _yieldConfidence;
 
   String? _cropNameEn;
   String? _cropNameAr;
@@ -97,6 +134,26 @@ class _AddCropScreenState extends State<AddCropScreen> {
           crop['fertilizationScheduleAr']?.toString().trim();
       _notesEn = crop['notesEn']?.toString().trim();
       _notesAr = crop['notesAr']?.toString().trim();
+
+      final areaValue = crop['area']?.toString().trim() ?? '';
+      if (areaValue.isNotEmpty) {
+        _areaController.text = areaValue;
+      }
+
+      final storedAreaUnit = crop['areaUnit']?.toString().trim();
+      if (storedAreaUnit != null &&
+          _areaUnitOptions.any((option) => option.value == storedAreaUnit)) {
+        _selectedAreaUnit = storedAreaUnit;
+      }
+
+      _expectedYieldMin = double.tryParse(
+        crop['expectedYieldMin']?.toString() ?? '',
+      );
+      _expectedYieldMax = double.tryParse(
+        crop['expectedYieldMax']?.toString() ?? '',
+      );
+      _yieldUnit = crop['yieldUnit']?.toString().trim();
+      _yieldConfidence = crop['yieldConfidence']?.toString().trim().toUpperCase();
 
       final fallbackName =
           crop['cropName']?.toString().trim() ?? '';
@@ -267,6 +324,7 @@ class _AddCropScreenState extends State<AddCropScreen> {
     _irrigationController.dispose();
     _fertilizationController.dispose();
     _notesController.dispose();
+    _areaController.dispose();
 
     super.dispose();
   }
@@ -329,6 +387,24 @@ class _AddCropScreenState extends State<AddCropScreen> {
     );
   }
 
+  double? _parsedArea() {
+    final normalized = _areaController.text.trim().replaceAll(',', '.');
+    return double.tryParse(normalized);
+  }
+
+  String _localizedYieldConfidence(BuildContext context) {
+    switch (_yieldConfidence?.toUpperCase()) {
+      case 'HIGH':
+        return _t(context, 'High', 'مرتفعة');
+      case 'MEDIUM':
+        return _t(context, 'Medium', 'متوسطة');
+      case 'LOW':
+        return _t(context, 'Low', 'منخفضة');
+      default:
+        return _t(context, 'Not available', 'غير متوفر');
+    }
+  }
+
   Future<void> _generateAiCare() async {
     final cropName =
         _cropNameController.text.trim();
@@ -365,6 +441,22 @@ class _AddCropScreenState extends State<AddCropScreen> {
       return;
     }
 
+    final area = _parsedArea();
+    if (area == null || area <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _t(
+              context,
+              'Please enter a valid cultivated area first',
+              'يرجى إدخال مساحة زراعية صحيحة أولًا',
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
     final languageCode =
         Localizations.localeOf(context).languageCode;
 
@@ -383,6 +475,8 @@ class _AddCropScreenState extends State<AddCropScreen> {
           ? typeOption.arabic
           : typeOption.english,
       language: languageCode,
+      area: area,
+      areaUnit: _selectedAreaUnit,
       plantingDate: _formattedPlantingDate(),
       notes: _optionalValue(_notesController),
     );
@@ -442,7 +536,22 @@ class _AddCropScreenState extends State<AddCropScreen> {
             ?.toString()
             .trim();
 
+    final expectedYieldMin = double.tryParse(
+      result['expectedYieldMin']?.toString() ?? '',
+    );
+    final expectedYieldMax = double.tryParse(
+      result['expectedYieldMax']?.toString() ?? '',
+    );
+    final yieldUnit = result['yieldUnit']?.toString().trim();
+    final yieldConfidence =
+        result['yieldConfidence']?.toString().trim().toUpperCase();
+
     setState(() {
+      _expectedYieldMin = expectedYieldMin;
+      _expectedYieldMax = expectedYieldMax;
+      _yieldUnit = yieldUnit;
+      _yieldConfidence = yieldConfidence;
+
       _irrigationController.text =
           languageCode == 'ar'
               ? (_irrigationScheduleAr ?? '')
@@ -459,8 +568,8 @@ class _AddCropScreenState extends State<AddCropScreen> {
         content: Text(
           _t(
             context,
-            'AI suggestions added. You can edit them before saving.',
-            'تمت إضافة اقتراحات الذكاء الاصطناعي، ويمكنك تعديلها قبل الحفظ.',
+            'AI care suggestions and yield estimate were generated successfully.',
+            'تم إنشاء اقتراحات العناية وتقدير الإنتاج بالذكاء الاصطناعي بنجاح.',
           ),
         ),
       ),
@@ -483,6 +592,22 @@ class _AddCropScreenState extends State<AddCropScreen> {
               context,
               'Please select a crop type',
               'يرجى اختيار نوع المحصول',
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final area = _parsedArea();
+    if (area == null || area <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _t(
+              context,
+              'Please enter a valid cultivated area',
+              'يرجى إدخال مساحة زراعية صحيحة',
             ),
           ),
         ),
@@ -545,6 +670,12 @@ class _AddCropScreenState extends State<AddCropScreen> {
         cropTypeEn: _cropTypeEn,
         cropTypeAr: _cropTypeAr,
         plantingDate: _formattedPlantingDate(),
+        area: area,
+        areaUnit: _selectedAreaUnit,
+        expectedYieldMin: _expectedYieldMin,
+        expectedYieldMax: _expectedYieldMax,
+        yieldUnit: _yieldUnit,
+        yieldConfidence: _yieldConfidence,
         irrigationSchedule:
             _optionalValue(_irrigationController),
         irrigationScheduleEn:
@@ -573,6 +704,12 @@ class _AddCropScreenState extends State<AddCropScreen> {
         cropTypeEn: _cropTypeEn,
         cropTypeAr: _cropTypeAr,
         plantingDate: _formattedPlantingDate(),
+        area: area,
+        areaUnit: _selectedAreaUnit,
+        expectedYieldMin: _expectedYieldMin,
+        expectedYieldMax: _expectedYieldMax,
+        yieldUnit: _yieldUnit,
+        yieldConfidence: _yieldConfidence,
         irrigationSchedule:
             _optionalValue(_irrigationController),
         irrigationScheduleEn:
@@ -828,6 +965,60 @@ class _AddCropScreenState extends State<AddCropScreen> {
                                     },
                                   ),
                                   const SizedBox(height: 16),
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final areaField = _StyledCropField(
+                                        controller: _areaController,
+                                        label: _t(context, 'Cultivated area', 'المساحة المزروعة'),
+                                        hint: _t(context, 'Example: 100', 'مثال: 100'),
+                                        icon: Icons.square_foot_outlined,
+                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                        validator: (value) {
+                                          final parsed = double.tryParse(
+                                            (value ?? '').trim().replaceAll(',', '.'),
+                                          );
+                                          if (parsed == null || parsed <= 0) {
+                                            return _t(context, 'Please enter a valid area', 'يرجى إدخال مساحة صحيحة');
+                                          }
+                                          return null;
+                                        },
+                                      );
+
+                                      final unitField = _AreaUnitDropdown(
+                                        value: _selectedAreaUnit,
+                                        isArabic: isArabic,
+                                        onChanged: (value) {
+                                          if (value == null) return;
+                                          setState(() {
+                                            _selectedAreaUnit = value;
+                                            _expectedYieldMin = null;
+                                            _expectedYieldMax = null;
+                                            _yieldUnit = null;
+                                            _yieldConfidence = null;
+                                          });
+                                        },
+                                      );
+
+                                      if (constraints.maxWidth < 680) {
+                                        return Column(
+                                          children: [
+                                            areaField,
+                                            const SizedBox(height: 16),
+                                            unitField,
+                                          ],
+                                        );
+                                      }
+
+                                      return Row(
+                                        children: [
+                                          Expanded(child: areaField),
+                                          const SizedBox(width: 16),
+                                          Expanded(child: unitField),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
                                   _DateField(
                                     value: formattedDate,
                                     hasDate:
@@ -905,6 +1096,17 @@ class _AddCropScreenState extends State<AddCropScreen> {
                                       ),
                                     ),
                                   ),
+                                  if (_expectedYieldMin != null &&
+                                      _expectedYieldMax != null) ...[
+                                    const SizedBox(height: 16),
+                                    _YieldEstimateCard(
+                                      isArabic: isArabic,
+                                      minYield: _expectedYieldMin!,
+                                      maxYield: _expectedYieldMax!,
+                                      yieldUnit: _yieldUnit?.isNotEmpty == true ? _yieldUnit! : 'kg',
+                                      confidence: _localizedYieldConfidence(context),
+                                    ),
+                                  ],
                                   const SizedBox(height: 16),
                                   _StyledCropField(
                                     controller:
@@ -1482,6 +1684,151 @@ class _CropTypeDropdown extends StatelessWidget {
   }
 }
 
+class _AreaUnitDropdown extends StatelessWidget {
+  final String value;
+  final bool isArabic;
+  final ValueChanged<String?> onChanged;
+
+  const _AreaUnitDropdown({
+    required this.value,
+    required this.isArabic,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: _t(context, 'Area unit', 'وحدة المساحة'),
+        prefixIcon: const Icon(
+          Icons.straighten_rounded,
+          color: _addCropPrimary,
+          size: 21,
+        ),
+        filled: true,
+        fillColor: const Color(0xFFFCFDFB),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Color(0xFFD8E2D4)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Color(0xFFD8E2D4)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: _addCropPrimary, width: 1.5),
+        ),
+      ),
+      items: _areaUnitOptions.map((option) {
+        return DropdownMenuItem<String>(
+          value: option.value,
+          child: Text(isArabic ? option.arabic : option.english),
+        );
+      }).toList(),
+      onChanged: onChanged,
+    );
+  }
+}
+
+class _YieldEstimateCard extends StatelessWidget {
+  final bool isArabic;
+  final double minYield;
+  final double maxYield;
+  final String yieldUnit;
+  final String confidence;
+
+  const _YieldEstimateCard({
+    required this.isArabic,
+    required this.minYield,
+    required this.maxYield,
+    required this.yieldUnit,
+    required this.confidence,
+  });
+
+  String _formatNumber(double value) {
+    if (value == value.roundToDouble()) {
+      return value.toStringAsFixed(0);
+    }
+    return value.toStringAsFixed(2);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F7E8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFCFE0BF)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFFDDECB8),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: const Icon(Icons.analytics_outlined, color: _addCropPrimary),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isArabic ? 'تقدير الإنتاج المتوقع' : 'Expected Yield Estimate',
+                  style: const TextStyle(
+                    color: _addCropText,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${_formatNumber(minYield)} - ${_formatNumber(maxYield)} $yieldUnit',
+                  style: const TextStyle(
+                    color: _addCropPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  isArabic ? 'مستوى الثقة: $confidence' : 'Confidence: $confidence',
+                  style: const TextStyle(
+                    color: _addCropMuted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  isArabic
+                      ? 'هذا تقدير تخطيطي يعتمد على البيانات المدخلة والممارسات الزراعية العامة، وليس ضمانًا للإنتاج الفعلي.'
+                      : 'This is a planning estimate based on the entered data and general agricultural practice, not a guarantee of actual production.',
+                  style: const TextStyle(
+                    color: _addCropMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _StyledCropField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -1489,6 +1836,7 @@ class _StyledCropField extends StatelessWidget {
   final IconData icon;
   final String? Function(String?)? validator;
   final int maxLines;
+  final TextInputType? keyboardType;
 
   const _StyledCropField({
     required this.controller,
@@ -1497,6 +1845,7 @@ class _StyledCropField extends StatelessWidget {
     required this.icon,
     this.validator,
     this.maxLines = 1,
+    this.keyboardType,
   });
 
   @override
@@ -1505,6 +1854,7 @@ class _StyledCropField extends StatelessWidget {
       controller: controller,
       validator: validator,
       maxLines: maxLines,
+      keyboardType: keyboardType,
       style: const TextStyle(
         color: _addCropText,
         fontSize: 14,

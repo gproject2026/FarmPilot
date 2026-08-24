@@ -53,6 +53,8 @@ class CropProvider extends ChangeNotifier {
     required String cropName,
     required String cropType,
     required String language,
+    required double area,
+    required String areaUnit,
     String? plantingDate,
     String? notes,
   }) async {
@@ -67,6 +69,8 @@ class CropProvider extends ChangeNotifier {
         cropName: cropName,
         cropType: cropType,
         language: language,
+        area: area,
+        areaUnit: areaUnit,
         plantingDate: plantingDate,
         notes: notes,
       );
@@ -97,6 +101,12 @@ class CropProvider extends ChangeNotifier {
     String? cropTypeEn,
     String? cropTypeAr,
     String? plantingDate,
+    double? area,
+    String? areaUnit,
+    double? expectedYieldMin,
+    double? expectedYieldMax,
+    String? yieldUnit,
+    String? yieldConfidence,
     String? irrigationSchedule,
     String? irrigationScheduleEn,
     String? irrigationScheduleAr,
@@ -123,6 +133,16 @@ class CropProvider extends ChangeNotifier {
         cropTypeAr: cropTypeAr,
         plantingDate:
             plantingDate,
+        area: area,
+        areaUnit: areaUnit,
+        expectedYieldMin:
+            expectedYieldMin,
+        expectedYieldMax:
+            expectedYieldMax,
+        yieldUnit:
+            yieldUnit,
+        yieldConfidence:
+            yieldConfidence,
         irrigationSchedule:
             irrigationSchedule,
         irrigationScheduleEn:
@@ -172,6 +192,12 @@ class CropProvider extends ChangeNotifier {
     String? cropTypeEn,
     String? cropTypeAr,
     String? plantingDate,
+    double? area,
+    String? areaUnit,
+    double? expectedYieldMin,
+    double? expectedYieldMax,
+    String? yieldUnit,
+    String? yieldConfidence,
     String? irrigationSchedule,
     String? irrigationScheduleEn,
     String? irrigationScheduleAr,
@@ -199,6 +225,16 @@ class CropProvider extends ChangeNotifier {
         cropTypeAr: cropTypeAr,
         plantingDate:
             plantingDate,
+        area: area,
+        areaUnit: areaUnit,
+        expectedYieldMin:
+            expectedYieldMin,
+        expectedYieldMax:
+            expectedYieldMax,
+        yieldUnit:
+            yieldUnit,
+        yieldConfidence:
+            yieldConfidence,
         irrigationSchedule:
             irrigationSchedule,
         irrigationScheduleEn:

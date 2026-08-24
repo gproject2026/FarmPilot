@@ -1,7 +1,10 @@
 import {
   IsDateString,
+  IsIn,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
 } from 'class-validator';
 
@@ -33,6 +36,38 @@ export class CreateCropDto {
   @IsOptional()
   @IsDateString()
   plantingDate?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  area?: number;
+
+  @IsOptional()
+  @IsString()
+  areaUnit?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  expectedYieldMin?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  expectedYieldMax?: number;
+
+  @IsOptional()
+  @IsString()
+  yieldUnit?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn([
+    'LOW',
+    'MEDIUM',
+    'HIGH',
+  ])
+  yieldConfidence?: string;
 
   @IsOptional()
   @IsString()

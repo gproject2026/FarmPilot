@@ -431,7 +431,7 @@ class _MyCropsScreenState extends State<MyCropsScreen> {
                                       crossAxisCount: crossAxisCount,
                                       crossAxisSpacing: 16,
                                       mainAxisSpacing: 16,
-                                      mainAxisExtent: 455,
+                                      mainAxisExtent: 640,
                                     ),
                                   );
                                 },
@@ -884,6 +884,147 @@ class _CropCard extends StatelessWidget {
       arKey: 'cropTypeAr',
     );
 
+    final isArabic =
+        Localizations.localeOf(context).languageCode == 'ar';
+
+    String formatNumber(dynamic value) {
+      final number =
+          double.tryParse(value?.toString() ?? '');
+
+      if (number == null) {
+        return '';
+      }
+
+      if (number == number.roundToDouble()) {
+        return number.toStringAsFixed(0);
+      }
+
+      return number.toStringAsFixed(2);
+    }
+
+    String localizedAreaUnit(dynamic value) {
+      final unit =
+          value?.toString().trim().toLowerCase() ?? '';
+
+      if (!isArabic) {
+        switch (unit) {
+          case 'm2':
+            return 'm²';
+          case 'dunum':
+            return 'dunum';
+          case 'hectare':
+            return 'hectare';
+          default:
+            return value?.toString().trim() ?? '';
+        }
+      }
+
+      switch (unit) {
+        case 'm2':
+          return 'م²';
+        case 'dunum':
+          return 'دونم';
+        case 'hectare':
+          return 'هكتار';
+        default:
+          return value?.toString().trim() ?? '';
+      }
+    }
+
+    String localizedYieldUnit(dynamic value) {
+      final unit =
+          value?.toString().trim().toLowerCase() ?? '';
+
+      if (!isArabic) {
+        return value?.toString().trim() ?? '';
+      }
+
+      switch (unit) {
+        case 'kg':
+          return 'كغ';
+        case 'g':
+          return 'غ';
+        case 'ton':
+        case 'tons':
+        case 'tonne':
+        case 'tonnes':
+          return 'طن';
+        default:
+          return value?.toString().trim() ?? '';
+      }
+    }
+
+    String localizedConfidence(dynamic value) {
+      final confidence =
+          value?.toString().trim().toUpperCase() ?? '';
+
+      switch (confidence) {
+        case 'HIGH':
+          return isArabic ? 'مرتفعة' : 'High';
+        case 'MEDIUM':
+          return isArabic ? 'متوسطة' : 'Medium';
+        case 'LOW':
+          return isArabic ? 'منخفضة' : 'Low';
+        default:
+          return _t(
+            context,
+            'Not specified',
+            'غير محدد',
+          );
+      }
+    }
+
+    final areaText = () {
+      final area =
+          formatNumber(crop['area']);
+
+      if (area.isEmpty) {
+        return _t(
+          context,
+          'Not specified',
+          'غير محدد',
+        );
+      }
+
+      final unit =
+          localizedAreaUnit(crop['areaUnit']);
+
+      return unit.isEmpty
+          ? area
+          : '$area $unit';
+    }();
+
+    final expectedYieldText = () {
+      final min =
+          formatNumber(crop['expectedYieldMin']);
+      final max =
+          formatNumber(crop['expectedYieldMax']);
+
+      if (min.isEmpty || max.isEmpty) {
+        return _t(
+          context,
+          'Not specified',
+          'غير محدد',
+        );
+      }
+
+      final unit =
+          localizedYieldUnit(crop['yieldUnit']);
+
+      final range = min == max
+          ? min
+          : '$min - $max';
+
+      return unit.isEmpty
+          ? range
+          : '$range $unit';
+    }();
+
+    final confidenceText =
+        localizedConfidence(
+      crop['yieldConfidence'],
+    );
+
     return Container(
       decoration: _cropCardDecoration(22),
       padding: const EdgeInsets.all(18),
@@ -940,6 +1081,36 @@ class _CropCard extends StatelessWidget {
             icon: Icons.calendar_month,
             label: _t(context, 'Planting date', 'تاريخ الزراعة'),
             value: formatDate(crop['plantingDate']),
+          ),
+          const SizedBox(height: 10),
+          _CropInfoTile(
+            icon: Icons.square_foot_outlined,
+            label: _t(
+              context,
+              'Cultivated area',
+              'المساحة المزروعة',
+            ),
+            value: areaText,
+          ),
+          const SizedBox(height: 10),
+          _CropInfoTile(
+            icon: Icons.analytics_outlined,
+            label: _t(
+              context,
+              'Expected yield',
+              'الإنتاج المتوقع',
+            ),
+            value: expectedYieldText,
+          ),
+          const SizedBox(height: 10),
+          _CropInfoTile(
+            icon: Icons.verified_outlined,
+            label: _t(
+              context,
+              'Confidence',
+              'مستوى الثقة',
+            ),
+            value: confidenceText,
           ),
           const SizedBox(height: 10),
           _CropInfoTile(

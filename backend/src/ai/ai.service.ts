@@ -27,6 +27,12 @@ interface CropCareContent {
   irrigationScheduleAr: string;
   fertilizationScheduleEn: string;
   fertilizationScheduleAr: string;
+  notesEn: string;
+  notesAr: string;
+  expectedYieldMin: number;
+  expectedYieldMax: number;
+  yieldUnit: string;
+  yieldConfidence: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 @Injectable()
@@ -129,6 +135,12 @@ export class AiService {
     const cropType =
       cropCareSuggestionDto.cropType.trim();
 
+    const area =
+      Number(cropCareSuggestionDto.area);
+
+    const areaUnit =
+      cropCareSuggestionDto.areaUnit.trim();
+
     const plantingDate =
       cropCareSuggestionDto.plantingDate?.trim();
 
@@ -148,18 +160,34 @@ export class AiService {
       '',
       `Crop name entered by farmer: ${cropName}`,
       `Crop type selected by farmer: ${cropType}`,
+      `Cultivated area: ${area} ${areaUnit}`,
       `Planting date: ${plantingDate || 'Not provided'}`,
       `Additional notes: ${notes || 'Not provided'}`,
       '',
       'Requirements:',
       '- Identify the crop name in both English and Arabic.',
       '- Return the crop type in both English and Arabic.',
-      '- Give a short and practical irrigation schedule in both English and Arabic.',
-      '- Give a short and practical fertilization schedule in both English and Arabic.',
+      '- Give a practical irrigation schedule in both English and Arabic.',
+      '- The irrigation schedule should state a useful timing or frequency whenever reasonably possible, such as every X days or according to a clear growth stage.',
+      '- Mention the preferred time of day for irrigation when useful, such as early morning or late afternoon.',
+      '- Do not invent false precision. If an exact interval cannot be justified from the provided information, use a short conditional recommendation based on soil moisture or growth stage.',
+      '- Give a practical fertilization schedule in both English and Arabic.',
+      '- The fertilization schedule should indicate when fertilization should start and how it should be repeated or which crop growth stages are most appropriate.',
+      '- Do not invent exact fertilizer dosages or unsafe chemical instructions.',
+      '- Return concise additional crop notes in both English and Arabic.',
+      '- Put general care advice that does not belong specifically to irrigation or fertilization in notesEn and notesAr, such as sunlight, drainage, temperature, disease monitoring, soil moisture monitoring, or other useful crop-management cautions.',
+      '- Estimate a realistic expected total yield range for the cultivated area provided by the farmer.',
+      '- expectedYieldMin and expectedYieldMax must be positive numbers, and expectedYieldMax must be greater than or equal to expectedYieldMin.',
+      '- Return yieldUnit as a short unit such as kg or ton, appropriate for the total estimated production.',
+      '- yieldConfidence must be exactly one of: LOW, MEDIUM, HIGH.',
+      '- Use HIGH only when the crop, crop type, area, and available context are sufficient for a reasonably stable general estimate.',
+      '- Use MEDIUM when the estimate is useful but important factors such as cultivar, soil, climate, irrigation system, or planting density are unknown.',
+      '- Use LOW when the available information is too limited for more than a rough estimate.',
+      '- Treat the yield as an approximate planning estimate, not a guarantee or measured prediction.',
       '- Keep irrigation and fertilization suggestions concise enough to store in a database field.',
       '- Do not invent exact fertilizer quantities, pesticide dosages, or unsafe chemical instructions.',
       '- Do not claim the recommendation is universally correct.',
-      '- Base the suggestions on common general agricultural practice.',
+      '- Base the suggestions and yield estimate on common general agricultural practice.',
       '- The Arabic and English values must have the same meaning.',
       '- Do not use markdown.',
       '- Do not wrap the response in JSON code fences.',
@@ -173,7 +201,13 @@ export class AiService {
       '  "irrigationScheduleEn": "string",',
       '  "irrigationScheduleAr": "string",',
       '  "fertilizationScheduleEn": "string",',
-      '  "fertilizationScheduleAr": "string"',
+      '  "fertilizationScheduleAr": "string",',
+      '  "notesEn": "string",',
+      '  "notesAr": "string",',
+      '  "expectedYieldMin": 0,',
+      '  "expectedYieldMax": 0,',
+      '  "yieldUnit": "kg",',
+      '  "yieldConfidence": "MEDIUM"',
       '}',
     ].join('\n');
 
@@ -217,8 +251,8 @@ export class AiService {
     return {
       message:
         language === 'ar'
-          ? 'تم إنشاء اقتراحات العناية بالمحصول بنجاح'
-          : 'Crop care suggestions generated successfully',
+          ? 'تم إنشاء اقتراحات العناية وتقدير الإنتاج بنجاح'
+          : 'Crop care suggestions and yield estimate generated successfully',
       ...generatedContent,
     };
   }
@@ -442,6 +476,43 @@ export class AiService {
         data.fertilizationScheduleAr,
       );
 
+    const notesEn =
+      this.normalizeString(
+        data.notesEn,
+      );
+
+    const notesAr =
+      this.normalizeString(
+        data.notesAr,
+      );
+
+    const expectedYieldMin =
+      this.normalizeNumber(
+        data.expectedYieldMin,
+      );
+
+    const expectedYieldMax =
+      this.normalizeNumber(
+        data.expectedYieldMax,
+      );
+
+    const yieldUnit =
+      this.normalizeString(
+        data.yieldUnit,
+      );
+
+    const yieldConfidenceRaw =
+      this.normalizeString(
+        data.yieldConfidence,
+      ).toUpperCase();
+
+    const yieldConfidence =
+      yieldConfidenceRaw === 'LOW' ||
+      yieldConfidenceRaw === 'MEDIUM' ||
+      yieldConfidenceRaw === 'HIGH'
+        ? yieldConfidenceRaw
+        : '';
+
     if (
       cropNameEn.length === 0 ||
       cropNameAr.length === 0 ||
@@ -450,7 +521,16 @@ export class AiService {
       irrigationScheduleEn.length === 0 ||
       irrigationScheduleAr.length === 0 ||
       fertilizationScheduleEn.length === 0 ||
-      fertilizationScheduleAr.length === 0
+      fertilizationScheduleAr.length === 0 ||
+      notesEn.length === 0 ||
+      notesAr.length === 0 ||
+      expectedYieldMin === null ||
+      expectedYieldMax === null ||
+      expectedYieldMin <= 0 ||
+      expectedYieldMax <= 0 ||
+      expectedYieldMax < expectedYieldMin ||
+      yieldUnit.length === 0 ||
+      yieldConfidence.length === 0
     ) {
       throw new BadGatewayException(
         language === 'ar'
@@ -468,6 +548,16 @@ export class AiService {
       irrigationScheduleAr,
       fertilizationScheduleEn,
       fertilizationScheduleAr,
+      notesEn,
+      notesAr,
+      expectedYieldMin,
+      expectedYieldMax,
+      yieldUnit,
+      yieldConfidence:
+        yieldConfidence as
+          | 'LOW'
+          | 'MEDIUM'
+          | 'HIGH',
     };
   }
 
@@ -566,6 +656,23 @@ export class AiService {
     return typeof value === 'string'
       ? value.trim()
       : '';
+  }
+
+  private normalizeNumber(
+    value: unknown,
+  ): number | null {
+    const numericValue =
+      typeof value === 'number'
+        ? value
+        : typeof value === 'string'
+          ? Number(value.trim())
+          : NaN;
+
+    return Number.isFinite(
+      numericValue,
+    )
+      ? numericValue
+      : null;
   }
 
   private normalizeStringArray(

@@ -51,6 +51,12 @@ class CropService {
     String? cropTypeEn,
     String? cropTypeAr,
     String? plantingDate,
+    double? area,
+    String? areaUnit,
+    double? expectedYieldMin,
+    double? expectedYieldMax,
+    String? yieldUnit,
+    String? yieldConfidence,
     String? irrigationSchedule,
     String? irrigationScheduleEn,
     String? irrigationScheduleAr,
@@ -71,55 +77,95 @@ class CropService {
       },
       body: jsonEncode({
         'cropName': cropName,
+
         if (_hasValue(cropType))
           'cropType': cropType,
+
         if (_hasValue(cropNameEn))
           'cropNameEn': cropNameEn,
+
         if (_hasValue(cropNameAr))
           'cropNameAr': cropNameAr,
+
         if (_hasValue(cropTypeEn))
           'cropTypeEn': cropTypeEn,
+
         if (_hasValue(cropTypeAr))
           'cropTypeAr': cropTypeAr,
+
         if (_hasValue(plantingDate))
           'plantingDate':
               plantingDate,
+
+        'area': ?area,
+
+        if (_hasValue(areaUnit))
+          'areaUnit':
+              areaUnit,
+
+        'expectedYieldMin':
+            ?expectedYieldMin,
+
+        'expectedYieldMax':
+            ?expectedYieldMax,
+
+        if (_hasValue(yieldUnit))
+          'yieldUnit':
+              yieldUnit,
+
+        if (_hasValue(
+          yieldConfidence,
+        ))
+          'yieldConfidence':
+              yieldConfidence,
+
         if (_hasValue(
           irrigationSchedule,
         ))
           'irrigationSchedule':
               irrigationSchedule,
+
         if (_hasValue(
           irrigationScheduleEn,
         ))
           'irrigationScheduleEn':
               irrigationScheduleEn,
+
         if (_hasValue(
           irrigationScheduleAr,
         ))
           'irrigationScheduleAr':
               irrigationScheduleAr,
+
         if (_hasValue(
           fertilizationSchedule,
         ))
           'fertilizationSchedule':
               fertilizationSchedule,
+
         if (_hasValue(
           fertilizationScheduleEn,
         ))
           'fertilizationScheduleEn':
               fertilizationScheduleEn,
+
         if (_hasValue(
           fertilizationScheduleAr,
         ))
           'fertilizationScheduleAr':
               fertilizationScheduleAr,
+
         if (_hasValue(notes))
-          'notes': notes,
+          'notes':
+              notes,
+
         if (_hasValue(notesEn))
-          'notesEn': notesEn,
+          'notesEn':
+              notesEn,
+
         if (_hasValue(notesAr))
-          'notesAr': notesAr,
+          'notesAr':
+              notesAr,
       }),
     );
 
@@ -157,6 +203,12 @@ class CropService {
     String? cropTypeEn,
     String? cropTypeAr,
     String? plantingDate,
+    double? area,
+    String? areaUnit,
+    double? expectedYieldMin,
+    double? expectedYieldMax,
+    String? yieldUnit,
+    String? yieldConfidence,
     String? irrigationSchedule,
     String? irrigationScheduleEn,
     String? irrigationScheduleAr,
@@ -176,14 +228,32 @@ class CropService {
         'Authorization': 'Bearer $token',
       },
       body: jsonEncode({
-        'cropName': cropName,
-        'cropType': cropType,
-        'cropNameEn': cropNameEn,
-        'cropNameAr': cropNameAr,
-        'cropTypeEn': cropTypeEn,
-        'cropTypeAr': cropTypeAr,
+        'cropName':
+            cropName,
+        'cropType':
+            cropType,
+        'cropNameEn':
+            cropNameEn,
+        'cropNameAr':
+            cropNameAr,
+        'cropTypeEn':
+            cropTypeEn,
+        'cropTypeAr':
+            cropTypeAr,
         'plantingDate':
             plantingDate,
+        'area':
+            area,
+        'areaUnit':
+            areaUnit,
+        'expectedYieldMin':
+            expectedYieldMin,
+        'expectedYieldMax':
+            expectedYieldMax,
+        'yieldUnit':
+            yieldUnit,
+        'yieldConfidence':
+            yieldConfidence,
         'irrigationSchedule':
             irrigationSchedule,
         'irrigationScheduleEn':
@@ -196,9 +266,12 @@ class CropService {
             fertilizationScheduleEn,
         'fertilizationScheduleAr':
             fertilizationScheduleAr,
-        'notes': notes,
-        'notesEn': notesEn,
-        'notesAr': notesAr,
+        'notes':
+            notes,
+        'notesEn':
+            notesEn,
+        'notesAr':
+            notesAr,
       }),
     );
 

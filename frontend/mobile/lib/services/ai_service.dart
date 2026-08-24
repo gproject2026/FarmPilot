@@ -62,6 +62,8 @@ class AiService {
     required String cropName,
     required String cropType,
     required String language,
+    required double area,
+    required String areaUnit,
     String? plantingDate,
     String? notes,
   }) async {
@@ -76,6 +78,8 @@ class AiService {
               plantingDate,
           'notes': notes,
           'language': language,
+          'area': area,
+          'areaUnit': areaUnit,
         },
       );
 

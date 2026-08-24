@@ -1,7 +1,9 @@
 import {
   IsIn,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
 } from 'class-validator';
 
@@ -13,6 +15,14 @@ export class CropCareSuggestionDto {
   @IsString()
   @IsNotEmpty()
   cropType!: string;
+
+  @IsNumber()
+  @IsPositive()
+  area!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  areaUnit!: string;
 
   @IsOptional()
   @IsString()

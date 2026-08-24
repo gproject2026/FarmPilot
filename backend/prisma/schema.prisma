@@ -126,6 +126,14 @@ model Crop {
 
   plantingDate DateTime? @map("planting_date") @db.Date
 
+  area     Decimal? @db.Decimal(10, 2)
+  areaUnit String?  @map("area_unit") @db.VarChar(20)
+
+  expectedYieldMin Decimal? @map("expected_yield_min") @db.Decimal(10, 2)
+  expectedYieldMax Decimal? @map("expected_yield_max") @db.Decimal(10, 2)
+  yieldUnit        String?  @map("yield_unit") @db.VarChar(20)
+  yieldConfidence  String?  @map("yield_confidence") @db.VarChar(20)
+
   irrigationSchedule   String? @map("irrigation_schedule") @db.VarChar(255)
   irrigationScheduleEn String? @map("irrigation_schedule_en") @db.VarChar(255)
   irrigationScheduleAr String? @map("irrigation_schedule_ar") @db.VarChar(255)
