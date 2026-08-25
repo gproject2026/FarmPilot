@@ -2,50 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/user_model.dart';
+import '../../providers/locale_provider.dart';
 import '../../providers/user_provider.dart';
 
 class AdminUsersScreen extends StatefulWidget {
-  const AdminUsersScreen({
-    super.key,
-  });
+  const AdminUsersScreen({super.key});
 
   @override
-  State<AdminUsersScreen> createState() =>
-      _AdminUsersScreenState();
+  State<AdminUsersScreen> createState() => _AdminUsersScreenState();
 }
 
-class _AdminUsersScreenState
-    extends State<AdminUsersScreen> {
+class _AdminUsersScreenState extends State<AdminUsersScreen> {
   String? _updatingUserId;
 
-  bool get _isArabic =>
-      Localizations.localeOf(context).languageCode == 'ar';
+  bool get _isArabic => Localizations.localeOf(context).languageCode == 'ar';
 
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        _loadUsers();
-      },
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUsers();
+    });
   }
 
   Future<void> _loadUsers() async {
-    await Provider.of<UserProvider>(
-      context,
-      listen: false,
-    ).loadAllUsers();
+    await Provider.of<UserProvider>(context, listen: false).loadAllUsers();
   }
 
-  Future<void> _changeUserStatus({
-    required UserModel user,
-  }) async {
+  Future<void> _changeUserStatus({required UserModel user}) async {
     final newStatus = !user.isActive;
 
-    final confirmed =
-        await _showConfirmationDialog(
+    final confirmed = await _showConfirmationDialog(
       user: user,
       newStatus: newStatus,
     );
@@ -58,14 +46,9 @@ class _AdminUsersScreenState
       _updatingUserId = user.id;
     });
 
-    final userProvider =
-        Provider.of<UserProvider>(
-      context,
-      listen: false,
-    );
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    final success =
-        await userProvider.updateUserStatus(
+    final success = await userProvider.updateUserStatus(
       userId: user.id,
       isActive: newStatus,
     );
@@ -86,11 +69,11 @@ class _AdminUsersScreenState
             content: Text(
               newStatus
                   ? (_isArabic
-                      ? 'تم إلغاء حظر حساب ${user.fullName}'
-                      : '${user.fullName} account has been unblocked')
+                        ? 'تم إلغاء حظر حساب ${user.fullName}'
+                        : '${user.fullName} account has been unblocked')
                   : (_isArabic
-                      ? 'تم حظر حساب ${user.fullName}'
-                      : '${user.fullName} account has been blocked'),
+                        ? 'تم حظر حساب ${user.fullName}'
+                        : '${user.fullName} account has been blocked'),
             ),
             backgroundColor: const Color(0xFF2F743F),
           ),
@@ -106,8 +89,7 @@ class _AdminUsersScreenState
                       ? 'فشل تحديث حالة المستخدم'
                       : 'Failed to update user status'),
             ),
-            backgroundColor:
-                Colors.red,
+            backgroundColor: Colors.red,
           ),
         );
     }
@@ -129,37 +111,26 @@ class _AdminUsersScreenState
           content: Text(
             newStatus
                 ? (_isArabic
-                    ? 'هل أنت متأكد من إلغاء حظر ${user.fullName}؟ سيتمكن من تسجيل الدخول مرة أخرى.'
-                    : 'Are you sure you want to unblock ${user.fullName}? They will be able to log in again.')
+                      ? 'هل أنت متأكد من إلغاء حظر ${user.fullName}؟ سيتمكن من تسجيل الدخول مرة أخرى.'
+                      : 'Are you sure you want to unblock ${user.fullName}? They will be able to log in again.')
                 : (_isArabic
-                    ? 'هل أنت متأكد من حظر ${user.fullName}؟ لن يتمكن من تسجيل الدخول ما دام الحساب محظورًا.'
-                    : 'Are you sure you want to block ${user.fullName}? They will not be able to log in while the account is blocked.'),
+                      ? 'هل أنت متأكد من حظر ${user.fullName}؟ لن يتمكن من تسجيل الدخول ما دام الحساب محظورًا.'
+                      : 'Are you sure you want to block ${user.fullName}? They will not be able to log in while the account is blocked.'),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(false);
+                Navigator.of(dialogContext).pop(false);
               },
-              child: Text(
-                _isArabic ? 'إلغاء' : 'Cancel',
-              ),
+              child: Text(_isArabic ? 'إلغاء' : 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(true);
+                Navigator.of(dialogContext).pop(true);
               },
-              style:
-                  ElevatedButton.styleFrom(
-                backgroundColor:
-                    newStatus
-                        ? Colors.green
-                        : Colors.red,
-                foregroundColor:
-                    Colors.white,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: newStatus ? Colors.green : Colors.red,
+                foregroundColor: Colors.white,
               ),
               child: Text(
                 newStatus
@@ -177,46 +148,41 @@ class _AdminUsersScreenState
 
   @override
   Widget build(BuildContext context) {
-    final userProvider =
-        Provider.of<UserProvider>(
-      context,
-    );
+    final userProvider = Provider.of<UserProvider>(context);
 
     final users = userProvider.users;
-    final activeCount =
-        users.where((user) => user.isActive).length;
-    final blockedCount =
-        users.length - activeCount;
+    final activeCount = users.where((user) => user.isActive).length;
+    final blockedCount = users.length - activeCount;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF4),
       body: Stack(
         children: [
-          const Positioned.fill(
-            child: _AdminUsersBackdrop(),
-          ),
+          const Positioned.fill(child: _AdminUsersBackdrop()),
           Column(
             children: [
               _AdminUsersTopBar(
                 isArabic: _isArabic,
                 onBack: () => Navigator.pop(context),
-                onRefresh:
-                    userProvider.isLoading ? null : _loadUsers,
+                onLanguage: () {
+                  Provider.of<LocaleProvider>(
+                    context,
+                    listen: false,
+                  ).toggleLanguage();
+                },
+                onRefresh: userProvider.isLoading ? null : _loadUsers,
               ),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: _loadUsers,
                   color: _adminUsersPrimary,
                   child: CustomScrollView(
-                    physics:
-                        const AlwaysScrollableScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
                       SliverToBoxAdapter(
                         child: Center(
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxWidth: 1320,
-                            ),
+                            constraints: const BoxConstraints(maxWidth: 1320),
                             child: Padding(
                               padding: const EdgeInsets.fromLTRB(
                                 24,
@@ -234,8 +200,7 @@ class _AdminUsersScreenState
                           ),
                         ),
                       ),
-                      if (userProvider.isLoading &&
-                          users.isEmpty)
+                      if (userProvider.isLoading && users.isEmpty)
                         const SliverFillRemaining(
                           hasScrollBody: false,
                           child: Center(
@@ -257,63 +222,47 @@ class _AdminUsersScreenState
                       else if (users.isEmpty)
                         SliverFillRemaining(
                           hasScrollBody: false,
-                          child: _AdminUsersEmptyState(
-                            isArabic: _isArabic,
-                          ),
+                          child: _AdminUsersEmptyState(isArabic: _isArabic),
                         )
                       else
                         SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(
-                            24,
-                            0,
-                            24,
-                            42,
-                          ),
+                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 42),
                           sliver: SliverLayoutBuilder(
                             builder: (context, constraints) {
-                              final width =
-                                  constraints.crossAxisExtent;
+                              final width = constraints.crossAxisExtent;
 
                               final crossAxisCount = width >= 1180
                                   ? 3
                                   : width >= 760
-                                      ? 2
-                                      : 1;
+                                  ? 2
+                                  : 1;
 
                               return SliverGrid(
-                                delegate:
-                                    SliverChildBuilderDelegate(
-                                  (context, index) {
-                                    final user = users[index];
+                                delegate: SliverChildBuilderDelegate((
+                                  context,
+                                  index,
+                                ) {
+                                  final user = users[index];
 
-                                    return _AdminUserCard(
-                                      isArabic: _isArabic,
-                                      user: user,
-                                      roleColor:
-                                          _roleColor(user.role),
-                                      roleIcon:
-                                          _roleIcon(user.role),
-                                      isUpdating:
-                                          _updatingUserId ==
-                                              user.id,
-                                      formatDate: _formatDate,
-                                      onChangeStatus: () {
-                                        _changeUserStatus(
-                                          user: user,
-                                        );
-                                      },
-                                    );
-                                  },
-                                  childCount: users.length,
-                                ),
+                                  return _AdminUserCard(
+                                    isArabic: _isArabic,
+                                    user: user,
+                                    roleColor: _roleColor(user.role),
+                                    roleIcon: _roleIcon(user.role),
+                                    isUpdating: _updatingUserId == user.id,
+                                    formatDate: _formatDate,
+                                    onChangeStatus: () {
+                                      _changeUserStatus(user: user);
+                                    },
+                                  );
+                                }, childCount: users.length),
                                 gridDelegate:
                                     SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount:
-                                      crossAxisCount,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 16,
-                                  mainAxisExtent: 360,
-                                ),
+                                      crossAxisCount: crossAxisCount,
+                                      crossAxisSpacing: 16,
+                                      mainAxisSpacing: 16,
+                                      mainAxisExtent: 360,
+                                    ),
                               );
                             },
                           ),
@@ -329,9 +278,7 @@ class _AdminUsersScreenState
     );
   }
 
-  Color _roleColor(
-    String role,
-  ) {
+  Color _roleColor(String role) {
     switch (role) {
       case 'ADMIN':
         return Colors.red;
@@ -344,13 +291,10 @@ class _AdminUsersScreenState
     }
   }
 
-  IconData _roleIcon(
-    String role,
-  ) {
+  IconData _roleIcon(String role) {
     switch (role) {
       case 'ADMIN':
-        return Icons
-            .admin_panel_settings;
+        return Icons.admin_panel_settings;
       case 'FARMER':
         return Icons.agriculture;
       case 'CUSTOMER':
@@ -360,24 +304,10 @@ class _AdminUsersScreenState
     }
   }
 
-  String _formatDate(
-    DateTime date,
-  ) {
-    final day =
-        date.day
-            .toString()
-            .padLeft(
-              2,
-              '0',
-            );
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
 
-    final month =
-        date.month
-            .toString()
-            .padLeft(
-              2,
-              '0',
-            );
+    final month = date.month.toString().padLeft(2, '0');
 
     return '$day/$month/${date.year}';
   }
@@ -392,11 +322,13 @@ const _adminUsersMuted = Color(0xFF6C786E);
 class _AdminUsersTopBar extends StatelessWidget {
   final bool isArabic;
   final VoidCallback onBack;
+  final VoidCallback onLanguage;
   final Future<void> Function()? onRefresh;
 
   const _AdminUsersTopBar({
     required this.isArabic,
     required this.onBack,
+    required this.onLanguage,
     required this.onRefresh,
   });
 
@@ -405,11 +337,7 @@ class _AdminUsersTopBar extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0xFF123A22),
-            Color(0xFF205A34),
-            Color(0xFF2E6F40),
-          ],
+          colors: [Color(0xFF123A22), Color(0xFF205A34), Color(0xFF2E6F40)],
         ),
       ),
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
@@ -430,10 +358,7 @@ class _AdminUsersTopBar extends StatelessWidget {
                 color: const Color(0xFFDDECB8),
                 borderRadius: BorderRadius.circular(13),
               ),
-              child: const Icon(
-                Icons.eco_rounded,
-                color: _adminUsersDark,
-              ),
+              child: const Icon(Icons.eco_rounded, color: _adminUsersDark),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -458,6 +383,14 @@ class _AdminUsersTopBar extends StatelessWidget {
                 ],
               ),
             ),
+            _AdminUsersHeaderButton(
+              icon: Icons.language_rounded,
+              tooltip: isArabic
+                  ? 'تغيير اللغة إلى الإنجليزية'
+                  : 'Change language to Arabic',
+              onTap: onLanguage,
+            ),
+            const SizedBox(width: 8),
             _AdminUsersHeaderButton(
               icon: Icons.refresh_rounded,
               tooltip: isArabic ? 'تحديث' : 'Refresh',
@@ -486,9 +419,7 @@ class _AdminUsersHeaderButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: Colors.white.withValues(
-          alpha: onTap == null ? 0.05 : 0.10,
-        ),
+        color: Colors.white.withValues(alpha: onTap == null ? 0.05 : 0.10),
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,
@@ -499,9 +430,7 @@ class _AdminUsersHeaderButton extends StatelessWidget {
             child: Icon(
               icon,
               size: 21,
-              color: onTap == null
-                  ? Colors.white54
-                  : Colors.white,
+              color: onTap == null ? Colors.white54 : Colors.white,
             ),
           ),
         ),
@@ -598,11 +527,7 @@ class _AdminUsersHero extends StatelessWidget {
           if (constraints.maxWidth < 760) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                heading,
-                const SizedBox(height: 18),
-                stats,
-              ],
+              children: [heading, const SizedBox(height: 18), stats],
             );
           }
 
@@ -623,18 +548,12 @@ class _AdminUsersStatChip extends StatelessWidget {
   final String label;
   final int value;
 
-  const _AdminUsersStatChip({
-    required this.label,
-    required this.value,
-  });
+  const _AdminUsersStatChip({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 13,
-        vertical: 10,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F6E9),
         borderRadius: BorderRadius.circular(15),
@@ -687,19 +606,13 @@ class _AdminUserCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 29,
-                backgroundColor:
-                    roleColor.withValues(alpha: 0.12),
-                backgroundImage: user.profileImage != null &&
-                        user.profileImage!.isNotEmpty
+                backgroundColor: roleColor.withValues(alpha: 0.12),
+                backgroundImage:
+                    user.profileImage != null && user.profileImage!.isNotEmpty
                     ? NetworkImage(user.profileImage!)
                     : null,
-                child: user.profileImage == null ||
-                        user.profileImage!.isEmpty
-                    ? Icon(
-                        roleIcon,
-                        color: roleColor,
-                        size: 28,
-                      )
+                child: user.profileImage == null || user.profileImage!.isEmpty
+                    ? Icon(roleIcon, color: roleColor, size: 28)
                     : null,
               ),
               const SizedBox(width: 13),
@@ -709,9 +622,7 @@ class _AdminUserCard extends StatelessWidget {
                   children: [
                     Text(
                       user.fullName.isEmpty
-                          ? (isArabic
-                              ? 'مستخدم بدون اسم'
-                              : 'Unnamed User')
+                          ? (isArabic ? 'مستخدم بدون اسم' : 'Unnamed User')
                           : user.fullName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -742,10 +653,7 @@ class _AdminUserCard extends StatelessWidget {
             runSpacing: 8,
             children: [
               _AdminUserBadge(
-                text: _localizedRole(
-                  user.role,
-                  isArabic,
-                ),
+                text: _localizedRole(user.role, isArabic),
                 color: roleColor,
                 icon: roleIcon,
               ),
@@ -762,12 +670,8 @@ class _AdminUserCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           if (user.phone != null && user.phone!.isNotEmpty)
-            _AdminUserInfoRow(
-              icon: Icons.phone_outlined,
-              text: user.phone!,
-            ),
-          if (user.address != null &&
-              user.address!.isNotEmpty)
+            _AdminUserInfoRow(icon: Icons.phone_outlined, text: user.phone!),
+          if (user.address != null && user.address!.isNotEmpty)
             _AdminUserInfoRow(
               icon: Icons.location_on_outlined,
               text: user.address!,
@@ -786,16 +690,13 @@ class _AdminUserCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFFFBFCF9),
               borderRadius: BorderRadius.circular(13),
-              border: Border.all(
-                color: const Color(0xFFE3E9DF),
-              ),
+              border: Border.all(color: const Color(0xFFE3E9DF)),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         isArabic ? 'حالة الحساب' : 'Account Status',
@@ -809,11 +710,11 @@ class _AdminUserCard extends StatelessWidget {
                       Text(
                         user.isActive
                             ? (isArabic
-                                ? 'يمكن لهذا الحساب الوصول إلى FarmPilot'
-                                : 'This account can access FarmPilot')
+                                  ? 'يمكن لهذا الحساب الوصول إلى FarmPilot'
+                                  : 'This account can access FarmPilot')
                             : (isArabic
-                                ? 'لا يمكن لهذا الحساب تسجيل الدخول'
-                                : 'This account cannot log in'),
+                                  ? 'لا يمكن لهذا الحساب تسجيل الدخول'
+                                  : 'This account cannot log in'),
                         style: const TextStyle(
                           color: _adminUsersMuted,
                           fontSize: 10,
@@ -846,8 +747,7 @@ class _AdminUserCard extends StatelessWidget {
                         vertical: 11,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     icon: Icon(
@@ -860,9 +760,7 @@ class _AdminUserCard extends StatelessWidget {
                       user.isActive
                           ? (isArabic ? 'حظر' : 'Block')
                           : (isArabic ? 'إلغاء الحظر' : 'Unblock'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
               ],
@@ -888,10 +786,7 @@ class _AdminUserBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(18),
@@ -899,11 +794,7 @@ class _AdminUserBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: color,
-          ),
+          Icon(icon, size: 14, color: color),
           const SizedBox(width: 5),
           Text(
             text,
@@ -923,10 +814,7 @@ class _AdminUserInfoRow extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _AdminUserInfoRow({
-    required this.icon,
-    required this.text,
-  });
+  const _AdminUserInfoRow({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -941,11 +829,7 @@ class _AdminUserInfoRow extends StatelessWidget {
               color: _adminUsersLight,
               borderRadius: BorderRadius.circular(9),
             ),
-            child: Icon(
-              icon,
-              size: 16,
-              color: _adminUsersPrimary,
-            ),
+            child: Icon(icon, size: 16, color: _adminUsersPrimary),
           ),
           const SizedBox(width: 9),
           Expanded(
@@ -953,10 +837,7 @@ class _AdminUserInfoRow extends StatelessWidget {
               text,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: _adminUsersText,
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: _adminUsersText, fontSize: 12),
             ),
           ),
         ],
@@ -968,17 +849,13 @@ class _AdminUserInfoRow extends StatelessWidget {
 class _AdminUsersEmptyState extends StatelessWidget {
   final bool isArabic;
 
-  const _AdminUsersEmptyState({
-    required this.isArabic,
-  });
+  const _AdminUsersEmptyState({required this.isArabic});
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 460,
-        ),
+        constraints: const BoxConstraints(maxWidth: 460),
         margin: const EdgeInsets.all(24),
         padding: const EdgeInsets.all(30),
         decoration: _adminUsersCardDecoration(24),
@@ -1026,9 +903,7 @@ class _AdminUsersErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 440,
-        ),
+        constraints: const BoxConstraints(maxWidth: 440),
         margin: const EdgeInsets.all(24),
         padding: const EdgeInsets.all(28),
         decoration: _adminUsersCardDecoration(24),
@@ -1044,10 +919,7 @@ class _AdminUsersErrorState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: _adminUsersText,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: _adminUsersText, fontSize: 14),
             ),
             const SizedBox(height: 18),
             ElevatedButton.icon(
@@ -1057,12 +929,8 @@ class _AdminUsersErrorState extends StatelessWidget {
                 foregroundColor: Colors.white,
                 elevation: 0,
               ),
-              icon: const Icon(
-                Icons.refresh_rounded,
-              ),
-              label: Text(
-                isArabic ? 'حاول مرة أخرى' : 'Try Again',
-              ),
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text(isArabic ? 'حاول مرة أخرى' : 'Try Again'),
             ),
           ],
         ),
@@ -1096,18 +964,12 @@ class _AdminUsersBackdrop extends StatelessWidget {
           PositionedDirectional(
             end: -180,
             top: 190,
-            child: _AdminUsersGlow(
-              size: 450,
-              color: const Color(0xFFCFE6B4),
-            ),
+            child: _AdminUsersGlow(size: 450, color: const Color(0xFFCFE6B4)),
           ),
           PositionedDirectional(
             start: -190,
             bottom: -220,
-            child: _AdminUsersGlow(
-              size: 520,
-              color: const Color(0xFFE7DFAF),
-            ),
+            child: _AdminUsersGlow(size: 520, color: const Color(0xFFE7DFAF)),
           ),
         ],
       ),
@@ -1119,10 +981,7 @@ class _AdminUsersGlow extends StatelessWidget {
   final double size;
   final Color color;
 
-  const _AdminUsersGlow({
-    required this.size,
-    required this.color,
-  });
+  const _AdminUsersGlow({required this.size, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -1132,21 +991,14 @@ class _AdminUsersGlow extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
-          colors: [
-            color.withValues(alpha: 0.25),
-            color.withValues(alpha: 0),
-          ],
+          colors: [color.withValues(alpha: 0.25), color.withValues(alpha: 0)],
         ),
       ),
     );
   }
 }
 
-
-String _localizedRole(
-  String role,
-  bool isArabic,
-) {
+String _localizedRole(String role, bool isArabic) {
   if (!isArabic) {
     return role;
   }
@@ -1167,9 +1019,7 @@ BoxDecoration _adminUsersCardDecoration(double radius) {
   return BoxDecoration(
     color: Colors.white,
     borderRadius: BorderRadius.circular(radius),
-    border: Border.all(
-      color: const Color(0xFFDCE5D8),
-    ),
+    border: Border.all(color: const Color(0xFFDCE5D8)),
     boxShadow: [
       BoxShadow(
         color: _adminUsersDark.withValues(alpha: 0.05),
