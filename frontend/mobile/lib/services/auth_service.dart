@@ -85,7 +85,8 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>> forgotPassword({
+  Future<Map<String, dynamic>>
+      forgotPassword({
     required String email,
   }) async {
     try {
@@ -122,7 +123,8 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>> resetPassword({
+  Future<Map<String, dynamic>>
+      resetPassword({
     required String token,
     required String password,
   }) async {

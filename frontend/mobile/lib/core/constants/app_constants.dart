@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String serverIp = '192.168.1.11';
+  static const String serverIp = '192.168.88.7';
 
   static const String baseUrl =
       'http://$serverIp:3000';

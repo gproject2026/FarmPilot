@@ -8,6 +8,7 @@ import '../../providers/cart_provider.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/order_provider.dart';
 import 'customer_orders_screen.dart';
+import 'customer_products_screen.dart';
 
 const Color _cartDarkGreen = Color(0xFF173F24);
 const Color _cartPrimaryGreen = Color(0xFF2F6B3D);
@@ -16,16 +17,12 @@ const Color _cartBackground = Color(0xFFF8FAF4);
 const Color _cartTextPrimary = Color(0xFF1D2C21);
 const Color _cartTextSecondary = Color(0xFF68756B);
 
-String _localizedCartProductName(
-  String name,
-  bool isArabic,
-) {
+String _localizedCartProductName(String name, bool isArabic) {
   if (!isArabic) {
     return name;
   }
 
-  final key =
-      name.trim().toLowerCase();
+  final key = name.trim().toLowerCase();
 
   const translations = <String, String>{
     'orange': 'برتقال',
@@ -64,10 +61,7 @@ String _localizedCartProductName(
   return translations[key] ?? name;
 }
 
-String _localizedCartUnit(
-  String unit,
-  bool isArabic,
-) {
+String _localizedCartUnit(String unit, bool isArabic) {
   if (!isArabic) {
     return unit;
   }
@@ -93,7 +87,6 @@ String _localizedCartUnit(
   }
 }
 
-
 class CustomerCartScreen extends StatelessWidget {
   const CustomerCartScreen({super.key});
 
@@ -102,10 +95,7 @@ class CustomerCartScreen extends StatelessWidget {
     final cartProvider = Provider.of<CartProvider>(context);
     final orderProvider = Provider.of<OrderProvider>(context);
 
-    final isArabic =
-        Localizations.localeOf(context)
-                .languageCode ==
-            'ar';
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
     return Scaffold(
       backgroundColor: _cartBackground,
@@ -126,9 +116,7 @@ class CustomerCartScreen extends StatelessWidget {
               if (cartProvider.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: _EmptyCart(
-                    isArabic: isArabic,
-                  ),
+                  child: _EmptyCart(isArabic: isArabic),
                 )
               else
                 SliverToBoxAdapter(
@@ -208,11 +196,7 @@ class CustomerCartScreen extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF123A22),
-            Color(0xFF205A34),
-            Color(0xFF2E6F40),
-          ],
+          colors: [Color(0xFF123A22), Color(0xFF205A34), Color(0xFF2E6F40)],
         ),
         boxShadow: [
           BoxShadow(
@@ -270,10 +254,7 @@ class CustomerCartScreen extends StatelessWidget {
               ),
             ),
             PopupMenuButton<String>(
-              tooltip:
-                  isArabic
-                      ? 'تغيير اللغة'
-                      : 'Change Language',
+              tooltip: isArabic ? 'تغيير اللغة' : 'Change Language',
               offset: const Offset(0, 48),
               position: PopupMenuPosition.under,
               color: const Color(0xFFF8FAF4),
@@ -285,9 +266,7 @@ class CustomerCartScreen extends StatelessWidget {
                 Provider.of<LocaleProvider>(
                   context,
                   listen: false,
-                ).setLocale(
-                  Locale(languageCode),
-                );
+                ).setLocale(Locale(languageCode));
               },
               itemBuilder: (context) {
                 return [
@@ -304,11 +283,7 @@ class CustomerCartScreen extends StatelessWidget {
                               : Colors.transparent,
                         ),
                         const SizedBox(width: 10),
-                        Text(
-                          isArabic
-                              ? 'الإنجليزية'
-                              : 'English',
-                        ),
+                        Text(isArabic ? 'الإنجليزية' : 'English'),
                       ],
                     ),
                   ),
@@ -325,11 +300,7 @@ class CustomerCartScreen extends StatelessWidget {
                               : Colors.transparent,
                         ),
                         const SizedBox(width: 10),
-                        Text(
-                          isArabic
-                              ? 'العربية'
-                              : 'Arabic',
-                        ),
+                        Text(isArabic ? 'العربية' : 'Arabic'),
                       ],
                     ),
                   ),
@@ -339,8 +310,7 @@ class CustomerCartScreen extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color:
-                      Colors.white.withValues(alpha: 0.10),
+                  color: Colors.white.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 alignment: Alignment.center,
@@ -358,10 +328,7 @@ class CustomerCartScreen extends StatelessWidget {
                 tooltip: isArabic ? 'تفريغ السلة' : 'Clear cart',
                 onTap: orderProvider.isLoading
                     ? null
-                    : () => _showClearCartDialog(
-                          context,
-                          cartProvider,
-                        ),
+                    : () => _showClearCartDialog(context, cartProvider),
               ),
           ],
         ),
@@ -379,52 +346,36 @@ class CustomerCartScreen extends StatelessWidget {
       children: [
         _SectionHeading(
           icon: Icons.shopping_cart_outlined,
-          title:
-              isArabic ? 'سلتك' : 'Your Cart',
-          subtitle:
-              isArabic
-                  ? 'راجع منتجاتك وعدّل الكميات قبل إتمام الشراء.'
-                  : 'Review your products and adjust quantities before checkout.',
+          title: isArabic ? 'سلتك' : 'Your Cart',
+          subtitle: isArabic
+              ? 'راجع منتجاتك وعدّل الكميات قبل إتمام الشراء.'
+              : 'Review your products and adjust quantities before checkout.',
         ),
         const SizedBox(height: 16),
-        ...List.generate(
-          cartProvider.items.length,
-          (index) {
-            final item = cartProvider.items[index];
+        ...List.generate(cartProvider.items.length, (index) {
+          final item = cartProvider.items[index];
 
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom:
-                    index == cartProvider.items.length - 1 ? 0 : 14,
-              ),
-              child: _CartItemCard(
-                item: item,
-                isArabic: isArabic,
-                isLoading: orderProvider.isLoading,
-              ),
-            );
-          },
-        ),
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: index == cartProvider.items.length - 1 ? 0 : 14,
+            ),
+            child: _CartItemCard(
+              item: item,
+              isArabic: isArabic,
+              isLoading: orderProvider.isLoading,
+            ),
+          );
+        }),
       ],
     );
   }
 
   Future<void> _checkout(BuildContext context) async {
-    final isArabic =
-        Localizations.localeOf(context).languageCode == 'ar';
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
-    final authProvider = Provider.of<AuthProvider>(
-      context,
-      listen: false,
-    );
-    final cartProvider = Provider.of<CartProvider>(
-      context,
-      listen: false,
-    );
-    final orderProvider = Provider.of<OrderProvider>(
-      context,
-      listen: false,
-    );
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
 
     final token = authProvider.token;
 
@@ -449,11 +400,7 @@ class CustomerCartScreen extends StatelessWidget {
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
-            content: Text(
-              isArabic
-                  ? 'سلة التسوق فارغة'
-                  : 'Your cart is empty',
-            ),
+            content: Text(isArabic ? 'سلة التسوق فارغة' : 'Your cart is empty'),
           ),
         );
       return;
@@ -485,18 +432,14 @@ class CustomerCartScreen extends StatelessWidget {
         ..showSnackBar(
           SnackBar(
             content: Text(
-              isArabic
-                  ? 'تم إنشاء الطلب بنجاح'
-                  : 'Order created successfully',
+              isArabic ? 'تم إنشاء الطلب بنجاح' : 'Order created successfully',
             ),
             backgroundColor: _cartPrimaryGreen,
           ),
         );
 
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const CustomerOrdersScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const CustomerOrdersScreen()),
       );
     } else {
       ScaffoldMessenger.of(context)
@@ -505,9 +448,7 @@ class CustomerCartScreen extends StatelessWidget {
           SnackBar(
             content: Text(
               orderProvider.errorMessage ??
-                  (isArabic
-                      ? 'فشل إنشاء الطلب'
-                      : 'Failed to create order'),
+                  (isArabic ? 'فشل إنشاء الطلب' : 'Failed to create order'),
             ),
             backgroundColor: Colors.red,
           ),
@@ -522,8 +463,7 @@ class CustomerCartScreen extends StatelessWidget {
     final result = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-        final isArabic =
-            Localizations.localeOf(context).languageCode == 'ar';
+        final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
         return AlertDialog(
           backgroundColor: const Color(0xFFFFFEFA),
@@ -532,24 +472,17 @@ class CustomerCartScreen extends StatelessWidget {
           ),
           title: Row(
             children: [
-              const Icon(
-                Icons.shopping_bag_outlined,
-                color: _cartPrimaryGreen,
-              ),
+              const Icon(Icons.shopping_bag_outlined, color: _cartPrimaryGreen),
               const SizedBox(width: 10),
-              Text(
-                isArabic
-                    ? 'تأكيد الطلب'
-                    : 'Confirm Order',
-              ),
+              Text(isArabic ? 'تأكيد الطلب' : 'Confirm Order'),
             ],
           ),
           content: Text(
             isArabic
                 ? 'هل تريد إنشاء هذا الطلب بإجمالي '
-                    '${totalPrice.toStringAsFixed(2)} ₪؟'
+                      '${totalPrice.toStringAsFixed(2)} ₪؟'
                 : 'Create this order with a total of '
-                    '${totalPrice.toStringAsFixed(2)} ₪?',
+                      '${totalPrice.toStringAsFixed(2)} ₪?',
           ),
           actions: [
             TextButton(
@@ -580,17 +513,11 @@ class CustomerCartScreen extends StatelessWidget {
     return result ?? false;
   }
 
-  void _showClearCartDialog(
-    BuildContext context,
-    CartProvider cartProvider,
-  ) {
+  void _showClearCartDialog(BuildContext context, CartProvider cartProvider) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
-        final isArabic =
-            Localizations.localeOf(context)
-                    .languageCode ==
-                'ar';
+        final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
         return AlertDialog(
           backgroundColor: const Color(0xFFFFFEFA),
@@ -599,16 +526,9 @@ class CustomerCartScreen extends StatelessWidget {
           ),
           title: Row(
             children: [
-              const Icon(
-                Icons.delete_sweep_outlined,
-                color: Colors.red,
-              ),
+              const Icon(Icons.delete_sweep_outlined, color: Colors.red),
               const SizedBox(width: 10),
-              Text(
-                isArabic
-                    ? 'تفريغ السلة'
-                    : 'Clear Cart',
-              ),
+              Text(isArabic ? 'تفريغ السلة' : 'Clear Cart'),
             ],
           ),
           content: Text(
@@ -630,9 +550,7 @@ class CustomerCartScreen extends StatelessWidget {
               },
               child: Text(
                 isArabic ? 'تفريغ' : 'Clear',
-                style: const TextStyle(
-                  color: Colors.red,
-                ),
+                style: const TextStyle(color: Colors.red),
               ),
             ),
           ],
@@ -658,9 +576,7 @@ class _HeaderButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: Colors.white.withValues(
-          alpha: onTap == null ? 0.05 : 0.10,
-        ),
+        color: Colors.white.withValues(alpha: onTap == null ? 0.05 : 0.10),
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,
@@ -670,8 +586,7 @@ class _HeaderButton extends StatelessWidget {
             height: 44,
             child: Icon(
               icon,
-              color:
-                  onTap == null ? Colors.white54 : Colors.white,
+              color: onTap == null ? Colors.white54 : Colors.white,
               size: 21,
             ),
           ),
@@ -704,11 +619,7 @@ class _SectionHeading extends StatelessWidget {
             color: const Color(0xFFEAF3DF),
             borderRadius: BorderRadius.circular(15),
           ),
-          child: Icon(
-            icon,
-            color: _cartPrimaryGreen,
-            size: 24,
-          ),
+          child: Icon(icon, color: _cartPrimaryGreen, size: 24),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -753,10 +664,7 @@ class _CartItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cartProvider = Provider.of<CartProvider>(
-      context,
-      listen: false,
-    );
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -764,15 +672,10 @@ class _CartItemCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFFFFFF),
-            Color(0xFFFFFEFA),
-          ],
+          colors: [Color(0xFFFFFFFF), Color(0xFFFFFEFA)],
         ),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFFDDE6D8),
-        ),
+        border: Border.all(color: const Color(0xFFDDE6D8)),
         boxShadow: [
           BoxShadow(
             color: _cartDarkGreen.withValues(alpha: 0.045),
@@ -802,25 +705,17 @@ class _CartItemCard extends StatelessWidget {
                       child: _ProductInfo(
                         item: item,
                         isArabic: isArabic,
-                        displayName:
-                            _localizedCartProductName(
+                        displayName: _localizedCartProductName(
                           item.name,
                           isArabic,
                         ),
-                        displayUnit:
-                            _localizedCartUnit(
-                          item.unit,
-                          isArabic,
-                        ),
+                        displayUnit: _localizedCartUnit(item.unit, isArabic),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 14),
-                _buildControls(
-                  context: context,
-                  cartProvider: cartProvider,
-                ),
+                _buildControls(context: context, cartProvider: cartProvider),
               ],
             );
           }
@@ -828,26 +723,14 @@ class _CartItemCard extends StatelessWidget {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _ProductImage(
-                imageUrl: item.imageUrl,
-                width: 110,
-                height: 118,
-              ),
+              _ProductImage(imageUrl: item.imageUrl, width: 110, height: 118),
               const SizedBox(width: 16),
               Expanded(
                 child: _ProductInfo(
                   item: item,
                   isArabic: isArabic,
-                  displayName:
-                      _localizedCartProductName(
-                    item.name,
-                    isArabic,
-                  ),
-                  displayUnit:
-                      _localizedCartUnit(
-                    item.unit,
-                    isArabic,
-                  ),
+                  displayName: _localizedCartProductName(item.name, isArabic),
+                  displayUnit: _localizedCartUnit(item.unit, isArabic),
                 ),
               ),
               const SizedBox(width: 18),
@@ -878,9 +761,7 @@ class _CartItemCard extends StatelessWidget {
           onPressed: isLoading
               ? null
               : () {
-                  cartProvider.decreaseQuantity(
-                    item.productId,
-                  );
+                  cartProvider.decreaseQuantity(item.productId);
                 },
         ),
         Expanded(
@@ -901,9 +782,7 @@ class _CartItemCard extends StatelessWidget {
           onPressed: isLoading
               ? null
               : () {
-                  cartProvider.increaseQuantity(
-                    item.productId,
-                  );
+                  cartProvider.increaseQuantity(item.productId);
                 },
         ),
         const SizedBox(width: 8),
@@ -911,18 +790,14 @@ class _CartItemCard extends StatelessWidget {
           onPressed: isLoading
               ? null
               : () {
-                  cartProvider.removeItem(
-                    item.productId,
-                  );
+                  cartProvider.removeItem(item.productId);
                 },
           tooltip: isArabic ? 'إزالة المنتج' : 'Remove product',
           style: IconButton.styleFrom(
             backgroundColor: const Color(0xFFFCE7E7),
             foregroundColor: const Color(0xFFB44F4F),
           ),
-          icon: const Icon(
-            Icons.delete_outline_rounded,
-          ),
+          icon: const Icon(Icons.delete_outline_rounded),
         ),
       ],
     );
@@ -961,17 +836,11 @@ class _ProductInfo extends StatelessWidget {
         Text(
           '${item.price.toStringAsFixed(2)} ₪'
           '${displayUnit.isEmpty ? '' : ' / $displayUnit'}',
-          style: const TextStyle(
-            color: _cartTextSecondary,
-            fontSize: 13,
-          ),
+          style: const TextStyle(color: _cartTextSecondary, fontSize: 13),
         ),
         const SizedBox(height: 9),
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 6,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
             color: const Color(0xFFEAF3DF),
             borderRadius: BorderRadius.circular(18),
@@ -1004,8 +873,7 @@ class _ProductImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasImage =
-        imageUrl != null && imageUrl!.trim().isNotEmpty;
+    final hasImage = imageUrl != null && imageUrl!.trim().isNotEmpty;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
@@ -1017,11 +885,7 @@ class _ProductImage extends StatelessWidget {
             ? Image.network(
                 _buildImageUrl(imageUrl!),
                 fit: BoxFit.cover,
-                errorBuilder: (
-                  context,
-                  error,
-                  stackTrace,
-                ) {
+                errorBuilder: (context, error, stackTrace) {
                   return const Center(
                     child: Icon(
                       Icons.image_not_supported_outlined,
@@ -1049,27 +913,19 @@ class _ProductImage extends StatelessWidget {
       return '';
     }
 
-    if (trimmed.startsWith(
-          'http://localhost:3000',
-        ) ||
-        trimmed.startsWith(
-          'http://127.0.0.1:3000',
-        )) {
+    if (trimmed.startsWith('http://localhost:3000') ||
+        trimmed.startsWith('http://127.0.0.1:3000')) {
       return trimmed.replaceFirst(
-        RegExp(
-          r'http://(localhost|127\.0\.0\.1):3000',
-        ),
+        RegExp(r'http://(localhost|127\.0\.0\.1):3000'),
         AppConstants.baseUrl,
       );
     }
 
-    if (trimmed.startsWith('http://') ||
-        trimmed.startsWith('https://')) {
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       return trimmed;
     }
 
-    final normalized =
-        trimmed.startsWith('/') ? trimmed : '/$trimmed';
+    final normalized = trimmed.startsWith('/') ? trimmed : '/$trimmed';
 
     return '${AppConstants.baseUrl}$normalized';
   }
@@ -1079,10 +935,7 @@ class _QuantityButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
 
-  const _QuantityButton({
-    required this.icon,
-    required this.onPressed,
-  });
+  const _QuantityButton({required this.icon, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -1092,10 +945,7 @@ class _QuantityButton extends StatelessWidget {
       child: IconButton(
         padding: EdgeInsets.zero,
         onPressed: onPressed,
-        icon: Icon(
-          icon,
-          size: 19,
-        ),
+        icon: Icon(icon, size: 19),
         style: IconButton.styleFrom(
           backgroundColor: const Color(0xFFEAF3DF),
           foregroundColor: _cartPrimaryGreen,
@@ -1128,15 +978,10 @@ class _CartSummary extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFFFFFF),
-            Color(0xFFFFFEFA),
-          ],
+          colors: [Color(0xFFFFFFFF), Color(0xFFFFFEFA)],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFFDDE6D8),
-        ),
+        border: Border.all(color: const Color(0xFFDDE6D8)),
         boxShadow: [
           BoxShadow(
             color: _cartDarkGreen.withValues(alpha: 0.055),
@@ -1172,9 +1017,7 @@ class _CartSummary extends StatelessWidget {
             value: totalQuantity.toString(),
           ),
           const SizedBox(height: 12),
-          const Divider(
-            color: Color(0xFFE1E8DD),
-          ),
+          const Divider(color: Color(0xFFE1E8DD)),
           const SizedBox(height: 12),
           _SummaryRow(
             label: isArabic ? 'السعر الإجمالي' : 'Total price',
@@ -1190,8 +1033,7 @@ class _CartSummary extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _cartPrimaryGreen,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor:
-                    const Color(0xFFD6DDD4),
+                disabledBackgroundColor: const Color(0xFFD6DDD4),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -1206,20 +1048,12 @@ class _CartSummary extends StatelessWidget {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(
-                      Icons.shopping_bag_outlined,
-                    ),
+                  : const Icon(Icons.shopping_bag_outlined),
               label: Text(
                 isLoading
-                    ? (isArabic
-                        ? 'جارٍ إنشاء الطلب...'
-                        : 'Creating Order...')
-                    : (isArabic
-                        ? 'إتمام الشراء'
-                        : 'Checkout'),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                ),
+                    ? (isArabic ? 'جارٍ إنشاء الطلب...' : 'Creating Order...')
+                    : (isArabic ? 'إتمام الشراء' : 'Checkout'),
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -1248,22 +1082,16 @@ class _SummaryRow extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              color: emphasize
-                  ? _cartTextPrimary
-                  : _cartTextSecondary,
+              color: emphasize ? _cartTextPrimary : _cartTextSecondary,
               fontSize: emphasize ? 16 : 14,
-              fontWeight: emphasize
-                  ? FontWeight.w700
-                  : FontWeight.w500,
+              fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            color: emphasize
-                ? _cartPrimaryGreen
-                : _cartTextPrimary,
+            color: emphasize ? _cartPrimaryGreen : _cartTextPrimary,
             fontSize: emphasize ? 21 : 15,
             fontWeight: FontWeight.w800,
           ),
@@ -1276,9 +1104,7 @@ class _SummaryRow extends StatelessWidget {
 class _EmptyCart extends StatelessWidget {
   final bool isArabic;
 
-  const _EmptyCart({
-    required this.isArabic,
-  });
+  const _EmptyCart({required this.isArabic});
 
   @override
   Widget build(BuildContext context) {
@@ -1286,16 +1112,12 @@ class _EmptyCart extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Container(
-          constraints: const BoxConstraints(
-            maxWidth: 480,
-          ),
+          constraints: const BoxConstraints(maxWidth: 480),
           padding: const EdgeInsets.all(30),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(
-              color: const Color(0xFFDDE6D8),
-            ),
+            border: Border.all(color: const Color(0xFFDDE6D8)),
             boxShadow: [
               BoxShadow(
                 color: _cartDarkGreen.withValues(alpha: 0.05),
@@ -1322,9 +1144,7 @@ class _EmptyCart extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Text(
-                isArabic
-                    ? 'سلة التسوق فارغة'
-                    : 'Your cart is empty',
+                isArabic ? 'سلة التسوق فارغة' : 'Your cart is empty',
                 style: const TextStyle(
                   color: _cartTextPrimary,
                   fontSize: 22,
@@ -1346,7 +1166,11 @@ class _EmptyCart extends StatelessWidget {
               const SizedBox(height: 22),
               ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (_) => const CustomerProductsScreen(),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _cartPrimaryGreen,
@@ -1360,13 +1184,9 @@ class _EmptyCart extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                icon: const Icon(
-                  Icons.storefront_outlined,
-                ),
+                icon: const Icon(Icons.storefront_outlined),
                 label: Text(
-                  isArabic
-                      ? 'العودة إلى السوق'
-                      : 'Back to Marketplace',
+                  isArabic ? 'العودة إلى السوق' : 'Back to Marketplace',
                 ),
               ),
             ],
@@ -1410,10 +1230,8 @@ class _CartBackdrop extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFCFE6B4)
-                        .withValues(alpha: 0.28),
-                    const Color(0xFFCFE6B4)
-                        .withValues(alpha: 0.0),
+                    const Color(0xFFCFE6B4).withValues(alpha: 0.28),
+                    const Color(0xFFCFE6B4).withValues(alpha: 0.0),
                   ],
                 ),
               ),
@@ -1429,10 +1247,8 @@ class _CartBackdrop extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFE7DFAF)
-                        .withValues(alpha: 0.22),
-                    const Color(0xFFE7DFAF)
-                        .withValues(alpha: 0.0),
+                    const Color(0xFFE7DFAF).withValues(alpha: 0.22),
+                    const Color(0xFFE7DFAF).withValues(alpha: 0.0),
                   ],
                 ),
               ),

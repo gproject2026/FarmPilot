@@ -314,9 +314,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 _buildLogoBadge(
                   l10n,
                 ),
-
                 const Spacer(),
-
                 Container(
                   width: 72,
                   height: 72,
@@ -339,11 +337,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     size: 38,
                   ),
                 ),
-
                 const SizedBox(
                   height: 28,
                 ),
-
                 Text(
                   l10n.loginBrandTitle,
                   style:
@@ -358,11 +354,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         -1.2,
                   ),
                 ),
-
                 const SizedBox(
                   height: 20,
                 ),
-
                 Text(
                   l10n.loginBrandDescription,
                   style:
@@ -375,11 +369,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 1.6,
                   ),
                 ),
-
                 const SizedBox(
                   height: 32,
                 ),
-
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
@@ -404,9 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-
                 const Spacer(),
-
                 Text(
                   l10n.appName,
                   style:
@@ -469,11 +459,9 @@ class _LoginScreenState extends State<LoginScreen> {
           _buildLogoBadge(
             l10n,
           ),
-
           const SizedBox(
             height: 28,
           ),
-
           Text(
             l10n.loginBrandTitle,
             style:
@@ -485,11 +473,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   FontWeight.w800,
             ),
           ),
-
           const SizedBox(
             height: 12,
           ),
-
           Text(
             l10n.mobileBrandDescription,
             style:
@@ -507,330 +493,392 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
- Widget _buildLoginPanel({
-  required BuildContext context,
-  required AuthProvider authProvider,
-  required AppLocalizations l10n,
-  required bool isArabic,
-  bool isMobile = false,
-}) {
-  return Container(
-    color: const Color(0xFFF5F7F0),
-    child: Center(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 24 : 56,
-          vertical: isMobile ? 32 : 48,
-        ),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 460,
+  Widget _buildLoginPanel({
+    required BuildContext context,
+    required AuthProvider authProvider,
+    required AppLocalizations l10n,
+    required bool isArabic,
+    bool isMobile = false,
+  }) {
+    return Container(
+      color: const Color(0xFFF5F7F0),
+      child: Center(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal:
+                isMobile ? 24 : 56,
+            vertical:
+                isMobile ? 32 : 48,
           ),
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.login,
-                          style: const TextStyle(
-                            color:
-                                Color(0xFF183124),
-                            fontSize: 34,
-                            fontWeight:
-                                FontWeight.w800,
-                            letterSpacing: -0.7,
+          child: ConstrainedBox(
+            constraints:
+                const BoxConstraints(
+              maxWidth: 460,
+            ),
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment
+                                .start,
+                        children: [
+                          Text(
+                            l10n.login,
+                            style:
+                                const TextStyle(
+                              color:
+                                  Color(
+                                0xFF183124,
+                              ),
+                              fontSize: 34,
+                              fontWeight:
+                                  FontWeight
+                                      .w800,
+                              letterSpacing:
+                                  -0.7,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.welcomeToFarmPilot,
-                          style: const TextStyle(
-                            color:
-                                Color(0xFF6D756E),
-                            fontSize: 15,
-                            height: 1.45,
+                          const SizedBox(
+                            height: 8,
                           ),
-                        ),
-                      ],
+                          Text(
+                            l10n
+                                .welcomeToFarmPilot,
+                            style:
+                                const TextStyle(
+                              color:
+                                  Color(
+                                0xFF6D756E,
+                              ),
+                              fontSize: 15,
+                              height: 1.45,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  _buildLanguageMenu(
-                    isArabic: isArabic,
-                    l10n: l10n,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 34),
-
-              _buildSectionLabel(
-                l10n.email,
-              ),
-
-              const SizedBox(height: 8),
-
-              TextField(
-                controller: emailController,
-                keyboardType:
-                    TextInputType.emailAddress,
-                textInputAction:
-                    TextInputAction.next,
-                autofillHints: const [
-                  AutofillHints.email,
-                ],
-                decoration: InputDecoration(
-                  hintText: l10n.email,
-                  prefixIcon: const Icon(
-                    Icons.mail_outline_rounded,
-                  ),
+                    _buildLanguageMenu(
+                      isArabic:
+                          isArabic,
+                      l10n: l10n,
+                    ),
+                  ],
                 ),
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildSectionLabel(
-                l10n.password,
-              ),
-
-              const SizedBox(height: 8),
-
-              TextField(
-                controller:
-                    passwordController,
-                obscureText:
-                    obscurePassword,
-                textInputAction:
-                    TextInputAction.done,
-                autofillHints: const [
-                  AutofillHints.password,
-                ],
-                onSubmitted: (_) {
-                  if (!authProvider
-                      .isLoading) {
-                    _login();
-                  }
-                },
-                decoration: InputDecoration(
-                  hintText: l10n.password,
-                  prefixIcon: const Icon(
-                    Icons.lock_outline_rounded,
-                  ),
-                  suffixIcon: IconButton(
-                    tooltip: obscurePassword
-                        ? l10n.showPassword
-                        : l10n.hidePassword,
-                    onPressed: () {
-                      setState(() {
-                        obscurePassword =
-                            !obscurePassword;
-                      });
-                    },
-                    icon: Icon(
-                      obscurePassword
-                          ? Icons
-                              .visibility_outlined
-                          : Icons
-                              .visibility_off_outlined,
+                const SizedBox(
+                  height: 34,
+                ),
+                _buildSectionLabel(
+                  l10n.email,
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                TextField(
+                  controller:
+                      emailController,
+                  keyboardType:
+                      TextInputType
+                          .emailAddress,
+                  textInputAction:
+                      TextInputAction
+                          .next,
+                  autofillHints:
+                      const [
+                    AutofillHints.username,
+                  ],
+                  decoration:
+                      InputDecoration(
+                    hintText:
+                        l10n.email,
+                    prefixIcon:
+                        const Icon(
+                      Icons
+                          .mail_outline_rounded,
                     ),
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 6),
-
-              Align(
-                alignment:
-                    AlignmentDirectional
-                        .centerEnd,
-                child: TextButton(
-                  onPressed:
-                      authProvider.isLoading
-                          ? null
-                          : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const ForgotPasswordScreen(),
-                                ),
-                              );
-                            },
-                  child: Text(
-                    l10n.forgotPassword,
-                  ),
+                const SizedBox(
+                  height: 20,
                 ),
-              ),
-
-              const SizedBox(height: 16),
-
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed:
-                      authProvider.isLoading
-                          ? null
-                          : _login,
-                  style:
-                      ElevatedButton.styleFrom(
-                    backgroundColor:
-                        const Color(
-                      0xFF2D663B,
+                _buildSectionLabel(
+                  l10n.password,
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                TextField(
+                  controller:
+                      passwordController,
+                  obscureText:
+                      obscurePassword,
+                  textInputAction:
+                      TextInputAction
+                          .done,
+                  autofillHints:
+                      const [
+                    AutofillHints.password,
+                  ],
+                  onSubmitted: (_) {
+                    if (!authProvider
+                        .isLoading) {
+                      _login();
+                    }
+                  },
+                  decoration:
+                      InputDecoration(
+                    hintText:
+                        l10n.password,
+                    prefixIcon:
+                        const Icon(
+                      Icons
+                          .lock_outline_rounded,
                     ),
-                    foregroundColor:
-                        Colors.white,
-                    elevation: 0,
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                        16,
+                    suffixIcon:
+                        IconButton(
+                      tooltip:
+                          obscurePassword
+                              ? l10n
+                                  .showPassword
+                              : l10n
+                                  .hidePassword,
+                      onPressed: () {
+                        setState(() {
+                          obscurePassword =
+                              !obscurePassword;
+                        });
+                      },
+                      icon: Icon(
+                        obscurePassword
+                            ? Icons
+                                .visibility_outlined
+                            : Icons
+                                .visibility_off_outlined,
                       ),
                     ),
                   ),
-                  child: authProvider
-                          .isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child:
-                              CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color:
-                                Colors.white,
-                          ),
-                        )
-                      : Text(
-                          l10n.login,
-                          style:
-                              const TextStyle(
-                            fontSize: 16,
-                            fontWeight:
-                                FontWeight.w700,
-                          ),
-                        ),
                 ),
-              ),
-
-              // =========================
-              // CREATE ACCOUNT
-              // =========================
-              const SizedBox(height: 18),
-
-              Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: Text(
-                      l10n.dontHaveAccount,
-                      textAlign:
-                          TextAlign.center,
-                      style:
-                          const TextStyle(
-                        color:
-                            Color(0xFF6D756E),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  TextButton(
+                const SizedBox(
+                  height: 6,
+                ),
+                Align(
+                  alignment:
+                      AlignmentDirectional
+                          .centerEnd,
+                  child: TextButton(
                     onPressed:
-                        authProvider.isLoading
+                        authProvider
+                                .isLoading
                             ? null
                             : () {
-                                Navigator.push(
+                                Navigator
+                                    .push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) =>
-                                        const RegisterScreen(),
+                                        const ForgotPasswordScreen(),
                                   ),
                                 );
                               },
-                    style:
-                        TextButton.styleFrom(
-                      foregroundColor:
+                    child: Text(
+                      l10n
+                          .forgotPassword,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+                SizedBox(
+                  width:
+                      double.infinity,
+                  height: 56,
+                  child:
+                      ElevatedButton(
+                    onPressed:
+                        authProvider
+                                .isLoading
+                            ? null
+                            : _login,
+                    style: ElevatedButton
+                        .styleFrom(
+                      backgroundColor:
                           const Color(
                         0xFF2D663B,
                       ),
-                      padding:
-                          const EdgeInsets
-                              .symmetric(
-                        horizontal: 6,
+                      foregroundColor:
+                          Colors.white,
+                      elevation: 0,
+                      shape:
+                          RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                          16,
+                        ),
                       ),
                     ),
-                    child: Text(
-                      l10n.registerNow,
-                      style:
-                          const TextStyle(
-                        fontSize: 14,
-                        fontWeight:
-                            FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 18),
-
-              Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.all(
-                  16,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(
-                    0xFFE8EFE3,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    16,
+                    child: authProvider
+                            .isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child:
+                                CircularProgressIndicator(
+                              strokeWidth:
+                                  2,
+                              color:
+                                  Colors
+                                      .white,
+                            ),
+                          )
+                        : Text(
+                            l10n.login,
+                            style:
+                                const TextStyle(
+                              fontSize: 16,
+                              fontWeight:
+                                  FontWeight
+                                      .w700,
+                            ),
+                          ),
                   ),
                 ),
-                child: Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                const SizedBox(
+                  height: 18,
+                ),
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment
+                          .center,
                   children: [
-                    const Icon(
-                      Icons.shield_outlined,
-                      color:
-                          Color(0xFF537448),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
+                    Flexible(
                       child: Text(
                         l10n
-                            .secureAccessMessage,
+                            .dontHaveAccount,
+                        textAlign:
+                            TextAlign.center,
                         style:
                             const TextStyle(
                           color:
-                              Color(0xFF5B665D),
-                          fontSize: 13,
-                          height: 1.45,
+                              Color(
+                            0xFF6D756E,
+                          ),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 4,
+                    ),
+                    TextButton(
+                      onPressed:
+                          authProvider
+                                  .isLoading
+                              ? null
+                              : () {
+                                  Navigator
+                                      .push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const RegisterScreen(),
+                                    ),
+                                  );
+                                },
+                      style: TextButton
+                          .styleFrom(
+                        foregroundColor:
+                            const Color(
+                          0xFF2D663B,
+                        ),
+                        padding:
+                            const EdgeInsets
+                                .symmetric(
+                          horizontal: 6,
+                        ),
+                      ),
+                      child: Text(
+                        l10n.registerNow,
+                        style:
+                            const TextStyle(
+                          fontSize: 14,
+                          fontWeight:
+                              FontWeight
+                                  .w800,
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(
+                  height: 18,
+                ),
+                Container(
+                  width:
+                      double.infinity,
+                  padding:
+                      const EdgeInsets.all(
+                    16,
+                  ),
+                  decoration:
+                      BoxDecoration(
+                    color:
+                        const Color(
+                      0xFFE8EFE3,
+                    ),
+                    borderRadius:
+                        BorderRadius
+                            .circular(
+                      16,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment:
+                        CrossAxisAlignment
+                            .start,
+                    children: [
+                      const Icon(
+                        Icons
+                            .shield_outlined,
+                        color:
+                            Color(
+                          0xFF537448,
+                        ),
+                        size: 20,
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        child: Text(
+                          l10n
+                              .secureAccessMessage,
+                          style:
+                              const TextStyle(
+                            color:
+                                Color(
+                              0xFF5B665D,
+                            ),
+                            fontSize: 13,
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildLogoBadge(
     AppLocalizations l10n,
@@ -862,11 +910,9 @@ class _LoginScreenState extends State<LoginScreen> {
             size: 24,
           ),
         ),
-
         const SizedBox(
           width: 12,
         ),
-
         Text(
           l10n.appName,
           style:
