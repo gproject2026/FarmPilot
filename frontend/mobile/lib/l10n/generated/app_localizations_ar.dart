@@ -458,4 +458,75 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get removeImage => 'إزالة الصورة';
+
+  @override
+  String get createAccount => 'إنشاء حساب';
+
+  @override
+  String get createAccountSubtitle => 'أنشئ حسابك وابدأ باستخدام فارم بايلوت.';
+
+  @override
+  String get alreadyHaveAccount => 'لديك حساب بالفعل؟';
+
+  @override
+  String get dontHaveAccount => 'ليس لديك حساب؟';
+
+  @override
+  String get loginHere => 'تسجيل الدخول';
+
+  @override
+  String get registerNow => 'إنشاء حساب';
+
+  @override
+  String get fullName => 'الاسم الكامل';
+
+  @override
+  String get phone => 'رقم الهاتف';
+
+  @override
+  String get address => 'العنوان';
+
+  @override
+  String get confirmPassword => 'تأكيد كلمة المرور';
+
+  @override
+  String get accountType => 'نوع الحساب';
+
+  @override
+  String get farmer => 'مزارع';
+
+  @override
+  String get customerAccount => 'عميل';
+
+  @override
+  String get selectAccountType => 'اختر نوع الحساب';
+
+  @override
+  String get createAccountButton => 'إنشاء الحساب';
+
+  @override
+  String get creatingAccount => 'جارٍ إنشاء الحساب...';
+
+  @override
+  String get accountCreatedSuccessfully =>
+      'تم إنشاء الحساب بنجاح. يمكنك الآن تسجيل الدخول.';
+
+  @override
+  String get pleaseFillAllFields => 'يرجى تعبئة جميع الحقول';
+
+  @override
+  String get passwordsDoNotMatch => 'كلمتا المرور غير متطابقتين';
+
+  @override
+  String get passwordTooShort => 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل';
+
+  @override
+  String get invalidEmail => 'يرجى إدخال بريد إلكتروني صحيح';
+
+  @override
+  String get joinFarmPilot => 'انضم إلى فارم بايلوت';
+
+  @override
+  String get registerBrandDescription =>
+      'أنشئ حسابًا كمزارع أو عميل واستفد من أدوات الزراعة الذكية والسوق المباشر.';
 }

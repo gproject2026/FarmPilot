@@ -463,4 +463,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeImage => 'Remove image';
+
+  @override
+  String get createAccount => 'Create Account';
+
+  @override
+  String get createAccountSubtitle =>
+      'Create your account and start using FarmPilot.';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get dontHaveAccount => 'Don\'t have an account?';
+
+  @override
+  String get loginHere => 'Login';
+
+  @override
+  String get registerNow => 'Create Account';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get phone => 'Phone Number';
+
+  @override
+  String get address => 'Address';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get accountType => 'Account Type';
+
+  @override
+  String get farmer => 'Farmer';
+
+  @override
+  String get customerAccount => 'Customer';
+
+  @override
+  String get selectAccountType => 'Select Account Type';
+
+  @override
+  String get createAccountButton => 'Create Account';
+
+  @override
+  String get creatingAccount => 'Creating account...';
+
+  @override
+  String get accountCreatedSuccessfully =>
+      'Account created successfully. You can now log in.';
+
+  @override
+  String get pleaseFillAllFields => 'Please fill in all fields';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 6 characters';
+
+  @override
+  String get invalidEmail => 'Please enter a valid email address';
+
+  @override
+  String get joinFarmPilot => 'Join FarmPilot';
+
+  @override
+  String get registerBrandDescription =>
+      'Create a farmer or customer account and access smart farming tools and the direct marketplace.';
 }
