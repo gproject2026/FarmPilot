@@ -8,6 +8,7 @@ import '../../providers/cart_provider.dart';
 import '../../providers/favorite_provider.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/product_provider.dart';
+import '../../providers/review_provider.dart';
 import 'customer_cart_screen.dart';
 import 'customer_favorites_screen.dart';
 import 'customer_product_details_screen.dart';
@@ -40,10 +41,29 @@ class _CustomerProductsScreenState extends State<CustomerProductsScreen> {
 
   Future<void> _loadData() async {
     try {
+      final productProvider = Provider.of<ProductProvider>(
+        context,
+        listen: false,
+      );
+
       await Future.wait([
-        Provider.of<ProductProvider>(context, listen: false).loadAllProducts(),
+        productProvider.loadAllProducts(),
         Provider.of<FavoriteProvider>(context, listen: false).loadFavorites(),
       ]);
+
+      if (!mounted) {
+        return;
+      }
+
+      final productIds = productProvider.products
+          .map((product) => product['id']?.toString() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+
+      await Provider.of<ReviewProvider>(
+        context,
+        listen: false,
+      ).loadMarketplaceRatings(productIds);
     } catch (e) {
       if (!mounted) {
         return;
@@ -379,7 +399,7 @@ class _CustomerProductsScreenState extends State<CustomerProductsScreen> {
                               maxCrossAxisExtent: 340,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
-                              mainAxisExtent: 455,
+                              mainAxisExtent: 480,
                             ),
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final product = Map<String, dynamic>.from(
@@ -825,6 +845,12 @@ class _ProductCard extends StatelessWidget {
 
     final isFavorite = favoriteProvider.isFavorite(productId);
 
+    final reviewProvider = Provider.of<ReviewProvider>(context);
+
+    final averageRating = reviewProvider.averageRatingFor(productId);
+
+    final reviewCount = reviewProvider.reviewCountFor(productId);
+
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(22),
@@ -1066,6 +1092,14 @@ class _ProductCard extends StatelessWidget {
                         ),
                       ],
                       const Spacer(),
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: _RatingStars(
+                          rating: averageRating,
+                          hasReviews: reviewCount > 0,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           Expanded(
@@ -1197,6 +1231,37 @@ class _ProductCard extends StatelessWidget {
         : '/$trimmedUrl';
 
     return '${AppConstants.baseUrl}$normalizedPath';
+  }
+}
+
+class _RatingStars extends StatelessWidget {
+  final double rating;
+  final bool hasReviews;
+
+  const _RatingStars({required this.rating, required this.hasReviews});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        final starNumber = index + 1;
+
+        IconData icon;
+
+        if (!hasReviews) {
+          icon = Icons.star_border_rounded;
+        } else if (rating >= starNumber) {
+          icon = Icons.star_rounded;
+        } else if (rating >= starNumber - 0.5) {
+          icon = Icons.star_half_rounded;
+        } else {
+          icon = Icons.star_border_rounded;
+        }
+
+        return Icon(icon, size: 19, color: const Color(0xFFF4B942));
+      }),
+    );
   }
 }
 
