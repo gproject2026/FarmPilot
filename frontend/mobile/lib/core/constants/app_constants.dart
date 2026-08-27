@@ -1,19 +1,13 @@
 class AppConstants {
-  static const String serverIp = '192.168.88.7';
-
   static const String baseUrl =
-      'http://$serverIp:3000';
+      'https://rogue-durable-hamburger.ngrok-free.dev';
 
-  static String getImageUrl(
-    String? imageUrl,
-  ) {
-    if (imageUrl == null ||
-        imageUrl.trim().isEmpty) {
+  static String getImageUrl(String? imageUrl) {
+    if (imageUrl == null || imageUrl.trim().isEmpty) {
       return '';
     }
 
-    if (imageUrl.startsWith('http://') ||
-        imageUrl.startsWith('https://')) {
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return imageUrl;
     }
 

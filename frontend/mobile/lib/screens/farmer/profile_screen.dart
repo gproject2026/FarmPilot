@@ -1,37 +1,32 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/profile_provider.dart';
+import '../../services/push_device_service.dart';
+import '../../services/push_notification_service.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({
-    super.key,
-  });
+  const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() =>
-      _ProfileScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState
-    extends State<ProfileScreen> {
-  final fullNameController =
-      TextEditingController();
+class _ProfileScreenState extends State<ProfileScreen> {
+  final fullNameController = TextEditingController();
 
-  final phoneController =
-      TextEditingController();
+  final phoneController = TextEditingController();
 
-  final addressController =
-      TextEditingController();
+  final addressController = TextEditingController();
 
-  final emailController =
-      TextEditingController();
+  final emailController = TextEditingController();
 
-  final roleController =
-      TextEditingController();
+  final roleController = TextEditingController();
 
   bool fieldsInitialized = false;
   bool _isArabic = false;
+  bool _isEnablingNotifications = false;
 
   void _setLanguage(bool isArabic) {
     if (_isArabic == isArabic) {
@@ -47,18 +42,13 @@ class _ProfileScreenState
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance
-        .addPostFrameCallback(
-      (_) {
-        if (!mounted) {
-          return;
-        }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
 
-        context
-            .read<ProfileProvider>()
-            .loadProfile();
-      },
-    );
+      context.read<ProfileProvider>().loadProfile();
+    });
   }
 
   @override
@@ -72,53 +62,122 @@ class _ProfileScreenState
     super.dispose();
   }
 
-  void initializeFields(
-    ProfileProvider provider,
-  ) {
-    if (
-      fieldsInitialized ||
-      provider.user == null
-    ) {
+  void initializeFields(ProfileProvider provider) {
+    if (fieldsInitialized || provider.user == null) {
       return;
     }
 
-    final user =
-        provider.user!;
+    final user = provider.user!;
 
-    fullNameController.text =
-        user.fullName;
+    fullNameController.text = user.fullName;
 
-    phoneController.text =
-        user.phone ?? '';
+    phoneController.text = user.phone ?? '';
 
-    addressController.text =
-        user.address ?? '';
+    addressController.text = user.address ?? '';
 
-    emailController.text =
-        user.email;
+    emailController.text = user.email;
 
-    roleController.text =
-        user.role;
+    roleController.text = user.role;
 
     fieldsInitialized = true;
   }
 
+  Future<void> enableNotifications() async {
+    if (_isEnablingNotifications) {
+      return;
+    }
+
+    setState(() {
+      _isEnablingNotifications = true;
+    });
+
+    try {
+      final token = await PushNotificationService.instance.initialize();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (token == null || token.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isArabic
+                  ? 'لم يتم منح صلاحية الإشعارات. يرجى السماح بالإشعارات ثم المحاولة مرة أخرى.'
+                  : 'Notification permission was not granted. Please allow notifications and try again.',
+            ),
+            backgroundColor: Colors.orange.shade700,
+          ),
+        );
+
+        return;
+      }
+
+      await PushDeviceService().registerDevice(
+        token: token,
+        platform: _notificationPlatform(),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isArabic
+                ? 'تم تفعيل الإشعارات بنجاح.'
+                : 'Notifications enabled successfully.',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isEnablingNotifications = false;
+        });
+      }
+    }
+  }
+
+  String _notificationPlatform() {
+    if (kIsWeb) {
+      return 'web';
+    }
+
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return 'android';
+
+      case TargetPlatform.iOS:
+        return 'ios';
+
+      default:
+        return 'web';
+    }
+  }
+
   Future<void> saveProfile() async {
-    final fullName =
-        fullNameController.text
-            .trim();
+    final fullName = fullNameController.text.trim();
 
-    final phone =
-        phoneController.text
-            .trim();
+    final phone = phoneController.text.trim();
 
-    final address =
-        addressController.text
-            .trim();
+    final address = addressController.text.trim();
 
     if (fullName.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             _isArabic
@@ -131,34 +190,27 @@ class _ProfileScreenState
       return;
     }
 
-    final profileProvider =
-        context.read<ProfileProvider>();
+    final profileProvider = context.read<ProfileProvider>();
 
     try {
-      await profileProvider
-          .updateProfile(
-        fullName:
-            fullName,
-        phone:
-            phone,
-        address:
-            address,
+      await profileProvider.updateProfile(
+        fullName: fullName,
+        phone: phone,
+        address: address,
       );
 
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             _isArabic
                 ? 'تم تحديث الملف الشخصي بنجاح'
                 : 'Profile updated successfully',
           ),
-          backgroundColor:
-              Colors.green,
+          backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
@@ -166,19 +218,10 @@ class _ProfileScreenState
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            e
-                .toString()
-                .replaceFirst(
-                  'Exception: ',
-                  '',
-                ),
-          ),
-          backgroundColor:
-              Colors.red,
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -187,144 +230,155 @@ class _ProfileScreenState
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection:
-          _isArabic ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: _isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-      backgroundColor: const Color(0xFFF8FAF4),
-      body: Consumer<ProfileProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading && provider.user == null) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF2F6B3D),
-              ),
-            );
-          }
+        backgroundColor: const Color(0xFFF8FAF4),
+        body: Consumer<ProfileProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading && provider.user == null) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF2F6B3D)),
+              );
+            }
 
-          if (provider.errorMessage != null && provider.user == null) {
-            return _ProfileErrorState(
-              isArabic: _isArabic,
-              message: provider.errorMessage!,
-              onRetry: provider.loadProfile,
-            );
-          }
+            if (provider.errorMessage != null && provider.user == null) {
+              return _ProfileErrorState(
+                isArabic: _isArabic,
+                message: provider.errorMessage!,
+                onRetry: provider.loadProfile,
+              );
+            }
 
-          if (provider.user == null) {
-            return Center(
-              child: Text(
-                _isArabic
-                    ? 'لم يتم العثور على بيانات الملف الشخصي'
-                    : 'Profile data not found',
-              ),
-            );
-          }
+            if (provider.user == null) {
+              return Center(
+                child: Text(
+                  _isArabic
+                      ? 'لم يتم العثور على بيانات الملف الشخصي'
+                      : 'Profile data not found',
+                ),
+              );
+            }
 
-          initializeFields(provider);
-          final user = provider.user!;
+            initializeFields(provider);
 
-          return Stack(
-            children: [
-              const Positioned.fill(child: _ProfileBackdrop()),
-              Column(
-                children: [
-                  _ProfileTopBar(
-                    isArabic: _isArabic,
-                    onLanguageChanged: _setLanguage,
-                    onBack: () => Navigator.pop(context),
-                    onRefresh: provider.isLoading
-                        ? null
-                        : () async {
-                            fieldsInitialized = false;
-                            await provider.loadProfile();
-                            if (mounted) {
-                              setState(() {});
-                            }
-                          },
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(24, 26, 24, 42),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 1180),
-                          child: Column(
-                            children: [
-                              _ProfileHero(
-                                isArabic: _isArabic,
-                                fullName: user.fullName,
-                                email: user.email,
-                                role: user.role,
-                                profileImage: user.profileImage,
-                              ),
-                              const SizedBox(height: 22),
-                              LayoutBuilder(
-                                builder: (context, constraints) {
-                                  final form = _ProfileFormCard(
-                                    isArabic: _isArabic,
-                                    fullNameController: fullNameController,
-                                    emailController: emailController,
-                                    phoneController: phoneController,
-                                    addressController: addressController,
-                                    roleController: roleController,
-                                    isSaving: provider.isSaving,
-                                    onSave: saveProfile,
-                                  );
+            final user = provider.user!;
 
-                                  final side = _ProfileSideCard(
-                                    isArabic: _isArabic,
-                                    fullName: user.fullName,
-                                    email: user.email,
-                                    role: user.role,
-                                  );
+            return Stack(
+              children: [
+                const Positioned.fill(child: _ProfileBackdrop()),
+                Column(
+                  children: [
+                    _ProfileTopBar(
+                      isArabic: _isArabic,
+                      onLanguageChanged: _setLanguage,
+                      onBack: () => Navigator.pop(context),
+                      onRefresh: provider.isLoading
+                          ? null
+                          : () async {
+                              fieldsInitialized = false;
 
-                                  if (constraints.maxWidth < 820) {
-                                    return Column(
+                              await provider.loadProfile();
+
+                              if (mounted) {
+                                setState(() {});
+                              }
+                            },
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(24, 26, 24, 42),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1180),
+                            child: Column(
+                              children: [
+                                _ProfileHero(
+                                  isArabic: _isArabic,
+                                  fullName: user.fullName,
+                                  email: user.email,
+                                  role: user.role,
+                                  profileImage: user.profileImage,
+                                ),
+                                const SizedBox(height: 22),
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final form = _ProfileFormCard(
+                                      isArabic: _isArabic,
+                                      fullNameController: fullNameController,
+                                      emailController: emailController,
+                                      phoneController: phoneController,
+                                      addressController: addressController,
+                                      roleController: roleController,
+                                      isSaving: provider.isSaving,
+                                      onSave: saveProfile,
+                                    );
+
+                                    final side = _ProfileSideCard(
+                                      isArabic: _isArabic,
+                                      fullName: user.fullName,
+                                      email: user.email,
+                                      role: user.role,
+                                      isEnablingNotifications:
+                                          _isEnablingNotifications,
+                                      onEnableNotifications:
+                                          enableNotifications,
+                                    );
+
+                                    if (constraints.maxWidth < 820) {
+                                      return Column(
+                                        children: [
+                                          form,
+                                          const SizedBox(height: 18),
+                                          side,
+                                        ],
+                                      );
+                                    }
+
+                                    return Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        form,
-                                        const SizedBox(height: 18),
-                                        side,
+                                        Expanded(flex: 7, child: form),
+                                        const SizedBox(width: 20),
+                                        Expanded(flex: 3, child: side),
                                       ],
                                     );
-                                  }
-
-                                  return Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(flex: 7, child: form),
-                                      const SizedBox(width: 20),
-                                      Expanded(flex: 3, child: side),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ],
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       ),
-    ),
     );
   }
 }
 
 const _profileDarkGreen = Color(0xFF173F24);
+
 const _profilePrimaryGreen = Color(0xFF2F6B3D);
+
 const _profileLightGreen = Color(0xFFDDECB8);
+
 const _profileText = Color(0xFF1D2C21);
+
 const _profileMuted = Color(0xFF6C786E);
 
 class _ProfileTopBar extends StatelessWidget {
   final bool isArabic;
+
   final ValueChanged<bool> onLanguageChanged;
+
   final VoidCallback onBack;
+
   final VoidCallback? onRefresh;
 
   const _ProfileTopBar({
@@ -341,11 +395,7 @@ class _ProfileTopBar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [
-            Color(0xFF123A22),
-            Color(0xFF205A34),
-            Color(0xFF2E6F40),
-          ],
+          colors: [Color(0xFF123A22), Color(0xFF205A34), Color(0xFF2E6F40)],
         ),
       ),
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
@@ -366,10 +416,7 @@ class _ProfileTopBar extends StatelessWidget {
                 color: _profileLightGreen,
                 borderRadius: BorderRadius.circular(13),
               ),
-              child: const Icon(
-                Icons.eco_rounded,
-                color: _profileDarkGreen,
-              ),
+              child: const Icon(Icons.eco_rounded, color: _profileDarkGreen),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -398,8 +445,7 @@ class _ProfileTopBar extends StatelessWidget {
             Directionality(
               textDirection: TextDirection.ltr,
               child: PopupMenuButton<String>(
-                tooltip:
-                    isArabic ? 'تغيير اللغة' : 'Change Language',
+                tooltip: isArabic ? 'تغيير اللغة' : 'Change Language',
                 position: PopupMenuPosition.under,
                 offset: const Offset(0, 8),
                 color: const Color(0xFFF8FAF4),
@@ -463,8 +509,7 @@ class _ProfileTopBar extends StatelessWidget {
             const SizedBox(width: 8),
             _TopButton(
               icon: Icons.refresh_rounded,
-              tooltip:
-                  isArabic ? 'تحديث الملف الشخصي' : 'Refresh profile',
+              tooltip: isArabic ? 'تحديث الملف الشخصي' : 'Refresh profile',
               onTap: onRefresh,
             ),
           ],
@@ -476,7 +521,9 @@ class _ProfileTopBar extends StatelessWidget {
 
 class _TopButton extends StatelessWidget {
   final IconData icon;
+
   final String tooltip;
+
   final VoidCallback? onTap;
 
   const _TopButton({
@@ -512,9 +559,13 @@ class _TopButton extends StatelessWidget {
 
 class _ProfileHero extends StatelessWidget {
   final bool isArabic;
+
   final String fullName;
+
   final String email;
+
   final String role;
+
   final String? profileImage;
 
   const _ProfileHero({
@@ -534,11 +585,7 @@ class _ProfileHero extends StatelessWidget {
         gradient: const LinearGradient(
           begin: AlignmentDirectional.centerStart,
           end: AlignmentDirectional.centerEnd,
-          colors: [
-            Colors.white,
-            Color(0xFFFFFEFA),
-            Color(0xFFF4F8EC),
-          ],
+          colors: [Colors.white, Color(0xFFFFFEFA), Color(0xFFF4F8EC)],
         ),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(color: const Color(0xFFDCE6D7)),
@@ -575,27 +622,17 @@ class _ProfileHero extends StatelessWidget {
                 email,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: _profileMuted,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: _profileMuted, fontSize: 14),
               ),
               const SizedBox(height: 12),
-              _RoleChip(
-                role: role,
-                isArabic: isArabic,
-              ),
+              _RoleChip(role: role, isArabic: isArabic),
             ],
           );
 
           if (constraints.maxWidth < 560) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                avatar,
-                const SizedBox(height: 16),
-                details,
-              ],
+              children: [avatar, const SizedBox(height: 16), details],
             );
           }
 
@@ -627,17 +664,17 @@ class _ProfileHero extends StatelessWidget {
 
 class _ProfileAvatar extends StatelessWidget {
   final String? profileImage;
+
   final String fullName;
 
-  const _ProfileAvatar({
-    required this.profileImage,
-    required this.fullName,
-  });
+  const _ProfileAvatar({required this.profileImage, required this.fullName});
 
   @override
   Widget build(BuildContext context) {
     final hasImage = profileImage != null && profileImage!.isNotEmpty;
+
     final trimmed = fullName.trim();
+
     final initial = trimmed.isEmpty ? 'U' : trimmed[0].toUpperCase();
 
     return Container(
@@ -668,12 +705,10 @@ class _ProfileAvatar extends StatelessWidget {
 
 class _RoleChip extends StatelessWidget {
   final String role;
+
   final bool isArabic;
 
-  const _RoleChip({
-    required this.role,
-    required this.isArabic,
-  });
+  const _RoleChip({required this.role, required this.isArabic});
 
   @override
   Widget build(BuildContext context) {
@@ -693,10 +728,7 @@ class _RoleChip extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            _localizedRoleLabel(
-              role,
-              isArabic,
-            ),
+            _localizedRoleLabel(role, isArabic),
             style: const TextStyle(
               color: _profilePrimaryGreen,
               fontSize: 12,
@@ -711,12 +743,19 @@ class _RoleChip extends StatelessWidget {
 
 class _ProfileFormCard extends StatelessWidget {
   final bool isArabic;
+
   final TextEditingController fullNameController;
+
   final TextEditingController emailController;
+
   final TextEditingController phoneController;
+
   final TextEditingController addressController;
+
   final TextEditingController roleController;
+
   final bool isSaving;
+
   final Future<void> Function() onSave;
 
   const _ProfileFormCard({
@@ -740,8 +779,7 @@ class _ProfileFormCard extends StatelessWidget {
         children: [
           _SectionHeading(
             icon: Icons.edit_note_rounded,
-            title:
-                isArabic ? 'المعلومات الشخصية' : 'Personal Information',
+            title: isArabic ? 'المعلومات الشخصية' : 'Personal Information',
             subtitle: isArabic
                 ? 'حدّث المعلومات المرتبطة بحسابك.'
                 : 'Update the information associated with your account.',
@@ -846,8 +884,9 @@ class _ProfileFormCard extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _profilePrimaryGreen,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor:
-                    _profilePrimaryGreen.withValues(alpha: 0.55),
+                disabledBackgroundColor: _profilePrimaryGreen.withValues(
+                  alpha: 0.55,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -882,10 +921,15 @@ class _ProfileFormCard extends StatelessWidget {
 
 class _ProfileField extends StatelessWidget {
   final TextEditingController controller;
+
   final String label;
+
   final IconData icon;
+
   final bool readOnly;
+
   final int maxLines;
+
   final TextInputType? keyboardType;
 
   const _ProfileField({
@@ -914,10 +958,11 @@ class _ProfileField extends StatelessWidget {
         labelStyle: const TextStyle(color: _profileMuted),
         prefixIcon: Icon(icon, color: _profilePrimaryGreen, size: 21),
         filled: true,
-        fillColor:
-            readOnly ? const Color(0xFFF3F5F1) : const Color(0xFFFCFDFB),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+        fillColor: readOnly ? const Color(0xFFF3F5F1) : const Color(0xFFFCFDFB),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 17,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: const BorderSide(color: Color(0xFFD8E2D4)),
@@ -928,10 +973,7 @@ class _ProfileField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(
-            color: _profilePrimaryGreen,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: _profilePrimaryGreen, width: 1.5),
         ),
       ),
     );
@@ -940,15 +982,24 @@ class _ProfileField extends StatelessWidget {
 
 class _ProfileSideCard extends StatelessWidget {
   final bool isArabic;
+
   final String fullName;
+
   final String email;
+
   final String role;
+
+  final bool isEnablingNotifications;
+
+  final Future<void> Function() onEnableNotifications;
 
   const _ProfileSideCard({
     required this.isArabic,
     required this.fullName,
     required this.email,
     required this.role,
+    required this.isEnablingNotifications,
+    required this.onEnableNotifications,
   });
 
   @override
@@ -1016,6 +1067,113 @@ class _ProfileSideCard extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 18),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7FAF2),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFDCE6D7)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAF3DF),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.notifications_active_outlined,
+                        color: _profilePrimaryGreen,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isArabic
+                                ? 'إشعارات التذكير'
+                                : 'Reminder Notifications',
+                            style: const TextStyle(
+                              color: _profileText,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isArabic
+                                ? 'فعّل الإشعارات ليصلك تنبيه عند حلول موعد التذكير.'
+                                : 'Enable notifications to receive an alert when a reminder is due.',
+                            style: const TextStyle(
+                              color: _profileMuted,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton.icon(
+                    onPressed: isEnablingNotifications
+                        ? null
+                        : onEnableNotifications,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _profilePrimaryGreen,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: _profilePrimaryGreen.withValues(
+                        alpha: 0.55,
+                      ),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    icon: isEnablingNotifications
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.notifications_active_outlined,
+                            size: 20,
+                          ),
+                    label: Text(
+                      isEnablingNotifications
+                          ? (isArabic ? 'جارٍ التفعيل...' : 'Enabling...')
+                          : (isArabic
+                                ? 'تفعيل الإشعارات'
+                                : 'Enable Notifications'),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1024,7 +1182,9 @@ class _ProfileSideCard extends StatelessWidget {
 
 class _AccountInfoRow extends StatelessWidget {
   final IconData icon;
+
   final String label;
+
   final String value;
 
   const _AccountInfoRow({
@@ -1054,10 +1214,7 @@ class _AccountInfoRow extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: _profileMuted,
-                  fontSize: 11,
-                ),
+                style: const TextStyle(color: _profileMuted, fontSize: 11),
               ),
               const SizedBox(height: 3),
               Text(
@@ -1078,7 +1235,9 @@ class _AccountInfoRow extends StatelessWidget {
 
 class _SectionHeading extends StatelessWidget {
   final IconData icon;
+
   final String title;
+
   final String subtitle;
 
   const _SectionHeading({
@@ -1133,7 +1292,9 @@ class _SectionHeading extends StatelessWidget {
 
 class _ProfileErrorState extends StatelessWidget {
   final bool isArabic;
+
   final String message;
+
   final Future<void> Function() onRetry;
 
   const _ProfileErrorState({
@@ -1162,10 +1323,7 @@ class _ProfileErrorState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: _profileText,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: _profileText, fontSize: 14),
             ),
             const SizedBox(height: 18),
             ElevatedButton.icon(
@@ -1175,9 +1333,7 @@ class _ProfileErrorState extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               icon: const Icon(Icons.refresh_rounded),
-              label: Text(
-                isArabic ? 'حاول مرة أخرى' : 'Try Again',
-              ),
+              label: Text(isArabic ? 'حاول مرة أخرى' : 'Try Again'),
             ),
           ],
         ),
@@ -1211,18 +1367,12 @@ class _ProfileBackdrop extends StatelessWidget {
           PositionedDirectional(
             end: -180,
             top: 160,
-            child: _Glow(
-              size: 470,
-              color: Color(0xFFCFE6B4),
-            ),
+            child: _Glow(size: 470, color: Color(0xFFCFE6B4)),
           ),
           PositionedDirectional(
             start: -200,
             bottom: -230,
-            child: _Glow(
-              size: 520,
-              color: Color(0xFFE7DFAF),
-            ),
+            child: _Glow(size: 520, color: Color(0xFFE7DFAF)),
           ),
         ],
       ),
@@ -1232,12 +1382,10 @@ class _ProfileBackdrop extends StatelessWidget {
 
 class _Glow extends StatelessWidget {
   final double size;
+
   final Color color;
 
-  const _Glow({
-    required this.size,
-    required this.color,
-  });
+  const _Glow({required this.size, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -1247,21 +1395,14 @@ class _Glow extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
-          colors: [
-            color.withValues(alpha: 0.25),
-            color.withValues(alpha: 0),
-          ],
+          colors: [color.withValues(alpha: 0.25), color.withValues(alpha: 0)],
         ),
       ),
     );
   }
 }
 
-
-String _localizedRoleLabel(
-  String role,
-  bool isArabic,
-) {
+String _localizedRoleLabel(String role, bool isArabic) {
   if (!isArabic) {
     return role;
   }
@@ -1269,10 +1410,13 @@ String _localizedRoleLabel(
   switch (role.trim().toUpperCase()) {
     case 'FARMER':
       return 'مزارع';
+
     case 'CUSTOMER':
       return 'عميل';
+
     case 'ADMIN':
       return 'مسؤول';
+
     default:
       return role;
   }

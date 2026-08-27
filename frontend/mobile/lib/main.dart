@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
+import 'firebase_options.dart';
 
 import 'l10n/generated/app_localizations.dart';
 
@@ -26,12 +31,119 @@ import 'providers/user_provider.dart';
 
 import 'screens/auth/login_screen.dart';
 
-void main() {
+import 'services/push_notification_service.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const FarmPilotApp());
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    PushNotificationService.instance.initialize();
+  });
 }
 
-class FarmPilotApp extends StatelessWidget {
+class FarmPilotApp extends StatefulWidget {
   const FarmPilotApp({super.key});
+
+  @override
+  State<FarmPilotApp> createState() => _FarmPilotAppState();
+}
+
+class _FarmPilotAppState extends State<FarmPilotApp> {
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
+
+  StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _foregroundMessageSubscription = PushNotificationService
+        .instance
+        .foregroundMessages
+        .listen(_showForegroundNotification);
+  }
+
+  Future<void> _showForegroundNotification(RemoteMessage message) async {
+    final notification = message.notification;
+
+    final title = notification?.title ?? 'FarmPilot Reminder';
+
+    final body = notification?.body ?? 'You have a new reminder.';
+
+    final messenger = _scaffoldMessengerKey.currentState;
+
+    if (messenger == null) {
+      return;
+    }
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 6),
+          behavior: SnackBarBehavior.floating,
+          content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 2),
+                child: Icon(
+                  Icons.notifications_active_outlined,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (body.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        body,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+    try {
+      await Provider.of<NotificationProvider>(
+        messenger.context,
+        listen: false,
+      ).loadNotifications();
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _foregroundMessageSubscription?.cancel();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +168,7 @@ class FarmPilotApp extends StatelessWidget {
       child: Consumer<LocaleProvider>(
         builder: (context, localeProvider, child) {
           return MaterialApp(
+            scaffoldMessengerKey: _scaffoldMessengerKey,
             debugShowCheckedModeBanner: false,
             title: 'FarmPilot',
             locale: localeProvider.locale,

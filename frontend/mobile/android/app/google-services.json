@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "103301243361",
+    "project_id": "farmpilot-646c1",
+    "storage_bucket": "farmpilot-646c1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:103301243361:android:bb3dc129d1bb1bec29f2a0",
+        "android_client_info": {
+          "package_name": "com.farmpilot.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3CAIiP_u0X0PaJBw-XbLELtXKDSOe-Bo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

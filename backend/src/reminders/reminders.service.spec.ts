@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { GeminiService } from '../ai/gemini.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RemindersService } from './reminders.service';
 
@@ -19,22 +20,26 @@ describe('RemindersService', () => {
     },
   };
 
-  beforeEach(async () => {
-    const module: TestingModule =
-      await Test.createTestingModule({
-        providers: [
-          RemindersService,
-          {
-            provide: PrismaService,
-            useValue: prismaMock,
-          },
-        ],
-      }).compile();
+  const geminiServiceMock = {
+    translateReminderContent: jest.fn(),
+  };
 
-    service =
-      module.get<RemindersService>(
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
         RemindersService,
-      );
+        {
+          provide: PrismaService,
+          useValue: prismaMock,
+        },
+        {
+          provide: GeminiService,
+          useValue: geminiServiceMock,
+        },
+      ],
+    }).compile();
+
+    service = module.get<RemindersService>(RemindersService);
   });
 
   afterEach(() => {

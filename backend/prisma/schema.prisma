@@ -61,8 +61,23 @@ model User {
   reminders       Reminder[]
   notifications   Notification[]
   aiMarketingLogs AIMarketingLog[]
+  pushDevices     PushDevice[]
 
   @@map("users")
+}
+
+model PushDevice {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  platform  String   @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_devices")
 }
 
 model Category {
@@ -279,9 +294,10 @@ model Reminder {
 
   type ReminderType @default(OTHER)
 
-  reminderDate DateTime @map("reminder_date")
-  status       Boolean  @default(false)
-  createdAt    DateTime @default(now()) @map("created_at")
+  reminderDate       DateTime  @map("reminder_date")
+  status             Boolean   @default(false)
+  notificationSentAt DateTime? @map("notification_sent_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
 
   farmer User  @relation(fields: [farmerId], references: [id])
   crop   Crop? @relation(fields: [cropId], references: [id])
