@@ -95,6 +95,18 @@ export class CreateCropDto {
 
   @IsOptional()
   @IsString()
+  sprayingSchedule?: string;
+
+  @IsOptional()
+  @IsString()
+  sprayingScheduleEn?: string;
+
+  @IsOptional()
+  @IsString()
+  sprayingScheduleAr?: string;
+
+  @IsOptional()
+  @IsString()
   notes?: string;
 
   @IsOptional()

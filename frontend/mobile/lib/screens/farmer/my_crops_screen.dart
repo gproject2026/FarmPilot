@@ -431,7 +431,7 @@ class _MyCropsScreenState extends State<MyCropsScreen> {
                                       crossAxisCount: crossAxisCount,
                                       crossAxisSpacing: 16,
                                       mainAxisSpacing: 16,
-                                      mainAxisExtent: 640,
+                                      mainAxisExtent: 1030,
                                     ),
                                   );
                                 },
@@ -749,8 +749,8 @@ class _CropsHero extends StatelessWidget {
                     Text(
                       _t(
                         context,
-                        'Track planting dates, irrigation, fertilization and notes for every crop.',
-                        'تابع مواعيد الزراعة والري والتسميد والملاحظات لكل محصول.',
+                        'Track planting dates, irrigation, fertilization, spraying and notes for every crop.',
+                        'تابع مواعيد الزراعة والري والتسميد والرش والملاحظات لكل محصول.',
                       ),
                       style: const TextStyle(
                         color: _cropsMuted,
@@ -1025,6 +1025,114 @@ class _CropCard extends StatelessWidget {
       crop['yieldConfidence'],
     );
 
+    final irrigationText = _localizedCropField(
+      context,
+      crop,
+      legacyKey: 'irrigationSchedule',
+      enKey: 'irrigationScheduleEn',
+      arKey: 'irrigationScheduleAr',
+    );
+
+    final fertilizationText = _localizedCropField(
+      context,
+      crop,
+      legacyKey: 'fertilizationSchedule',
+      enKey: 'fertilizationScheduleEn',
+      arKey: 'fertilizationScheduleAr',
+    );
+
+    final sprayingText = _localizedCropField(
+      context,
+      crop,
+      legacyKey: 'sprayingSchedule',
+      enKey: 'sprayingScheduleEn',
+      arKey: 'sprayingScheduleAr',
+    );
+
+    Future<void> showCareDetails() async {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: Row(
+              children: [
+                const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: _cropsPrimary,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _t(
+                      context,
+                      'AI Care Details',
+                      'تفاصيل العناية بالذكاء الاصطناعي',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 620,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    _CareDetailSection(
+                      icon: Icons.water_drop_outlined,
+                      title: _t(
+                        context,
+                        'Irrigation',
+                        'الري',
+                      ),
+                      value: irrigationText,
+                    ),
+                    const SizedBox(height: 14),
+                    _CareDetailSection(
+                      icon: Icons.science_outlined,
+                      title: _t(
+                        context,
+                        'Fertilization',
+                        'التسميد',
+                      ),
+                      value: fertilizationText,
+                    ),
+                    const SizedBox(height: 14),
+                    _CareDetailSection(
+                      icon: Icons.pest_control_outlined,
+                      title: _t(
+                        context,
+                        'Spraying',
+                        'الرش',
+                      ),
+                      value: sprayingText,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () =>
+                    Navigator.pop(dialogContext),
+                child: Text(
+                  _t(
+                    context,
+                    'Close',
+                    'إغلاق',
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     return Container(
       decoration: _cropCardDecoration(22),
       padding: const EdgeInsets.all(18),
@@ -1116,24 +1224,56 @@ class _CropCard extends StatelessWidget {
           _CropInfoTile(
             icon: Icons.water_drop_outlined,
             label: _t(context, 'Irrigation', 'الري'),
-            value: _localizedCropField(
-              context,
-              crop,
-              legacyKey: 'irrigationSchedule',
-              enKey: 'irrigationScheduleEn',
-              arKey: 'irrigationScheduleAr',
-            ),
+            value: irrigationText,
+            maxLines: 2,
           ),
           const SizedBox(height: 10),
           _CropInfoTile(
             icon: Icons.science_outlined,
             label: _t(context, 'Fertilization', 'التسميد'),
-            value: _localizedCropField(
-              context,
-              crop,
-              legacyKey: 'fertilizationSchedule',
-              enKey: 'fertilizationScheduleEn',
-              arKey: 'fertilizationScheduleAr',
+            value: fertilizationText,
+            maxLines: 2,
+          ),
+          const SizedBox(height: 10),
+          _CropInfoTile(
+            icon: Icons.pest_control_outlined,
+            label: _t(context, 'Spraying', 'الرش'),
+            value: sprayingText,
+            maxLines: 2,
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: showCareDetails,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _cropsPrimary,
+                side: const BorderSide(
+                  color: Color(0xFFCFE0BF),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 11,
+                  horizontal: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(13),
+                ),
+              ),
+              icon: const Icon(
+                Icons.visibility_outlined,
+                size: 18,
+              ),
+              label: Text(
+                _t(
+                  context,
+                  'View full AI care details',
+                  'عرض تفاصيل العناية كاملة',
+                ),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 10),
@@ -1149,7 +1289,7 @@ class _CropCard extends StatelessWidget {
             ),
             maxLines: 3,
           ),
-          const Spacer(),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -1201,6 +1341,77 @@ class _CropCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CareDetailSection extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+
+  const _CareDetailSection({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFCF9),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFE3E9DF),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: _cropsLight,
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(
+              icon,
+              color: _cropsPrimary,
+              size: 19,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: _cropsText,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                SelectableText(
+                  value,
+                  style: const TextStyle(
+                    color: _cropsText,
+                    fontSize: 13,
+                    height: 1.55,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -1337,8 +1548,8 @@ class _EmptyCrops extends StatelessWidget {
             Text(
               _t(
                 context,
-                'Add your first crop to start managing planting, irrigation and fertilization.',
-                'أضف محصولك الأول لبدء إدارة الزراعة والري والتسميد.',
+                'Add your first crop to start managing planting, irrigation, fertilization and spraying.',
+                'أضف محصولك الأول لبدء إدارة الزراعة والري والتسميد والرش.',
               ),
               textAlign: TextAlign.center,
               style: const TextStyle(

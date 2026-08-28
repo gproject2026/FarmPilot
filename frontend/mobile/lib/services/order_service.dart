@@ -6,72 +6,117 @@ import '../core/constants/app_constants.dart';
 import '../models/order_model.dart';
 
 class OrderService {
-  Future<List<OrderModel>> getCustomerOrders({required String token}) async {
+  Future<List<OrderModel>> getCustomerOrders({
+    required String token,
+  }) async {
     final response = await http.get(
-      Uri.parse('${AppConstants.baseUrl}/orders/my'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/my',
+      ),
       headers: _headers(token),
     );
 
     if (response.statusCode == 200) {
-      final decodedBody = jsonDecode(response.body);
+      final decodedBody = jsonDecode(
+        response.body,
+      );
 
       if (decodedBody is! List) {
-        throw Exception('Invalid customer orders response');
+        throw Exception(
+          'Invalid customer orders response',
+        );
       }
 
       return decodedBody
-          .map((item) => OrderModel.fromJson(Map<String, dynamic>.from(item)))
+          .map(
+            (item) => OrderModel.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
           .toList();
     }
 
     throw Exception(
-      _readErrorMessage(response.body, 'Failed to load customer orders'),
+      _readErrorMessage(
+        response.body,
+        'Failed to load customer orders',
+      ),
     );
   }
 
-  Future<List<OrderModel>> getFarmerOrders({required String token}) async {
+  Future<List<OrderModel>> getFarmerOrders({
+    required String token,
+  }) async {
     final response = await http.get(
-      Uri.parse('${AppConstants.baseUrl}/orders/farmer'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/farmer',
+      ),
       headers: _headers(token),
     );
 
     if (response.statusCode == 200) {
-      final decodedBody = jsonDecode(response.body);
+      final decodedBody = jsonDecode(
+        response.body,
+      );
 
       if (decodedBody is! List) {
-        throw Exception('Invalid farmer orders response');
+        throw Exception(
+          'Invalid farmer orders response',
+        );
       }
 
       return decodedBody
-          .map((item) => OrderModel.fromJson(Map<String, dynamic>.from(item)))
+          .map(
+            (item) => OrderModel.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
           .toList();
     }
 
     throw Exception(
-      _readErrorMessage(response.body, 'Failed to load farmer orders'),
+      _readErrorMessage(
+        response.body,
+        'Failed to load farmer orders',
+      ),
     );
   }
 
-  Future<List<OrderModel>> getAdminOrders({required String token}) async {
+  Future<List<OrderModel>> getAdminOrders({
+    required String token,
+  }) async {
     final response = await http.get(
-      Uri.parse('${AppConstants.baseUrl}/orders/admin'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/admin',
+      ),
       headers: _headers(token),
     );
 
     if (response.statusCode == 200) {
-      final decodedBody = jsonDecode(response.body);
+      final decodedBody = jsonDecode(
+        response.body,
+      );
 
       if (decodedBody is! List) {
-        throw Exception('Invalid admin orders response');
+        throw Exception(
+          'Invalid admin orders response',
+        );
       }
 
       return decodedBody
-          .map((item) => OrderModel.fromJson(Map<String, dynamic>.from(item)))
+          .map(
+            (item) => OrderModel.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
           .toList();
     }
 
     throw Exception(
-      _readErrorMessage(response.body, 'Failed to load admin orders'),
+      _readErrorMessage(
+        response.body,
+        'Failed to load admin orders',
+      ),
     );
   }
 
@@ -80,36 +125,75 @@ class OrderService {
     required String orderId,
   }) async {
     final response = await http.get(
-      Uri.parse('${AppConstants.baseUrl}/orders/$orderId'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/$orderId',
+      ),
       headers: _headers(token),
     );
 
     if (response.statusCode == 200) {
       return OrderModel.fromJson(
-        Map<String, dynamic>.from(jsonDecode(response.body)),
+        Map<String, dynamic>.from(
+          jsonDecode(response.body),
+        ),
       );
     }
 
-    throw Exception(_readErrorMessage(response.body, 'Failed to load order'));
+    throw Exception(
+      _readErrorMessage(
+        response.body,
+        'Failed to load order',
+      ),
+    );
   }
 
   Future<OrderModel> createOrder({
     required String token,
     required List<Map<String, dynamic>> items,
+    required String deliveryMethod,
+    String? deliveryAddress,
+    String paymentMethod = 'CASH',
   }) async {
+    final requestBody = <String, dynamic>{
+      'items': items,
+      'deliveryMethod': deliveryMethod,
+      'paymentMethod': paymentMethod,
+    };
+
+    if (deliveryMethod == 'DELIVERY') {
+      final normalizedAddress =
+          deliveryAddress?.trim();
+
+      if (normalizedAddress != null &&
+          normalizedAddress.isNotEmpty) {
+        requestBody['deliveryAddress'] =
+            normalizedAddress;
+      }
+    }
+
     final response = await http.post(
-      Uri.parse('${AppConstants.baseUrl}/orders'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders',
+      ),
       headers: _headers(token),
-      body: jsonEncode({'items': items}),
+      body: jsonEncode(requestBody),
     );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
+    if (response.statusCode == 200 ||
+        response.statusCode == 201) {
       return OrderModel.fromJson(
-        Map<String, dynamic>.from(jsonDecode(response.body)),
+        Map<String, dynamic>.from(
+          jsonDecode(response.body),
+        ),
       );
     }
 
-    throw Exception(_readErrorMessage(response.body, 'Failed to create order'));
+    throw Exception(
+      _readErrorMessage(
+        response.body,
+        'Failed to create order',
+      ),
+    );
   }
 
   Future<OrderModel> updateOrderStatus({
@@ -118,23 +202,36 @@ class OrderService {
     required String status,
   }) async {
     final response = await http.patch(
-      Uri.parse('${AppConstants.baseUrl}/orders/$orderId/status'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/orders/$orderId/status',
+      ),
       headers: _headers(token),
-      body: jsonEncode({'status': status}),
+      body: jsonEncode(
+        {
+          'status': status,
+        },
+      ),
     );
 
     if (response.statusCode == 200) {
       return OrderModel.fromJson(
-        Map<String, dynamic>.from(jsonDecode(response.body)),
+        Map<String, dynamic>.from(
+          jsonDecode(response.body),
+        ),
       );
     }
 
     throw Exception(
-      _readErrorMessage(response.body, 'Failed to update order status'),
+      _readErrorMessage(
+        response.body,
+        'Failed to update order status',
+      ),
     );
   }
 
-  Map<String, String> _headers(String token) {
+  Map<String, String> _headers(
+    String token,
+  ) {
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -142,12 +239,18 @@ class OrderService {
     };
   }
 
-  String _readErrorMessage(String responseBody, String fallbackMessage) {
+  String _readErrorMessage(
+    String responseBody,
+    String fallbackMessage,
+  ) {
     try {
-      final decodedBody = jsonDecode(responseBody);
+      final decodedBody =
+          jsonDecode(responseBody);
 
-      if (decodedBody is Map<String, dynamic>) {
-        final message = decodedBody['message'];
+      if (decodedBody
+          is Map<String, dynamic>) {
+        final message =
+            decodedBody['message'];
 
         if (message is String) {
           return message;

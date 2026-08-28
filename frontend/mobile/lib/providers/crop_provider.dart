@@ -113,6 +113,9 @@ class CropProvider extends ChangeNotifier {
     String? fertilizationSchedule,
     String? fertilizationScheduleEn,
     String? fertilizationScheduleAr,
+    String? sprayingSchedule,
+    String? sprayingScheduleEn,
+    String? sprayingScheduleAr,
     String? notes,
     String? notesEn,
     String? notesAr,
@@ -155,6 +158,12 @@ class CropProvider extends ChangeNotifier {
             fertilizationScheduleEn,
         fertilizationScheduleAr:
             fertilizationScheduleAr,
+        sprayingSchedule:
+            sprayingSchedule,
+        sprayingScheduleEn:
+            sprayingScheduleEn,
+        sprayingScheduleAr:
+            sprayingScheduleAr,
         notes: notes,
         notesEn: notesEn,
         notesAr: notesAr,
@@ -204,6 +213,9 @@ class CropProvider extends ChangeNotifier {
     String? fertilizationSchedule,
     String? fertilizationScheduleEn,
     String? fertilizationScheduleAr,
+    String? sprayingSchedule,
+    String? sprayingScheduleEn,
+    String? sprayingScheduleAr,
     String? notes,
     String? notesEn,
     String? notesAr,
@@ -247,6 +259,12 @@ class CropProvider extends ChangeNotifier {
             fertilizationScheduleEn,
         fertilizationScheduleAr:
             fertilizationScheduleAr,
+        sprayingSchedule:
+            sprayingSchedule,
+        sprayingScheduleEn:
+            sprayingScheduleEn,
+        sprayingScheduleAr:
+            sprayingScheduleAr,
         notes: notes,
         notesEn: notesEn,
         notesAr: notesAr,

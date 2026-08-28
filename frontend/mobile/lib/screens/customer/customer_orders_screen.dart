@@ -1146,6 +1146,13 @@ class _OrderCard
           const SizedBox(
             height: 18,
           ),
+          _OrderFulfillmentDetails(
+            isArabic: isArabic,
+            order: order,
+          ),
+          const SizedBox(
+            height: 18,
+          ),
           Row(
             children: [
               Text(
@@ -1282,6 +1289,145 @@ class _OrderCard
             );
 
     return '$day/$month/${localDate.year}  $hour:$minute';
+  }
+}
+
+
+class _OrderFulfillmentDetails extends StatelessWidget {
+  final bool isArabic;
+  final OrderModel order;
+
+  const _OrderFulfillmentDetails({
+    required this.isArabic,
+    required this.order,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDelivery = order.deliveryMethod == 'DELIVERY';
+
+    final methodLabel = isDelivery
+        ? (isArabic ? 'توصيل' : 'Delivery')
+        : (isArabic ? 'استلام من المزارع' : 'Pickup from Farmer');
+
+    final paymentLabel = isDelivery
+        ? (isArabic ? 'الدفع نقدًا عند التوصيل' : 'Cash on Delivery')
+        : (isArabic ? 'الدفع نقدًا عند الاستلام' : 'Cash on Pickup');
+
+    final location = isDelivery
+        ? order.deliveryAddress?.trim()
+        : order.pickupLocation?.trim();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F9EE),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFDDE7D8),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isDelivery
+                    ? Icons.local_shipping_outlined
+                    : Icons.storefront_outlined,
+                color: _ordersPrimaryGreen,
+                size: 21,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isArabic ? 'تفاصيل الاستلام والدفع' : 'Fulfillment & Payment',
+                  style: const TextStyle(
+                    color: _ordersTextPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _OrderDetailRow(
+            icon: isDelivery
+                ? Icons.local_shipping_outlined
+                : Icons.shopping_bag_outlined,
+            label: isArabic ? 'طريقة الاستلام' : 'Delivery Method',
+            value: methodLabel,
+          ),
+          const SizedBox(height: 11),
+          _OrderDetailRow(
+            icon: Icons.payments_outlined,
+            label: isArabic ? 'طريقة الدفع' : 'Payment Method',
+            value: paymentLabel,
+          ),
+          if (location != null && location.isNotEmpty) ...[
+            const SizedBox(height: 11),
+            _OrderDetailRow(
+              icon: Icons.location_on_outlined,
+              label: isDelivery
+                  ? (isArabic ? 'عنوان التوصيل' : 'Delivery Address')
+                  : (isArabic ? 'موقع الاستلام' : 'Pickup Location'),
+              value: location,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderDetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _OrderDetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: _ordersTextSecondary,
+        ),
+        const SizedBox(width: 9),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(
+                color: _ordersTextSecondary,
+                fontSize: 12.5,
+                height: 1.45,
+              ),
+              children: [
+                TextSpan(
+                  text: '$label: ',
+                  style: const TextStyle(
+                    color: _ordersTextPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                TextSpan(text: value),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

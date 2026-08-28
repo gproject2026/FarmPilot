@@ -86,6 +86,7 @@ class _AddCropScreenState extends State<AddCropScreen> {
   final _cropNameController = TextEditingController();
   final _irrigationController = TextEditingController();
   final _fertilizationController = TextEditingController();
+  final _sprayingController = TextEditingController();
   final _notesController = TextEditingController();
   final _areaController = TextEditingController();
 
@@ -108,6 +109,8 @@ class _AddCropScreenState extends State<AddCropScreen> {
   String? _irrigationScheduleAr;
   String? _fertilizationScheduleEn;
   String? _fertilizationScheduleAr;
+  String? _sprayingScheduleEn;
+  String? _sprayingScheduleAr;
   String? _notesEn;
   String? _notesAr;
 
@@ -132,6 +135,10 @@ class _AddCropScreenState extends State<AddCropScreen> {
           crop['fertilizationScheduleEn']?.toString().trim();
       _fertilizationScheduleAr =
           crop['fertilizationScheduleAr']?.toString().trim();
+      _sprayingScheduleEn =
+          crop['sprayingScheduleEn']?.toString().trim();
+      _sprayingScheduleAr =
+          crop['sprayingScheduleAr']?.toString().trim();
       _notesEn = crop['notesEn']?.toString().trim();
       _notesAr = crop['notesAr']?.toString().trim();
 
@@ -163,6 +170,8 @@ class _AddCropScreenState extends State<AddCropScreen> {
           crop['irrigationSchedule']?.toString().trim() ?? '';
       final fallbackFertilization =
           crop['fertilizationSchedule']?.toString().trim() ?? '';
+      final fallbackSpraying =
+          crop['sprayingSchedule']?.toString().trim() ?? '';
       final fallbackNotes =
           crop['notes']?.toString().trim() ?? '';
 
@@ -186,6 +195,13 @@ class _AddCropScreenState extends State<AddCropScreen> {
               : _fertilizationScheduleAr?.isNotEmpty == true
                   ? _fertilizationScheduleAr!
                   : fallbackFertilization;
+
+      _sprayingController.text =
+          _sprayingScheduleEn?.isNotEmpty == true
+              ? _sprayingScheduleEn!
+              : _sprayingScheduleAr?.isNotEmpty == true
+                  ? _sprayingScheduleAr!
+                  : fallbackSpraying;
 
       _notesController.text =
           _notesEn?.isNotEmpty == true
@@ -277,6 +293,8 @@ class _AddCropScreenState extends State<AddCropScreen> {
           _irrigationController.text.trim();
       _fertilizationScheduleAr =
           _fertilizationController.text.trim();
+      _sprayingScheduleAr =
+          _sprayingController.text.trim();
       _notesAr = _notesController.text.trim();
     } else {
       _cropNameEn = _cropNameController.text.trim();
@@ -284,6 +302,8 @@ class _AddCropScreenState extends State<AddCropScreen> {
           _irrigationController.text.trim();
       _fertilizationScheduleEn =
           _fertilizationController.text.trim();
+      _sprayingScheduleEn =
+          _sprayingController.text.trim();
       _notesEn = _notesController.text.trim();
     }
   }
@@ -298,6 +318,9 @@ class _AddCropScreenState extends State<AddCropScreen> {
     final fertilization = isArabic
         ? _fertilizationScheduleAr
         : _fertilizationScheduleEn;
+    final spraying = isArabic
+        ? _sprayingScheduleAr
+        : _sprayingScheduleEn;
     final notes = isArabic ? _notesAr : _notesEn;
 
     if (name != null && name.isNotEmpty) {
@@ -313,6 +336,10 @@ class _AddCropScreenState extends State<AddCropScreen> {
       _fertilizationController.text = fertilization;
     }
 
+    if (spraying != null && spraying.isNotEmpty) {
+      _sprayingController.text = spraying;
+    }
+
     if (notes != null && notes.isNotEmpty) {
       _notesController.text = notes;
     }
@@ -323,6 +350,7 @@ class _AddCropScreenState extends State<AddCropScreen> {
     _cropNameController.dispose();
     _irrigationController.dispose();
     _fertilizationController.dispose();
+    _sprayingController.dispose();
     _notesController.dispose();
     _areaController.dispose();
 
@@ -536,6 +564,15 @@ class _AddCropScreenState extends State<AddCropScreen> {
             ?.toString()
             .trim();
 
+    _sprayingScheduleEn =
+        result['sprayingScheduleEn']
+            ?.toString()
+            .trim();
+    _sprayingScheduleAr =
+        result['sprayingScheduleAr']
+            ?.toString()
+            .trim();
+
     final expectedYieldMin = double.tryParse(
       result['expectedYieldMin']?.toString() ?? '',
     );
@@ -561,6 +598,11 @@ class _AddCropScreenState extends State<AddCropScreen> {
           languageCode == 'ar'
               ? (_fertilizationScheduleAr ?? '')
               : (_fertilizationScheduleEn ?? '');
+
+      _sprayingController.text =
+          languageCode == 'ar'
+              ? (_sprayingScheduleAr ?? '')
+              : (_sprayingScheduleEn ?? '');
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -688,6 +730,12 @@ class _AddCropScreenState extends State<AddCropScreen> {
             _fertilizationScheduleEn,
         fertilizationScheduleAr:
             _fertilizationScheduleAr,
+        sprayingSchedule:
+            _optionalValue(_sprayingController),
+        sprayingScheduleEn:
+            _sprayingScheduleEn,
+        sprayingScheduleAr:
+            _sprayingScheduleAr,
         notes: _optionalValue(_notesController),
         notesEn: _notesEn,
         notesAr: _notesAr,
@@ -722,6 +770,12 @@ class _AddCropScreenState extends State<AddCropScreen> {
             _fertilizationScheduleEn,
         fertilizationScheduleAr:
             _fertilizationScheduleAr,
+        sprayingSchedule:
+            _optionalValue(_sprayingController),
+        sprayingScheduleEn:
+            _sprayingScheduleEn,
+        sprayingScheduleAr:
+            _sprayingScheduleAr,
         notes: _optionalValue(_notesController),
         notesEn: _notesEn,
         notesAr: _notesAr,
@@ -1085,8 +1139,8 @@ class _AddCropScreenState extends State<AddCropScreen> {
                                               )
                                             : _t(
                                                 context,
-                                                'Suggest irrigation and fertilization with AI',
-                                                'اقتراح الري والتسميد بالذكاء الاصطناعي',
+                                                'Suggest irrigation, fertilization, and spraying with AI',
+                                                'اقتراح الري والتسميد والرش بالذكاء الاصطناعي',
                                               ),
                                         style:
                                             const TextStyle(
@@ -1115,6 +1169,7 @@ class _AddCropScreenState extends State<AddCropScreen> {
                                     hint: _t(context, 'Example: Every two days', 'مثال: كل يومين'),
                                     icon: Icons
                                         .water_drop_outlined,
+                                    maxLines: 4,
                                   ),
                                   const SizedBox(height: 16),
                                   _StyledCropField(
@@ -1124,6 +1179,17 @@ class _AddCropScreenState extends State<AddCropScreen> {
                                     hint: _t(context, 'Example: Once every two weeks', 'مثال: مرة كل أسبوعين'),
                                     icon:
                                         Icons.science_outlined,
+                                    maxLines: 4,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _StyledCropField(
+                                    controller:
+                                        _sprayingController,
+                                    label: _t(context, 'Spraying schedule', 'جدول الرش'),
+                                    hint: _t(context, 'AI suggestion based on crop area and monitoring', 'اقتراح بالذكاء الاصطناعي حسب المساحة والمراقبة'),
+                                    icon:
+                                        Icons.pest_control_outlined,
+                                    maxLines: 4,
                                   ),
                                   const SizedBox(height: 16),
                                   _StyledCropField(

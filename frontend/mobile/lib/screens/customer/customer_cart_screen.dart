@@ -406,18 +406,21 @@ class CustomerCartScreen extends StatelessWidget {
       return;
     }
 
-    final confirmed = await _showCheckoutDialog(
+    final checkoutDetails = await _showCheckoutDialog(
       context,
       cartProvider.totalPrice,
     );
 
-    if (!confirmed || !context.mounted) {
+    if (checkoutDetails == null || !context.mounted) {
       return;
     }
 
     final success = await orderProvider.createOrder(
       token: token,
       items: cartProvider.toOrderItems(),
+      deliveryMethod: checkoutDetails.deliveryMethod,
+      deliveryAddress: checkoutDetails.deliveryAddress,
+      paymentMethod: 'CASH',
     );
 
     if (!context.mounted) {
@@ -456,61 +459,300 @@ class CustomerCartScreen extends StatelessWidget {
     }
   }
 
-  Future<bool> _showCheckoutDialog(
+  Future<_CheckoutDetails?> _showCheckoutDialog(
     BuildContext context,
     double totalPrice,
   ) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final addressController = TextEditingController();
 
-        return AlertDialog(
-          backgroundColor: const Color(0xFFFFFEFA),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          title: Row(
-            children: [
-              const Icon(Icons.shopping_bag_outlined, color: _cartPrimaryGreen),
-              const SizedBox(width: 10),
-              Text(isArabic ? 'تأكيد الطلب' : 'Confirm Order'),
-            ],
-          ),
-          content: Text(
-            isArabic
-                ? 'هل تريد إنشاء هذا الطلب بإجمالي '
-                      '${totalPrice.toStringAsFixed(2)} ₪؟'
-                : 'Create this order with a total of '
-                      '${totalPrice.toStringAsFixed(2)} ₪?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(false);
-              },
-              child: Text(isArabic ? 'إلغاء' : 'Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _cartPrimaryGreen,
-                foregroundColor: Colors.white,
-                elevation: 0,
+    String deliveryMethod = 'PICKUP';
+    String? validationMessage;
+
+    try {
+      return await showDialog<_CheckoutDetails>(
+        context: context,
+        builder: (dialogContext) {
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              final isDelivery = deliveryMethod == 'DELIVERY';
+
+              return AlertDialog(
+                backgroundColor: const Color(0xFFFFFEFA),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(24),
                 ),
-              ),
-              child: Text(isArabic ? 'إنشاء الطلب' : 'Create Order'),
-            ),
-          ],
-        );
-      },
-    );
+                title: Row(
+                  children: [
+                    const Icon(
+                      Icons.shopping_bag_outlined,
+                      color: _cartPrimaryGreen,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        isArabic ? 'إتمام الطلب' : 'Checkout',
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                  ],
+                ),
+                content: SingleChildScrollView(
+                  child: SizedBox(
+                    width: 470,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEAF3DF),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.receipt_long_outlined,
+                                color: _cartPrimaryGreen,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  isArabic ? 'الإجمالي' : 'Order total',
+                                  style: const TextStyle(
+                                    color: _cartTextSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${totalPrice.toStringAsFixed(2)} ₪',
+                                style: const TextStyle(
+                                  color: _cartPrimaryGreen,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          isArabic ? 'طريقة الاستلام' : 'Delivery Method',
+                          style: const TextStyle(
+                            color: _cartTextPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _CheckoutChoiceTile(
+                          title: isArabic
+                              ? 'استلام من المزارع'
+                              : 'Pickup from Farmer',
+                          subtitle: isArabic
+                              ? 'سيتم اعتماد موقع الاستلام المسجل لدى المزارع.'
+                              : 'The farmer\'s saved pickup location will be used.',
+                          icon: Icons.storefront_outlined,
+                          selected: deliveryMethod == 'PICKUP',
+                          onTap: () {
+                            setDialogState(() {
+                              deliveryMethod = 'PICKUP';
+                              validationMessage = null;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        _CheckoutChoiceTile(
+                          title: isArabic ? 'توصيل' : 'Delivery',
+                          subtitle: isArabic
+                              ? 'أدخل العنوان الذي تريد توصيل الطلب إليه.'
+                              : 'Enter the address where you want the order delivered.',
+                          icon: Icons.local_shipping_outlined,
+                          selected: deliveryMethod == 'DELIVERY',
+                          onTap: () {
+                            setDialogState(() {
+                              deliveryMethod = 'DELIVERY';
+                              validationMessage = null;
+                            });
+                          },
+                        ),
+                        if (isDelivery) ...[
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: addressController,
+                            keyboardType: TextInputType.streetAddress,
+                            textInputAction: TextInputAction.done,
+                            maxLines: 3,
+                            minLines: 1,
+                            onChanged: (_) {
+                              if (validationMessage != null) {
+                                setDialogState(() {
+                                  validationMessage = null;
+                                });
+                              }
+                            },
+                            decoration: InputDecoration(
+                              labelText: isArabic
+                                  ? 'عنوان التوصيل'
+                                  : 'Delivery Address',
+                              hintText: isArabic
+                                  ? 'مثال: المدينة، الحي، الشارع...'
+                                  : 'Example: city, neighborhood, street...',
+                              prefixIcon: const Icon(
+                                Icons.location_on_outlined,
+                              ),
+                              errorText: validationMessage,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFDDE6D8),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFDDE6D8),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                borderSide: const BorderSide(
+                                  color: _cartPrimaryGreen,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 20),
+                        Text(
+                          isArabic ? 'طريقة الدفع' : 'Payment Method',
+                          style: const TextStyle(
+                            color: _cartTextPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F8F0),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFDDE6D8),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEAF3DF),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.payments_outlined,
+                                  color: _cartPrimaryGreen,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      isDelivery
+                                          ? (isArabic
+                                                ? 'الدفع نقدًا عند التوصيل'
+                                                : 'Cash on Delivery')
+                                          : (isArabic
+                                                ? 'الدفع نقدًا عند الاستلام'
+                                                : 'Cash on Pickup'),
+                                      style: const TextStyle(
+                                        color: _cartTextPrimary,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      isArabic
+                                          ? 'الدفع الإلكتروني غير مطلوب.'
+                                          : 'No online payment is required.',
+                                      style: const TextStyle(
+                                        color: _cartTextSecondary,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                color: _cartPrimaryGreen,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                    },
+                    child: Text(isArabic ? 'إلغاء' : 'Cancel'),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      final normalizedAddress = addressController.text.trim();
 
-    return result ?? false;
+                      if (isDelivery && normalizedAddress.isEmpty) {
+                        setDialogState(() {
+                          validationMessage = isArabic
+                              ? 'عنوان التوصيل مطلوب'
+                              : 'Delivery address is required';
+                        });
+                        return;
+                      }
+
+                      Navigator.of(dialogContext).pop(
+                        _CheckoutDetails(
+                          deliveryMethod: deliveryMethod,
+                          deliveryAddress:
+                              isDelivery ? normalizedAddress : null,
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _cartPrimaryGreen,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.check_rounded),
+                    label: Text(isArabic ? 'إنشاء الطلب' : 'Create Order'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    } finally {
+      addressController.dispose();
+    }
   }
 
   void _showClearCartDialog(BuildContext context, CartProvider cartProvider) {
@@ -556,6 +798,109 @@ class CustomerCartScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _CheckoutDetails {
+  final String deliveryMethod;
+  final String? deliveryAddress;
+
+  const _CheckoutDetails({
+    required this.deliveryMethod,
+    this.deliveryAddress,
+  });
+}
+
+class _CheckoutChoiceTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _CheckoutChoiceTile({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? const Color(0xFFEAF3DF) : Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected
+                  ? _cartPrimaryGreen
+                  : const Color(0xFFDDE6D8),
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? Colors.white
+                      : const Color(0xFFF5F8F0),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: _cartPrimaryGreen,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: _cartTextPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: _cartTextSecondary,
+                        fontSize: 12,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                selected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_off_rounded,
+                color: selected
+                    ? _cartPrimaryGreen
+                    : const Color(0xFF9AA59B),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

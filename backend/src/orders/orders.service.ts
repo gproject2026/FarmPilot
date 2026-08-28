@@ -6,7 +6,9 @@ import {
 } from '@nestjs/common';
 
 import {
+  DeliveryMethod,
   OrderStatus,
+  PaymentMethod,
   Prisma,
   ProductStatus,
   UserRole,
@@ -43,6 +45,7 @@ export class OrdersService {
                 fullName: true,
                 email: true,
                 phone: true,
+                address: true,
               },
             },
             category: true,
@@ -109,6 +112,64 @@ export class OrdersService {
 
         const farmerId =
           products[0].farmerId;
+
+        const deliveryMethod =
+          createOrderDto.deliveryMethod;
+
+        const paymentMethod =
+          createOrderDto.paymentMethod ??
+          PaymentMethod.CASH;
+
+        let deliveryAddress:
+          string | null = null;
+
+        let pickupLocation:
+          string | null = null;
+
+        if (
+          deliveryMethod ===
+          DeliveryMethod.DELIVERY
+        ) {
+          const normalizedAddress =
+            createOrderDto.deliveryAddress
+              ?.trim();
+
+          if (!normalizedAddress) {
+            throw new BadRequestException(
+              'Delivery address is required for delivery orders',
+            );
+          }
+
+          deliveryAddress =
+            normalizedAddress;
+        } else if (
+          deliveryMethod ===
+          DeliveryMethod.PICKUP
+        ) {
+          const farmer =
+            await tx.user.findUnique({
+              where: {
+                id: farmerId,
+              },
+              select: {
+                address: true,
+              },
+            });
+
+          const normalizedPickupLocation =
+            farmer?.address?.trim();
+
+          if (
+            !normalizedPickupLocation
+          ) {
+            throw new BadRequestException(
+              'The farmer has not set a pickup location yet',
+            );
+          }
+
+          pickupLocation =
+            normalizedPickupLocation;
+        }
 
         let totalPrice =
           new Prisma.Decimal(0);
@@ -238,6 +299,10 @@ export class OrdersService {
             data: {
               customerId,
               totalPrice,
+              deliveryMethod,
+              paymentMethod,
+              deliveryAddress,
+              pickupLocation,
               orderItems: {
                 create:
                   orderItemsData,

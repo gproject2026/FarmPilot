@@ -3,6 +3,12 @@ class OrderModel {
   final String customerId;
   final double totalPrice;
   final String status;
+
+  final String deliveryMethod;
+  final String paymentMethod;
+  final String? deliveryAddress;
+  final String? pickupLocation;
+
   final DateTime createdAt;
   final DateTime updatedAt;
   final OrderCustomer customer;
@@ -13,35 +19,96 @@ class OrderModel {
     required this.customerId,
     required this.totalPrice,
     required this.status,
+    required this.deliveryMethod,
+    required this.paymentMethod,
+    this.deliveryAddress,
+    this.pickupLocation,
     required this.createdAt,
     required this.updatedAt,
     required this.customer,
     required this.orderItems,
   });
 
-  factory OrderModel.fromJson(Map<String, dynamic> json) {
+  factory OrderModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return OrderModel(
       id: json['id']?.toString() ?? '',
-      customerId: json['customerId']?.toString() ?? '',
-      totalPrice: double.tryParse(json['totalPrice'].toString()) ?? 0.0,
-      status: json['status']?.toString() ?? 'PENDING',
+      customerId:
+          json['customerId']?.toString() ?? '',
+      totalPrice:
+          double.tryParse(
+            json['totalPrice'].toString(),
+          ) ??
+          0.0,
+      status:
+          json['status']?.toString() ??
+          'PENDING',
+      deliveryMethod:
+          json['deliveryMethod']?.toString() ??
+          'PICKUP',
+      paymentMethod:
+          json['paymentMethod']?.toString() ??
+          'CASH',
+      deliveryAddress:
+          _nullableString(
+            json['deliveryAddress'],
+          ),
+      pickupLocation:
+          _nullableString(
+            json['pickupLocation'],
+          ),
       createdAt:
-          DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
+          DateTime.tryParse(
+            json['createdAt']
+                    ?.toString() ??
+                '',
+          ) ??
           DateTime.now(),
       updatedAt:
-          DateTime.tryParse(json['updatedAt']?.toString() ?? '') ??
+          DateTime.tryParse(
+            json['updatedAt']
+                    ?.toString() ??
+                '',
+          ) ??
           DateTime.now(),
-      customer: OrderCustomer.fromJson(
-        json['customer'] as Map<String, dynamic>? ?? {},
+      customer:
+          OrderCustomer.fromJson(
+        json['customer']
+                as Map<String, dynamic>? ??
+            {},
       ),
       orderItems:
-          (json['orderItems'] as List<dynamic>? ?? [])
+          (json['orderItems']
+                      as List<dynamic>? ??
+                  [])
               .map(
                 (item) =>
-                    OrderItemModel.fromJson(item as Map<String, dynamic>),
+                    OrderItemModel.fromJson(
+                  Map<String, dynamic>.from(
+                    item as Map,
+                  ),
+                ),
               )
               .toList(),
     );
+  }
+
+  static String? _nullableString(
+    dynamic value,
+  ) {
+    if (value == null) {
+      return null;
+    }
+
+    final text = value.toString().trim();
+
+    if (text.isEmpty ||
+        text.toLowerCase() == 'null') {
+      return null;
+    }
+
+    return text;
   }
 }
 
@@ -64,15 +131,31 @@ class OrderCustomer {
     this.profileImage,
   });
 
-  factory OrderCustomer.fromJson(Map<String, dynamic> json) {
+  factory OrderCustomer.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return OrderCustomer(
-      id: json['id']?.toString() ?? '',
-      fullName: json['fullName']?.toString() ?? '',
-      email: json['email']?.toString() ?? '',
-      phone: json['phone']?.toString() ?? '',
-      role: json['role']?.toString() ?? '',
-      address: json['address']?.toString() ?? '',
-      profileImage: json['profileImage']?.toString(),
+      id:
+          json['id']?.toString() ??
+          '',
+      fullName:
+          json['fullName']?.toString() ??
+          '',
+      email:
+          json['email']?.toString() ??
+          '',
+      phone:
+          json['phone']?.toString() ??
+          '',
+      role:
+          json['role']?.toString() ??
+          '',
+      address:
+          json['address']?.toString() ??
+          '',
+      profileImage:
+          json['profileImage']
+              ?.toString(),
     );
   }
 }
@@ -94,15 +177,34 @@ class OrderItemModel {
     required this.product,
   });
 
-  factory OrderItemModel.fromJson(Map<String, dynamic> json) {
+  factory OrderItemModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return OrderItemModel(
-      id: json['id']?.toString() ?? '',
-      orderId: json['orderId']?.toString() ?? '',
-      productId: json['productId']?.toString() ?? '',
-      quantity: int.tryParse(json['quantity'].toString()) ?? 0,
-      price: double.tryParse(json['price'].toString()) ?? 0.0,
-      product: OrderProduct.fromJson(
-        json['product'] as Map<String, dynamic>? ?? {},
+      id:
+          json['id']?.toString() ??
+          '',
+      orderId:
+          json['orderId']?.toString() ??
+          '',
+      productId:
+          json['productId']?.toString() ??
+          '',
+      quantity:
+          int.tryParse(
+            json['quantity'].toString(),
+          ) ??
+          0,
+      price:
+          double.tryParse(
+            json['price'].toString(),
+          ) ??
+          0.0,
+      product:
+          OrderProduct.fromJson(
+        json['product']
+                as Map<String, dynamic>? ??
+            {},
       ),
     );
   }
@@ -149,46 +251,93 @@ class OrderProduct {
     required this.category,
   });
 
-  factory OrderProduct.fromJson(Map<String, dynamic> json) {
+  factory OrderProduct.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return OrderProduct(
-      id: json['id']?.toString() ?? '',
-      farmerId: json['farmerId']?.toString() ?? '',
-      categoryId: json['categoryId']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
-      nameEn: json['nameEn']?.toString(),
-      nameAr: json['nameAr']?.toString(),
-      description: json['description']?.toString() ?? '',
-      descriptionEn: json['descriptionEn']?.toString(),
-      descriptionAr: json['descriptionAr']?.toString(),
-      price: double.tryParse(json['price'].toString()) ?? 0.0,
-      quantity: int.tryParse(json['quantity'].toString()) ?? 0,
-      unit: json['unit']?.toString() ?? '',
-      imageUrl: json['imageUrl']?.toString(),
-      status: json['status']?.toString() ?? '',
-      farmer: OrderFarmer.fromJson(
-        json['farmer'] as Map<String, dynamic>? ?? {},
+      id:
+          json['id']?.toString() ??
+          '',
+      farmerId:
+          json['farmerId']?.toString() ??
+          '',
+      categoryId:
+          json['categoryId']
+                  ?.toString() ??
+              '',
+      name:
+          json['name']?.toString() ??
+          '',
+      nameEn:
+          json['nameEn']?.toString(),
+      nameAr:
+          json['nameAr']?.toString(),
+      description:
+          json['description']
+                  ?.toString() ??
+              '',
+      descriptionEn:
+          json['descriptionEn']
+              ?.toString(),
+      descriptionAr:
+          json['descriptionAr']
+              ?.toString(),
+      price:
+          double.tryParse(
+            json['price'].toString(),
+          ) ??
+          0.0,
+      quantity:
+          int.tryParse(
+            json['quantity'].toString(),
+          ) ??
+          0,
+      unit:
+          json['unit']?.toString() ??
+          '',
+      imageUrl:
+          json['imageUrl']?.toString(),
+      status:
+          json['status']?.toString() ??
+          '',
+      farmer:
+          OrderFarmer.fromJson(
+        json['farmer']
+                as Map<String, dynamic>? ??
+            {},
       ),
-      category: OrderCategory.fromJson(
-        json['category'] as Map<String, dynamic>? ?? {},
+      category:
+          OrderCategory.fromJson(
+        json['category']
+                as Map<String, dynamic>? ??
+            {},
       ),
     );
   }
 
-  String localizedName(bool isArabic) {
+  String localizedName(
+    bool isArabic,
+  ) {
     final preferred =
-        isArabic ? nameAr?.trim() : nameEn?.trim();
+        isArabic
+            ? nameAr?.trim()
+            : nameEn?.trim();
 
-    if (preferred != null && preferred.isNotEmpty) {
+    if (preferred != null &&
+        preferred.isNotEmpty) {
       return preferred;
     }
 
-    final fallback = name.trim();
+    final fallback =
+        name.trim();
 
     if (fallback.isNotEmpty) {
       return fallback;
     }
 
-    return isArabic ? 'منتج' : 'Product';
+    return isArabic
+        ? 'منتج'
+        : 'Product';
   }
 }
 
@@ -197,20 +346,35 @@ class OrderFarmer {
   final String fullName;
   final String email;
   final String phone;
+  final String address;
 
   OrderFarmer({
     required this.id,
     required this.fullName,
     required this.email,
     required this.phone,
+    required this.address,
   });
 
-  factory OrderFarmer.fromJson(Map<String, dynamic> json) {
+  factory OrderFarmer.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return OrderFarmer(
-      id: json['id']?.toString() ?? '',
-      fullName: json['fullName']?.toString() ?? '',
-      email: json['email']?.toString() ?? '',
-      phone: json['phone']?.toString() ?? '',
+      id:
+          json['id']?.toString() ??
+          '',
+      fullName:
+          json['fullName']?.toString() ??
+          '',
+      email:
+          json['email']?.toString() ??
+          '',
+      phone:
+          json['phone']?.toString() ??
+          '',
+      address:
+          json['address']?.toString() ??
+          '',
     );
   }
 }
@@ -234,15 +398,30 @@ class OrderCategory {
     this.descriptionAr,
   });
 
-  factory OrderCategory.fromJson(Map<String, dynamic> json) {
+  factory OrderCategory.fromJson(
+    Map<String, dynamic> json,
+  ) {
     return OrderCategory(
-      id: json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
-      nameEn: json['nameEn']?.toString(),
-      nameAr: json['nameAr']?.toString(),
-      description: json['description']?.toString() ?? '',
-      descriptionEn: json['descriptionEn']?.toString(),
-      descriptionAr: json['descriptionAr']?.toString(),
+      id:
+          json['id']?.toString() ??
+          '',
+      name:
+          json['name']?.toString() ??
+          '',
+      nameEn:
+          json['nameEn']?.toString(),
+      nameAr:
+          json['nameAr']?.toString(),
+      description:
+          json['description']
+                  ?.toString() ??
+              '',
+      descriptionEn:
+          json['descriptionEn']
+              ?.toString(),
+      descriptionAr:
+          json['descriptionAr']
+              ?.toString(),
     );
   }
 }

@@ -21,7 +21,12 @@ class CropService {
       return List<dynamic>.from(decodedBody);
     }
 
-    throw Exception(_readErrorMessage(response.body, 'Failed to load crops'));
+    throw Exception(
+      _readErrorMessage(
+        response.body,
+        'Failed to load crops',
+      ),
+    );
   }
 
   Future<Map<String, dynamic>> createCrop({
@@ -45,6 +50,9 @@ class CropService {
     String? fertilizationSchedule,
     String? fertilizationScheduleEn,
     String? fertilizationScheduleAr,
+    String? sprayingSchedule,
+    String? sprayingScheduleEn,
+    String? sprayingScheduleAr,
     String? notes,
     String? notesEn,
     String? notesAr,
@@ -55,29 +63,38 @@ class CropService {
       body: jsonEncode({
         'cropName': cropName,
 
-        if (_hasValue(cropType)) 'cropType': cropType,
+        if (_hasValue(cropType))
+          'cropType': cropType,
 
-        if (_hasValue(cropNameEn)) 'cropNameEn': cropNameEn,
+        if (_hasValue(cropNameEn))
+          'cropNameEn': cropNameEn,
 
-        if (_hasValue(cropNameAr)) 'cropNameAr': cropNameAr,
+        if (_hasValue(cropNameAr))
+          'cropNameAr': cropNameAr,
 
-        if (_hasValue(cropTypeEn)) 'cropTypeEn': cropTypeEn,
+        if (_hasValue(cropTypeEn))
+          'cropTypeEn': cropTypeEn,
 
-        if (_hasValue(cropTypeAr)) 'cropTypeAr': cropTypeAr,
+        if (_hasValue(cropTypeAr))
+          'cropTypeAr': cropTypeAr,
 
-        if (_hasValue(plantingDate)) 'plantingDate': plantingDate,
+        if (_hasValue(plantingDate))
+          'plantingDate': plantingDate,
 
         'area': ?area,
 
-        if (_hasValue(areaUnit)) 'areaUnit': areaUnit,
+        if (_hasValue(areaUnit))
+          'areaUnit': areaUnit,
 
         'expectedYieldMin': ?expectedYieldMin,
 
         'expectedYieldMax': ?expectedYieldMax,
 
-        if (_hasValue(yieldUnit)) 'yieldUnit': yieldUnit,
+        if (_hasValue(yieldUnit))
+          'yieldUnit': yieldUnit,
 
-        if (_hasValue(yieldConfidence)) 'yieldConfidence': yieldConfidence,
+        if (_hasValue(yieldConfidence))
+          'yieldConfidence': yieldConfidence,
 
         if (_hasValue(irrigationSchedule))
           'irrigationSchedule': irrigationSchedule,
@@ -92,21 +109,39 @@ class CropService {
           'fertilizationSchedule': fertilizationSchedule,
 
         if (_hasValue(fertilizationScheduleEn))
-          'fertilizationScheduleEn': fertilizationScheduleEn,
+          'fertilizationScheduleEn':
+              fertilizationScheduleEn,
 
         if (_hasValue(fertilizationScheduleAr))
-          'fertilizationScheduleAr': fertilizationScheduleAr,
+          'fertilizationScheduleAr':
+              fertilizationScheduleAr,
 
-        if (_hasValue(notes)) 'notes': notes,
+        if (_hasValue(sprayingSchedule))
+          'sprayingSchedule': sprayingSchedule,
 
-        if (_hasValue(notesEn)) 'notesEn': notesEn,
+        if (_hasValue(sprayingScheduleEn))
+          'sprayingScheduleEn': sprayingScheduleEn,
 
-        if (_hasValue(notesAr)) 'notesAr': notesAr,
+        if (_hasValue(sprayingScheduleAr))
+          'sprayingScheduleAr': sprayingScheduleAr,
+
+        if (_hasValue(notes))
+          'notes': notes,
+
+        if (_hasValue(notesEn))
+          'notesEn': notesEn,
+
+        if (_hasValue(notesAr))
+          'notesAr': notesAr,
       }),
     );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final decodedBody = jsonDecode(response.body);
+    if (
+      response.statusCode == 200 ||
+      response.statusCode == 201
+    ) {
+      final decodedBody =
+          jsonDecode(response.body);
 
       if (decodedBody is! Map<String, dynamic>) {
         throw Exception('Invalid crop response');
@@ -115,7 +150,12 @@ class CropService {
       return decodedBody;
     }
 
-    throw Exception(_readErrorMessage(response.body, 'Failed to create crop'));
+    throw Exception(
+      _readErrorMessage(
+        response.body,
+        'Failed to create crop',
+      ),
+    );
   }
 
   Future<Map<String, dynamic>> updateCrop({
@@ -140,12 +180,17 @@ class CropService {
     String? fertilizationSchedule,
     String? fertilizationScheduleEn,
     String? fertilizationScheduleAr,
+    String? sprayingSchedule,
+    String? sprayingScheduleEn,
+    String? sprayingScheduleAr,
     String? notes,
     String? notesEn,
     String? notesAr,
   }) async {
     final response = await http.patch(
-      Uri.parse('${AppConstants.baseUrl}/crops/$cropId'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/crops/$cropId',
+      ),
       headers: _headers(token),
       body: jsonEncode({
         'cropName': cropName,
@@ -164,9 +209,15 @@ class CropService {
         'irrigationSchedule': irrigationSchedule,
         'irrigationScheduleEn': irrigationScheduleEn,
         'irrigationScheduleAr': irrigationScheduleAr,
-        'fertilizationSchedule': fertilizationSchedule,
-        'fertilizationScheduleEn': fertilizationScheduleEn,
-        'fertilizationScheduleAr': fertilizationScheduleAr,
+        'fertilizationSchedule':
+            fertilizationSchedule,
+        'fertilizationScheduleEn':
+            fertilizationScheduleEn,
+        'fertilizationScheduleAr':
+            fertilizationScheduleAr,
+        'sprayingSchedule': sprayingSchedule,
+        'sprayingScheduleEn': sprayingScheduleEn,
+        'sprayingScheduleAr': sprayingScheduleAr,
         'notes': notes,
         'notesEn': notesEn,
         'notesAr': notesAr,
@@ -174,7 +225,8 @@ class CropService {
     );
 
     if (response.statusCode == 200) {
-      final decodedBody = jsonDecode(response.body);
+      final decodedBody =
+          jsonDecode(response.body);
 
       if (decodedBody is! Map<String, dynamic>) {
         throw Exception('Invalid crop response');
@@ -183,7 +235,12 @@ class CropService {
       return decodedBody;
     }
 
-    throw Exception(_readErrorMessage(response.body, 'Failed to update crop'));
+    throw Exception(
+      _readErrorMessage(
+        response.body,
+        'Failed to update crop',
+      ),
+    );
   }
 
   Future<void> deleteCrop({
@@ -191,13 +248,21 @@ class CropService {
     required String cropId,
   }) async {
     final response = await http.delete(
-      Uri.parse('${AppConstants.baseUrl}/crops/$cropId'),
+      Uri.parse(
+        '${AppConstants.baseUrl}/crops/$cropId',
+      ),
       headers: _headers(token),
     );
 
-    if (response.statusCode != 200 && response.statusCode != 204) {
+    if (
+      response.statusCode != 200 &&
+      response.statusCode != 204
+    ) {
       throw Exception(
-        _readErrorMessage(response.body, 'Failed to delete crop'),
+        _readErrorMessage(
+          response.body,
+          'Failed to delete crop',
+        ),
       );
     }
   }
@@ -211,12 +276,17 @@ class CropService {
   }
 
   bool _hasValue(String? value) {
-    return value != null && value.trim().isNotEmpty;
+    return value != null &&
+        value.trim().isNotEmpty;
   }
 
-  String _readErrorMessage(String responseBody, String fallbackMessage) {
+  String _readErrorMessage(
+    String responseBody,
+    String fallbackMessage,
+  ) {
     try {
-      final decodedBody = jsonDecode(responseBody);
+      final decodedBody =
+          jsonDecode(responseBody);
 
       if (decodedBody is Map<String, dynamic>) {
         final message = decodedBody['message'];

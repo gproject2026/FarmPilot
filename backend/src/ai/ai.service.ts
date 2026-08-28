@@ -27,6 +27,8 @@ interface CropCareContent {
   irrigationScheduleAr: string;
   fertilizationScheduleEn: string;
   fertilizationScheduleAr: string;
+  sprayingScheduleEn: string;
+  sprayingScheduleAr: string;
   notesEn: string;
   notesAr: string;
   expectedYieldMin: number;
@@ -156,7 +158,7 @@ export class AiService {
       'You are an agricultural assistant for FarmPilot.',
       '',
       'The farmer is adding or editing a crop.',
-      'Your task is to provide bilingual crop information and practical general care suggestions.',
+      'Your task is to provide bilingual crop information and practical general crop-care recommendations based on the cultivated area.',
       '',
       `Crop name entered by farmer: ${cropName}`,
       `Crop type selected by farmer: ${cropType}`,
@@ -164,19 +166,51 @@ export class AiService {
       `Planting date: ${plantingDate || 'Not provided'}`,
       `Additional notes: ${notes || 'Not provided'}`,
       '',
-      'Requirements:',
-      '- Identify the crop name in both English and Arabic.',
-      '- Return the crop type in both English and Arabic.',
-      '- Give a practical irrigation schedule in both English and Arabic.',
-      '- The irrigation schedule should state a useful timing or frequency whenever reasonably possible, such as every X days or according to a clear growth stage.',
+      'Important area rule:',
+      `- All irrigation, fertilization, spraying-volume, and yield recommendations must refer to the farmer's TOTAL cultivated area of ${area} ${areaUnit}.`,
+      '- When giving a quantity, clearly state the total quantity for the full cultivated area, not only a per-square-meter or per-hectare rate.',
+      '- You may also mention a standard rate per unit area when useful, but you must calculate and state the corresponding total for the cultivated area.',
+      '- Check the arithmetic before returning the response.',
+      '- Use ranges when agricultural conditions can reasonably cause variation.',
+      '- Do not invent false precision.',
+      '',
+      'Irrigation requirements:',
+      '- Give a practical irrigation recommendation in both English and Arabic.',
+      '- Include an approximate water quantity or water-volume range for the TOTAL cultivated area whenever reasonably possible.',
+      '- Express irrigation water using a practical volume unit such as liters or cubic meters.',
+      '- State useful timing or frequency whenever reasonably possible, such as every X days, according to crop growth stage, or according to soil moisture.',
       '- Mention the preferred time of day for irrigation when useful, such as early morning or late afternoon.',
-      '- Do not invent false precision. If an exact interval cannot be justified from the provided information, use a short conditional recommendation based on soil moisture or growth stage.',
-      '- Give a practical fertilization schedule in both English and Arabic.',
-      '- The fertilization schedule should indicate when fertilization should start and how it should be repeated or which crop growth stages are most appropriate.',
-      '- Do not invent exact fertilizer dosages or unsafe chemical instructions.',
+      '- Water requirements vary with soil, climate, growth stage, rainfall, and irrigation method. Make this uncertainty clear when relevant.',
+      '- If a reliable exact interval cannot be inferred, provide a practical conditional recommendation rather than inventing certainty.',
+      '',
+      'Fertilization requirements:',
+      '- Give a practical fertilization recommendation in both English and Arabic.',
+      '- State when fertilization should begin and how it should be repeated or at which crop growth stages it is commonly applied.',
+      '- When a generally reasonable nutrient or fertilizer quantity range can be estimated from common agricultural practice, calculate and state an approximate quantity for the TOTAL cultivated area.',
+      '- Prefer nutrient-based or clearly identified general fertilizer guidance rather than pretending that all commercial fertilizer products have the same concentration.',
+      '- If a specific fertilizer product, formulation, soil-test result, or nutrient concentration is required to calculate a safe exact product dose, explicitly say that the final product amount must be adjusted according to the fertilizer analysis, soil test, and product label.',
+      '- Do not invent an exact commercial fertilizer dose when the required product information is unavailable.',
+      '',
+      'Spraying requirements:',
+      '- Give a practical crop spraying and crop-protection recommendation in both English and Arabic.',
+      '- Include routine monitoring and explain when spraying may be appropriate rather than recommending unnecessary pesticide use.',
+      '- Identify the most relevant common pest or disease targets for this crop when reasonably inferable from general agricultural practice.',
+      '- When treatment may be appropriate, recommend a suitable pesticide TYPE and, when reasonably possible, name one or more commonly used ACTIVE INGREDIENT examples appropriate to the stated target problem (for example an insecticide, fungicide, acaricide, or other crop-protection category).',
+      '- Never recommend an active ingredient without also stating the pest or disease problem it is intended to target.',
+      '- Do not present a pesticide as mandatory preventive treatment when no pest or disease has been identified. Phrase pesticide choices conditionally, such as: if the named pest or disease is detected and treatment is justified, a registered product containing the suggested active ingredient may be considered.',
+      '- Prefer active-ingredient names over commercial brand names because registrations and brands vary by country.',
+      '- When reasonably possible, provide an approximate spray-solution or carrier-water volume for the TOTAL cultivated area, calculated from a sensible general coverage rate.',
+      '- Clearly distinguish spray-solution volume from pesticide product dose.',
+      '- Never invent a pesticide active ingredient concentration, pesticide product dose, mixing ratio, restricted-use instruction, pre-harvest interval, or re-entry interval.',
+      '- If a pesticide or other crop-protection product is needed, explicitly state that the suggested active ingredient must be legally registered/labeled for BOTH the crop and target problem in the farmer\'s location, and that the official product label determines the exact dose, dilution, protective equipment, re-entry interval, and pre-harvest interval.',
+      '- If several pest or disease problems are common, give a concise conditional mapping such as: target problem -> pesticide type/active ingredient example, rather than mixing unrelated pesticides together.',
+      '- Prefer integrated pest management: monitoring, sanitation, cultural control, and targeted treatment only when needed.',
+      '- Do not claim that routine pesticide spraying is required when no pest or disease problem has been identified.',
+      '',
+      'Yield and notes requirements:',
       '- Return concise additional crop notes in both English and Arabic.',
-      '- Put general care advice that does not belong specifically to irrigation or fertilization in notesEn and notesAr, such as sunlight, drainage, temperature, disease monitoring, soil moisture monitoring, or other useful crop-management cautions.',
-      '- Estimate a realistic expected total yield range for the cultivated area provided by the farmer.',
+      '- Put general care advice that does not belong specifically to irrigation, fertilization, or spraying in notesEn and notesAr, such as sunlight, drainage, temperature, soil condition, and other useful crop-management cautions.',
+      '- Estimate a realistic expected TOTAL yield range for the cultivated area provided by the farmer.',
       '- expectedYieldMin and expectedYieldMax must be positive numbers, and expectedYieldMax must be greater than or equal to expectedYieldMin.',
       '- Return yieldUnit as a short unit such as kg or ton, appropriate for the total estimated production.',
       '- yieldConfidence must be exactly one of: LOW, MEDIUM, HIGH.',
@@ -184,11 +218,12 @@ export class AiService {
       '- Use MEDIUM when the estimate is useful but important factors such as cultivar, soil, climate, irrigation system, or planting density are unknown.',
       '- Use LOW when the available information is too limited for more than a rough estimate.',
       '- Treat the yield as an approximate planning estimate, not a guarantee or measured prediction.',
-      '- Keep irrigation and fertilization suggestions concise enough to store in a database field.',
-      '- Do not invent exact fertilizer quantities, pesticide dosages, or unsafe chemical instructions.',
-      '- Do not claim the recommendation is universally correct.',
-      '- Base the suggestions and yield estimate on common general agricultural practice.',
-      '- The Arabic and English values must have the same meaning.',
+      '',
+      'General response requirements:',
+      '- The Arabic and English values must have the same meaning and the same quantities.',
+      '- Keep each recommendation practical and readable, but include the important quantity, timing, and safety context.',
+      '- Do not claim that any recommendation is universally correct.',
+      '- Base recommendations and yield estimates on common general agricultural practice.',
       '- Do not use markdown.',
       '- Do not wrap the response in JSON code fences.',
       '',
@@ -202,6 +237,8 @@ export class AiService {
       '  "irrigationScheduleAr": "string",',
       '  "fertilizationScheduleEn": "string",',
       '  "fertilizationScheduleAr": "string",',
+      '  "sprayingScheduleEn": "string",',
+      '  "sprayingScheduleAr": "string",',
       '  "notesEn": "string",',
       '  "notesAr": "string",',
       '  "expectedYieldMin": 0,',
@@ -251,8 +288,8 @@ export class AiService {
     return {
       message:
         language === 'ar'
-          ? 'تم إنشاء اقتراحات العناية وتقدير الإنتاج بنجاح'
-          : 'Crop care suggestions and yield estimate generated successfully',
+          ? 'تم إنشاء اقتراحات الري والتسميد والرش وتقدير الإنتاج بنجاح'
+          : 'Irrigation, fertilization, spraying, and yield suggestions generated successfully',
       ...generatedContent,
     };
   }
@@ -476,6 +513,16 @@ export class AiService {
         data.fertilizationScheduleAr,
       );
 
+    const sprayingScheduleEn =
+      this.normalizeString(
+        data.sprayingScheduleEn,
+      );
+
+    const sprayingScheduleAr =
+      this.normalizeString(
+        data.sprayingScheduleAr,
+      );
+
     const notesEn =
       this.normalizeString(
         data.notesEn,
@@ -522,6 +569,8 @@ export class AiService {
       irrigationScheduleAr.length === 0 ||
       fertilizationScheduleEn.length === 0 ||
       fertilizationScheduleAr.length === 0 ||
+      sprayingScheduleEn.length === 0 ||
+      sprayingScheduleAr.length === 0 ||
       notesEn.length === 0 ||
       notesAr.length === 0 ||
       expectedYieldMin === null ||
@@ -548,6 +597,8 @@ export class AiService {
       irrigationScheduleAr,
       fertilizationScheduleEn,
       fertilizationScheduleAr,
+      sprayingScheduleEn,
+      sprayingScheduleAr,
       notesEn,
       notesAr,
       expectedYieldMin,

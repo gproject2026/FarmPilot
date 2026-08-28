@@ -31,6 +31,15 @@ enum OrderStatus {
   COMPLETED
 }
 
+enum DeliveryMethod {
+  PICKUP
+  DELIVERY
+}
+
+enum PaymentMethod {
+  CASH
+}
+
 enum ReminderType {
   IRRIGATION
   FERTILIZATION
@@ -149,13 +158,17 @@ model Crop {
   yieldUnit        String?  @map("yield_unit") @db.VarChar(20)
   yieldConfidence  String?  @map("yield_confidence") @db.VarChar(20)
 
-  irrigationSchedule   String? @map("irrigation_schedule") @db.VarChar(255)
-  irrigationScheduleEn String? @map("irrigation_schedule_en") @db.VarChar(255)
-  irrigationScheduleAr String? @map("irrigation_schedule_ar") @db.VarChar(255)
+  irrigationSchedule   String? @map("irrigation_schedule")
+  irrigationScheduleEn String? @map("irrigation_schedule_en")
+  irrigationScheduleAr String? @map("irrigation_schedule_ar")
 
-  fertilizationSchedule   String? @map("fertilization_schedule") @db.VarChar(255)
-  fertilizationScheduleEn String? @map("fertilization_schedule_en") @db.VarChar(255)
-  fertilizationScheduleAr String? @map("fertilization_schedule_ar") @db.VarChar(255)
+  fertilizationSchedule   String? @map("fertilization_schedule")
+  fertilizationScheduleEn String? @map("fertilization_schedule_en")
+  fertilizationScheduleAr String? @map("fertilization_schedule_ar")
+
+  sprayingSchedule   String? @map("spraying_schedule")
+  sprayingScheduleEn String? @map("spraying_schedule_en")
+  sprayingScheduleAr String? @map("spraying_schedule_ar")
 
   notes   String?
   notesEn String? @map("notes_en")
@@ -225,12 +238,16 @@ model Diagnosis {
 }
 
 model Order {
-  id         String      @id @default(uuid()) @db.Uuid
-  customerId String      @map("customer_id") @db.Uuid
-  totalPrice Decimal     @map("total_price") @db.Decimal(10, 2)
-  status     OrderStatus @default(PENDING)
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @updatedAt @map("updated_at")
+  id              String         @id @default(uuid()) @db.Uuid
+  customerId      String         @map("customer_id") @db.Uuid
+  totalPrice      Decimal        @map("total_price") @db.Decimal(10, 2)
+  status          OrderStatus    @default(PENDING)
+  deliveryMethod  DeliveryMethod @map("delivery_method")
+  paymentMethod   PaymentMethod  @default(CASH) @map("payment_method")
+  deliveryAddress String?        @map("delivery_address")
+  pickupLocation  String?        @map("pickup_location")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
 
   customer   User        @relation(fields: [customerId], references: [id])
   orderItems OrderItem[]

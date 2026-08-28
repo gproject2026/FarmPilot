@@ -113,6 +113,9 @@ class OrderProvider extends ChangeNotifier {
   Future<bool> createOrder({
     required String token,
     required List<Map<String, dynamic>> items,
+    required String deliveryMethod,
+    String? deliveryAddress,
+    String paymentMethod = 'CASH',
   }) async {
     _setLoading(true);
     _errorMessage = null;
@@ -122,6 +125,9 @@ class OrderProvider extends ChangeNotifier {
           await _orderService.createOrder(
         token: token,
         items: items,
+        deliveryMethod: deliveryMethod,
+        deliveryAddress: deliveryAddress,
+        paymentMethod: paymentMethod,
       );
 
       _customerOrders.insert(

@@ -1180,6 +1180,8 @@ class _FarmerOrderCard extends StatelessWidget {
             },
           ),
           const SizedBox(height: 18),
+          _FulfillmentPanel(order: order),
+          const SizedBox(height: 18),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 15),
             decoration: BoxDecoration(
@@ -1266,6 +1268,152 @@ class _FarmerOrderCard extends StatelessWidget {
     final d = date.toLocal();
     String two(int value) => value.toString().padLeft(2, '0');
     return '${two(d.day)}/${two(d.month)}/${d.year}  ${two(d.hour)}:${two(d.minute)}';
+  }
+}
+
+
+class _FulfillmentPanel extends StatelessWidget {
+  final OrderModel order;
+
+  const _FulfillmentPanel({
+    required this.order,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDelivery =
+        order.deliveryMethod.trim().toUpperCase() == 'DELIVERY';
+
+    final method = isDelivery
+        ? _t(context, 'Delivery', 'توصيل')
+        : _t(
+            context,
+            'Pickup from Farmer',
+            'استلام من المزارع',
+          );
+
+    final payment = isDelivery
+        ? _t(
+            context,
+            'Cash on Delivery',
+            'الدفع نقدًا عند التوصيل',
+          )
+        : _t(
+            context,
+            'Cash on Pickup',
+            'الدفع نقدًا عند الاستلام',
+          );
+
+    final location = isDelivery
+        ? order.deliveryAddress?.trim()
+        : order.pickupLocation?.trim();
+
+    return _InnerPanel(
+      title: _t(
+        context,
+        'Fulfillment & Payment',
+        'تفاصيل الاستلام والدفع',
+      ),
+      icon: isDelivery
+          ? Icons.local_shipping_outlined
+          : Icons.storefront_outlined,
+      child: Column(
+        children: [
+          _LabeledInfoRow(
+            icon: isDelivery
+                ? Icons.local_shipping_outlined
+                : Icons.shopping_bag_outlined,
+            label: _t(
+              context,
+              'Delivery Method',
+              'طريقة الاستلام',
+            ),
+            value: method,
+          ),
+          _LabeledInfoRow(
+            icon: Icons.payments_outlined,
+            label: _t(
+              context,
+              'Payment Method',
+              'طريقة الدفع',
+            ),
+            value: payment,
+          ),
+          if (location != null && location.isNotEmpty)
+            _LabeledInfoRow(
+              icon: Icons.location_on_outlined,
+              label: isDelivery
+                  ? _t(
+                      context,
+                      'Delivery Address',
+                      'عنوان التوصيل',
+                    )
+                  : _t(
+                      context,
+                      'Pickup Location',
+                      'موقع الاستلام',
+                    ),
+              value: location,
+              isLast: true,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LabeledInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool isLast;
+
+  const _LabeledInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.isLast = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: isLast ? 0 : 9,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            size: 17,
+            color: _ordersMuted,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  color: _ordersMuted,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+                children: [
+                  TextSpan(
+                    text: '$label: ',
+                    style: const TextStyle(
+                      color: _ordersText,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  TextSpan(text: value),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
