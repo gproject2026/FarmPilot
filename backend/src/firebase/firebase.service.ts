@@ -50,6 +50,18 @@ export class FirebaseService implements OnModuleInit {
     return getMessaging(this.app).send({
       token,
 
+      notification: {
+        title,
+        body,
+      },
+
+      android: {
+        priority: 'high',
+        notification: {
+          sound: 'default',
+        },
+      },
+
       webpush: {
         headers: {
           Urgency: 'high',
