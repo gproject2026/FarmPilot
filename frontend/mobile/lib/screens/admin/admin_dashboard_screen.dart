@@ -10,6 +10,7 @@ import 'admin_supplier_categories_screen.dart';
 import 'admin_orders_screen.dart';
 import 'admin_products_screen.dart';
 import 'admin_users_screen.dart';
+import 'admin_supplier_orders_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({
@@ -87,6 +88,15 @@ class _AdminDashboardScreenState
       ),
     );
   }
+
+  void _openSupplyOrders() {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) =>
+          const AdminSupplierOrdersScreen(),
+    ),
+  );
+}
 
   void _changeLanguage(
     String languageCode,
@@ -532,6 +542,24 @@ class _AdminDashboardScreenState
                           onPressed:
                               _openManageSupplierCategories,
                         ),
+                         _adminToolCard(
+  icon:
+      Icons.local_shipping_outlined,
+  title:
+      Localizations.localeOf(context)
+                  .languageCode ==
+              'ar'
+          ? 'طلبات المستلزمات'
+          : 'Supply Orders',
+  subtitle:
+      Localizations.localeOf(context)
+                  .languageCode ==
+              'ar'
+          ? 'مراجعة طلبات المستلزمات بين المزارعين والموردين ومتابعة حالتها.'
+          : 'Review supply orders between farmers and suppliers and track their status.',
+  onPressed:
+      _openSupplyOrders,
+),
                       ],
                     ),
                   ],

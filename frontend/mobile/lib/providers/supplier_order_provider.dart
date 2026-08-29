@@ -22,6 +22,9 @@ class SupplierOrderProvider
   // Supply orders created by the FARMER.
   List farmerSupplierOrders = [];
 
+  // Supply orders shown to the ADMIN.
+List adminSupplierOrders = [];
+
   Map<String, dynamic>? selectedOrder;
 
   Future<void> loadSupplierOrders() async {
@@ -42,6 +45,25 @@ class SupplierOrderProvider
       notifyListeners();
     }
   }
+
+  Future<void> loadAdminSupplierOrders() async {
+  isLoading = true;
+  errorMessage = null;
+  notifyListeners();
+
+  try {
+    adminSupplierOrders =
+        await supplierOrderService
+            .getAdminSupplierOrders();
+  } catch (error) {
+    errorMessage = _cleanError(
+      error,
+    );
+  } finally {
+    isLoading = false;
+    notifyListeners();
+  }
+}
 
   Future<void>
       loadFarmerSupplierOrders() async {
@@ -232,12 +254,13 @@ class SupplierOrderProvider
   }
 
   void clearOrders() {
-    supplierOrders = [];
-    farmerSupplierOrders = [];
-    selectedOrder = null;
-    errorMessage = null;
-    notifyListeners();
-  }
+  supplierOrders = [];
+  farmerSupplierOrders = [];
+  adminSupplierOrders = [];
+  selectedOrder = null;
+  errorMessage = null;
+  notifyListeners();
+}
 
   String _cleanError(
     Object error,

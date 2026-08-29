@@ -93,6 +93,30 @@ class SupplierOrderService {
     }
   }
 
+  Future<List> getAdminSupplierOrders() async {
+  try {
+    final response = await apiClient.dio.get(
+      '/supplier-orders/admin',
+    );
+
+    final data = response.data;
+
+    if (data is! List) {
+      throw Exception(
+        'Invalid admin supplier orders response',
+      );
+    }
+
+    return data;
+  } on DioException catch (error) {
+    _throwDioMessage(
+      error,
+      fallback:
+          'Failed to load admin supplier orders',
+    );
+  }
+}
+
   Future<Map<String, dynamic>> getSupplierOrderById(
     String orderId,
   ) async {
