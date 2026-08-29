@@ -279,30 +279,42 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   }
 
   Color _roleColor(String role) {
-    switch (role) {
-      case 'ADMIN':
-        return Colors.red;
-      case 'FARMER':
-        return Colors.green;
-      case 'CUSTOMER':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
+  switch (role.trim().toUpperCase()) {
+    case 'ADMIN':
+      return Colors.red;
+
+    case 'FARMER':
+      return Colors.green;
+
+    case 'CUSTOMER':
+      return Colors.blue;
+
+    case 'SUPPLIER':
+      return Colors.orange;
+
+    default:
+      return Colors.grey;
   }
+}
 
   IconData _roleIcon(String role) {
-    switch (role) {
-      case 'ADMIN':
-        return Icons.admin_panel_settings;
-      case 'FARMER':
-        return Icons.agriculture;
-      case 'CUSTOMER':
-        return Icons.person_outline;
-      default:
-        return Icons.person;
-    }
+  switch (role.trim().toUpperCase()) {
+    case 'ADMIN':
+      return Icons.admin_panel_settings;
+
+    case 'FARMER':
+      return Icons.agriculture;
+
+    case 'CUSTOMER':
+      return Icons.person_outline;
+
+    case 'SUPPLIER':
+      return Icons.storefront_outlined;
+
+    default:
+      return Icons.person;
   }
+}
 
   String _formatDate(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
@@ -998,18 +1010,30 @@ class _AdminUsersGlow extends StatelessWidget {
   }
 }
 
-String _localizedRole(String role, bool isArabic) {
+String _localizedRole(
+  String role,
+  bool isArabic,
+) {
+  final normalizedRole =
+      role.trim().toUpperCase();
+
   if (!isArabic) {
-    return role;
+    return normalizedRole;
   }
 
-  switch (role.trim().toUpperCase()) {
+  switch (normalizedRole) {
     case 'ADMIN':
       return 'مسؤول';
+
     case 'FARMER':
       return 'مزارع';
+
     case 'CUSTOMER':
       return 'عميل';
+
+    case 'SUPPLIER':
+      return 'مورد';
+
     default:
       return role;
   }
