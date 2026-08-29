@@ -30,13 +30,11 @@ export class RegisterDto {
     'FARMER',
     'CUSTOMER',
     'SUPPLIER',
-    'ADMIN',
   ])
   role!:
     | 'FARMER'
     | 'CUSTOMER'
-    | 'SUPPLIER'
-    | 'ADMIN';
+    | 'SUPPLIER';
 
   @IsOptional()
   @IsString()
