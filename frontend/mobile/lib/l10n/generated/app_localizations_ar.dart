@@ -367,7 +367,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get aiDiagnosis => 'التشخيص بالذكاء الاصطناعي';
 
   @override
-  String get secureAccessMessage => 'دخول آمن للمزارعين والعملاء والمسؤولين.';
+  String get secureAccessMessage =>
+      'دخول آمن للمزارعين والعملاء والموردين والمسؤولين.';
 
   @override
   String get mobileBrandDescription =>
@@ -499,6 +500,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerAccount => 'عميل';
 
   @override
+  String get supplier => 'مورد';
+
+  @override
+  String get supplierAccount => 'مورد';
+
+  @override
   String get selectAccountType => 'اختر نوع الحساب';
 
   @override
@@ -528,5 +535,154 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get registerBrandDescription =>
-      'أنشئ حسابًا كمزارع أو عميل واستفد من أدوات الزراعة الذكية والسوق المباشر.';
+      'أنشئ حسابًا كمزارع أو عميل أو مورد واستفد من أدوات الزراعة الذكية والسوق المباشر.';
+
+  @override
+  String get supplierDashboard => 'لوحة تحكم المورد';
+
+  @override
+  String get welcomeSupplier => 'مرحبًا بالمورد';
+
+  @override
+  String get supplierDashboardSubtitle =>
+      'أدر مستلزماتك الزراعية وطلبات المزارعين ومخزونك من مكان واحد.';
+
+  @override
+  String get supplierProducts => 'منتجات المورد';
+
+  @override
+  String get mySupplierProducts => 'منتجاتي';
+
+  @override
+  String get manageSupplierProducts =>
+      'إدارة المستلزمات الزراعية التي تعرضها للمزارعين';
+
+  @override
+  String get supplierOrders => 'طلبات المزارعين';
+
+  @override
+  String get manageFarmerOrders =>
+      'عرض وتحديث طلبات المستلزمات الواردة من المزارعين';
+
+  @override
+  String get supplierCategories => 'تصنيفات المستلزمات';
+
+  @override
+  String get browseSupplierCategories => 'عرض تصنيفات المستلزمات الزراعية';
+
+  @override
+  String get supplierInventory => 'المخزون';
+
+  @override
+  String get manageSupplierInventory => 'متابعة كميات المنتجات وحالة توفرها';
+
+  @override
+  String get storeLocation => 'موقع المتجر';
+
+  @override
+  String get manageStoreLocation => 'إدارة بيانات المورد وموقع استلام الطلبات';
+
+  @override
+  String get agriculturalSupplies => 'المستلزمات الزراعية';
+
+  @override
+  String get agriculturalSuppliesSubtitle =>
+      'البذور والأسمدة والمبيدات وأدوات ومستلزمات الزراعة';
+
+  @override
+  String get supplierManagement => 'إدارة المورد';
+
+  @override
+  String get supplierManagementSubtitle =>
+      'إدارة المنتجات والطلبات والمخزون وبيانات المتجر';
+
+  @override
+  String get addSupplierProduct => 'إضافة منتج للمورد';
+
+  @override
+  String get editSupplierProduct => 'تعديل منتج المورد';
+
+  @override
+  String get addSupplierProductSubtitle =>
+      'أضف مستلزمًا زراعيًا جديدًا ليتمكن المزارعون من شرائه.';
+
+  @override
+  String get editSupplierProductSubtitle =>
+      'حدّث تفاصيل المنتج وتعليماته وصورته ومعلومات توفره.';
+
+  @override
+  String get supplierProductInformation => 'معلومات المنتج';
+
+  @override
+  String get supplierProductInformationSubtitle =>
+      'أضف المعلومات الأساسية للمستلزم الزراعي الذي سيظهر للمزارعين.';
+
+  @override
+  String get supplierProductImage => 'صورة المنتج';
+
+  @override
+  String get supplierProductImageSubtitle =>
+      'اختر صورة واضحة للمستلزم الزراعي لعرضها في المتجر.';
+
+  @override
+  String get plantingInstructions => 'تعليمات الزراعة';
+
+  @override
+  String get plantingInstructionsHint =>
+      'أدخل تعليمات الزراعة أو الغرس إن وجدت';
+
+  @override
+  String get irrigationInstructions => 'تعليمات الري';
+
+  @override
+  String get irrigationInstructionsHint => 'أدخل تعليمات الري إن وجدت';
+
+  @override
+  String get usageInstructions => 'تعليمات الاستخدام';
+
+  @override
+  String get usageInstructionsHint =>
+      'أدخل تعليمات الاستخدام الآمن والصحيح للمنتج إن وجدت';
+
+  @override
+  String get productInstructions => 'تعليمات المنتج';
+
+  @override
+  String get productInstructionsSubtitle =>
+      'أضف التعليمات المناسبة لهذا المنتج لمساعدة المزارع على استخدامه بشكل صحيح.';
+
+  @override
+  String get selectSupplierCategory => 'اختر تصنيف المستلزم';
+
+  @override
+  String get noSupplierCategoriesFound => 'لا توجد تصنيفات للمستلزمات متاحة';
+
+  @override
+  String get supplierProductAddedSuccessfully => 'تمت إضافة منتج المورد بنجاح';
+
+  @override
+  String get supplierProductUpdatedSuccessfully => 'تم تحديث منتج المورد بنجاح';
+
+  @override
+  String get supplierProductIdNotFound => 'لم يتم العثور على معرف منتج المورد';
+
+  @override
+  String get pleaseEnterValidSupplierProductData =>
+      'يرجى إدخال بيانات صحيحة للمنتج';
+
+  @override
+  String get failedToSaveSupplierProduct => 'فشل حفظ منتج المورد';
+
+  @override
+  String get supplierProductImageUploadFailed => 'فشل رفع صورة المنتج';
+
+  @override
+  String get supplierProductNoDescription => 'لا يوجد وصف لهذا المنتج';
+
+  @override
+  String get noSupplierProductsFound => 'لا توجد منتجات للمورد';
+
+  @override
+  String get createFirstSupplierProduct =>
+      'أضف أول مستلزم زراعي لك ليظهر للمزارعين ويتمكنوا من شرائه.';
 }

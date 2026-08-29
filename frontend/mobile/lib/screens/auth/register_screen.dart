@@ -692,6 +692,12 @@ class _RegisterScreenState
                     l10n.farmer,
                   ),
                 ),
+                DropdownMenuItem(
+                  value: 'SUPPLIER',
+                  child: Text(
+                    l10n.supplierAccount,
+                  ),
+                ),
               ],
               onChanged: (value) {
                 if (value == null) {

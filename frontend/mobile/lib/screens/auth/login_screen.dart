@@ -7,6 +7,7 @@ import '../../providers/locale_provider.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../customer/customer_dashboard_screen.dart';
 import '../farmer/farmer_dashboard_screen.dart';
+import '../supplier/supplier_dashboard_screen.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
@@ -20,52 +21,66 @@ class LoginScreen extends StatefulWidget {
       _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final emailController =
+class _LoginScreenState
+    extends State<LoginScreen> {
+  final TextEditingController
+      _emailController =
       TextEditingController();
 
-  final passwordController =
+  final TextEditingController
+      _passwordController =
       TextEditingController();
 
-  bool obscurePassword = true;
+  bool _obscurePassword = true;
+
+  static const Color _darkGreen =
+      Color(0xFF173F24);
+
+  static const Color _primaryGreen =
+      Color(0xFF2F6B3D);
+
+  static const Color _background =
+      Color(0xFFF8FAF4);
 
   @override
   void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
 
     super.dispose();
   }
 
   Future<void> _login() async {
+    final l10n =
+        AppLocalizations.of(context)!;
+
+    final email =
+        _emailController.text.trim();
+
+    final password =
+        _passwordController.text;
+
+    if (email.isEmpty ||
+        password.isEmpty) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n
+                  .pleaseEnterEmailPassword,
+            ),
+          ),
+        );
+
+      return;
+    }
+
     final authProvider =
         Provider.of<AuthProvider>(
       context,
       listen: false,
     );
-
-    final l10n =
-        AppLocalizations.of(context)!;
-
-    final email =
-        emailController.text.trim();
-
-    final password =
-        passwordController.text.trim();
-
-    if (email.isEmpty ||
-        password.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.pleaseEnterEmailPassword,
-          ),
-        ),
-      );
-
-      return;
-    }
 
     try {
       await authProvider.login(
@@ -77,8 +92,11 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      if (authProvider.userRole ==
-          'FARMER') {
+      final role =
+          authProvider.userRole
+              ?.toUpperCase();
+
+      if (role == 'FARMER') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -90,8 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      if (authProvider.userRole ==
-          'CUSTOMER') {
+      if (role == 'CUSTOMER') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -103,8 +120,19 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      if (authProvider.userRole ==
-          'ADMIN') {
+      if (role == 'SUPPLIER') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                const SupplierDashboardScreen(),
+          ),
+        );
+
+        return;
+      }
+
+      if (role == 'ADMIN') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -117,47 +145,47 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            '${l10n.unsupportedRole}: '
-            '${authProvider.userRole ?? l10n.unknown}',
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.unsupportedRole,
+            ),
           ),
-        ),
-      );
-    } catch (error) {
+        );
+    } catch (e) {
       if (!mounted) {
         return;
       }
 
+      final message =
+          authProvider.errorMessage ??
+              e
+                  .toString()
+                  .replaceFirst(
+                    'Exception: ',
+                    '',
+                  );
+
       ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            error
-                .toString()
-                .replaceFirst(
-                  'Exception: ',
-                  '',
-                ),
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              message,
+            ),
           ),
-          backgroundColor:
-              Colors.red,
-        ),
-      );
+        );
     }
   }
 
   void _changeLanguage(
     String languageCode,
   ) {
-    final localeProvider =
-        Provider.of<LocaleProvider>(
+    Provider.of<LocaleProvider>(
       context,
       listen: false,
-    );
-
-    localeProvider.setLocale(
+    ).setLocale(
       Locale(languageCode),
     );
   }
@@ -166,81 +194,114 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(
     BuildContext context,
   ) {
-    final authProvider =
-        Provider.of<AuthProvider>(
-      context,
-    );
+    final l10n =
+        AppLocalizations.of(context)!;
 
     final localeProvider =
         Provider.of<LocaleProvider>(
       context,
     );
 
-    final l10n =
-        AppLocalizations.of(context)!;
-
     final isArabic =
         localeProvider
                 .locale.languageCode ==
             'ar';
 
+    final authProvider =
+        Provider.of<AuthProvider>(
+      context,
+    );
+
     return Scaffold(
       backgroundColor:
-          const Color(0xFFF5F7F0),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (
-            context,
-            constraints,
-          ) {
-            final isWide =
-                constraints.maxWidth >=
-                    900;
+          _background,
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child:
+                _LoginBackdrop(),
+          ),
+          SafeArea(
+            child: Center(
+              child:
+                  SingleChildScrollView(
+                padding:
+                    const EdgeInsets
+                        .all(
+                  20,
+                ),
+                child:
+                    ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(
+                    maxWidth: 1120,
+                  ),
+                  child:
+                      LayoutBuilder(
+                    builder: (
+                      context,
+                      constraints,
+                    ) {
+                      final isWide =
+                          constraints
+                                  .maxWidth >=
+                              850;
 
-            if (isWide) {
-              return Row(
-                children: [
-                  Expanded(
-                    flex: 11,
-                    child: _buildBrandPanel(
-                      l10n,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 9,
-                    child: _buildLoginPanel(
-                      context: context,
-                      authProvider:
-                          authProvider,
-                      l10n: l10n,
-                      isArabic:
-                          isArabic,
-                    ),
-                  ),
-                ],
-              );
-            }
+                      if (isWide) {
+                        return Row(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: 620,
+                                child: _buildBrandPanel(
+                                  l10n,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 24,
+                            ),
+                            Expanded(
+                              child: SizedBox(
+                                height: 620,
+                                child: _buildLoginCard(
+                                  l10n: l10n,
+                                  isArabic: isArabic,
+                                  authProvider:
+                                      authProvider,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
 
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildMobileBrandHeader(
-                    l10n,
+                      return Column(
+                        children: [
+                          _buildMobileBrand(
+                            l10n,
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          _buildLoginCard(
+                            l10n: l10n,
+                            isArabic:
+                                isArabic,
+                            authProvider:
+                                authProvider,
+                          ),
+                        ],
+                      );
+                    },
                   ),
-                  _buildLoginPanel(
-                    context: context,
-                    authProvider:
-                        authProvider,
-                    l10n: l10n,
-                    isArabic:
-                        isArabic,
-                    isMobile: true,
-                  ),
-                ],
+                ),
               ),
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -249,243 +310,271 @@ class _LoginScreenState extends State<LoginScreen> {
     AppLocalizations l10n,
   ) {
     return Container(
-      height: double.infinity,
+      constraints:
+          const BoxConstraints(
+        minHeight: 620,
+      ),
+      padding:
+          const EdgeInsets.all(
+        44,
+      ),
       decoration:
-          const BoxDecoration(
-        gradient: LinearGradient(
+          BoxDecoration(
+        gradient:
+            const LinearGradient(
           begin:
               Alignment.topLeft,
           end:
               Alignment.bottomRight,
           colors: [
-            Color(0xFF163D24),
-            Color(0xFF295B35),
-            Color(0xFF6D8F3E),
+            Color(0xFF123A22),
+            Color(0xFF205A34),
+            Color(0xFF2E6F40),
           ],
         ),
+        borderRadius:
+            BorderRadius.circular(
+          32,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                _darkGreen.withValues(
+              alpha: 0.18,
+            ),
+            blurRadius: 30,
+            offset:
+                const Offset(
+              0,
+              12,
+            ),
+          ),
+        ],
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
-          Positioned(
-            top: -90,
-            right: -70,
-            child: Container(
-              width: 260,
-              height: 260,
-              decoration:
-                  BoxDecoration(
-                color: Colors.white
-                    .withValues(
-                  alpha: 0.06,
+          Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration:
+                    BoxDecoration(
+                  color:
+                      const Color(
+                    0xFFDDECB8,
+                  ),
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    17,
+                  ),
                 ),
-                shape:
-                    BoxShape.circle,
+                child:
+                    const Icon(
+                  Icons.eco_rounded,
+                  color:
+                      _darkGreen,
+                  size: 30,
+                ),
               ),
+              const SizedBox(
+                width: 14,
+              ),
+              Text(
+                l10n.appName,
+                style:
+                    const TextStyle(
+                  color:
+                      Colors.white,
+                  fontSize: 25,
+                  fontWeight:
+                      FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 110,
+          ),
+          Text(
+            l10n.loginBrandTitle,
+            style:
+                const TextStyle(
+              color:
+                  Colors.white,
+              fontSize: 48,
+              height: 1.05,
+              fontWeight:
+                  FontWeight.w900,
+              letterSpacing: -1.5,
             ),
           ),
-          Positioned(
-            bottom: -120,
-            left: -70,
-            child: Container(
-              width: 330,
-              height: 330,
-              decoration:
-                  BoxDecoration(
+          const SizedBox(
+            height: 24,
+          ),
+          Text(
+            l10n
+                .loginBrandDescription,
+            style:
+                TextStyle(
+              color:
+                  Colors.white
+                      .withValues(
+                alpha: 0.82,
+              ),
+              fontSize: 16,
+              height: 1.7,
+            ),
+          ),
+          const SizedBox(
+            height: 34,
+          ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _BrandChip(
+                icon:
+                    Icons.eco_outlined,
+                label:
+                    l10n.smartCrops,
+              ),
+              _BrandChip(
+                icon:
+                    Icons
+                        .health_and_safety_outlined,
+                label:
+                    l10n.aiDiagnosis,
+              ),
+              _BrandChip(
+                icon:
+                    Icons.storefront_outlined,
+                label:
+                    l10n.marketplace,
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 80,
+          ),
+          Row(
+            children: [
+              const Icon(
+                Icons
+                    .verified_user_outlined,
                 color:
-                    const Color(
-                  0xFFCFE47A,
-                ).withValues(
-                  alpha: 0.10,
+                    Color(
+                  0xFFDDECB8,
                 ),
-                shape:
-                    BoxShape.circle,
+                size: 21,
               ),
-            ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.all(
-              56,
-            ),
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                _buildLogoBadge(
-                  l10n,
-                ),
-                const Spacer(),
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration:
-                      BoxDecoration(
-                    color: Colors.white
-                        .withValues(
-                      alpha: 0.12,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(
-                      22,
-                    ),
-                  ),
-                  child:
-                      const Icon(
-                    Icons.agriculture,
-                    color:
-                        Colors.white,
-                    size: 38,
-                  ),
-                ),
-                const SizedBox(
-                  height: 28,
-                ),
-                Text(
-                  l10n.loginBrandTitle,
-                  style:
-                      const TextStyle(
-                    color:
-                        Colors.white,
-                    fontSize: 42,
-                    height: 1.05,
-                    fontWeight:
-                        FontWeight.w800,
-                    letterSpacing:
-                        -1.2,
-                  ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Text(
-                  l10n.loginBrandDescription,
+              const SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                child: Text(
+                  l10n
+                      .secureAccessMessage,
                   style:
                       TextStyle(
-                    color: Colors.white
-                        .withValues(
-                      alpha: 0.82,
-                    ),
-                    fontSize: 16,
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(
-                  height: 32,
-                ),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _FeatureBadge(
-                      icon:
-                          Icons.eco_outlined,
-                      label:
-                          l10n.smartCrops,
-                    ),
-                    _FeatureBadge(
-                      icon: Icons
-                          .health_and_safety_outlined,
-                      label:
-                          l10n.aiDiagnosis,
-                    ),
-                    _FeatureBadge(
-                      icon: Icons
-                          .storefront_outlined,
-                      label:
-                          l10n.marketplace,
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Text(
-                  l10n.appName,
-                  style:
-                      TextStyle(
-                    color: Colors.white
-                        .withValues(
-                      alpha: 0.62,
+                    color:
+                        Colors.white
+                            .withValues(
+                      alpha: 0.75,
                     ),
                     fontSize: 13,
-                    letterSpacing:
-                        1.4,
-                    fontWeight:
-                        FontWeight.w600,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMobileBrandHeader(
+  Widget _buildMobileBrand(
     AppLocalizations l10n,
   ) {
     return Container(
-      width: double.infinity,
+      width:
+          double.infinity,
       padding:
-          const EdgeInsets.fromLTRB(
+          const EdgeInsets.all(
         24,
-        24,
-        24,
-        36,
       ),
       decoration:
-          const BoxDecoration(
-        gradient: LinearGradient(
-          begin:
-              Alignment.topLeft,
-          end:
-              Alignment.bottomRight,
+          BoxDecoration(
+        gradient:
+            const LinearGradient(
           colors: [
-            Color(0xFF163D24),
-            Color(0xFF295B35),
+            Color(0xFF173F24),
+            Color(0xFF2F6B3D),
           ],
         ),
         borderRadius:
-            BorderRadius.only(
-          bottomLeft:
-              Radius.circular(32),
-          bottomRight:
-              Radius.circular(32),
+            BorderRadius.circular(
+          26,
         ),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
         children: [
-          _buildLogoBadge(
-            l10n,
-          ),
-          const SizedBox(
-            height: 28,
-          ),
-          Text(
-            l10n.loginBrandTitle,
-            style:
-                const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              height: 1.05,
-              fontWeight:
-                  FontWeight.w800,
+          Container(
+            width: 58,
+            height: 58,
+            decoration:
+                BoxDecoration(
+              color:
+                  const Color(
+                0xFFDDECB8,
+              ),
+              borderRadius:
+                  BorderRadius
+                      .circular(
+                18,
+              ),
+            ),
+            child:
+                const Icon(
+              Icons.eco_rounded,
+              color:
+                  _darkGreen,
+              size: 32,
             ),
           ),
           const SizedBox(
             height: 12,
           ),
           Text(
-            l10n.mobileBrandDescription,
+            l10n.appName,
+            style:
+                const TextStyle(
+              color:
+                  Colors.white,
+              fontSize: 25,
+              fontWeight:
+                  FontWeight.w800,
+            ),
+          ),
+          const SizedBox(
+            height: 7,
+          ),
+          Text(
+            l10n
+                .mobileBrandDescription,
+            textAlign:
+                TextAlign.center,
             style:
                 TextStyle(
-              color: Colors.white
-                  .withValues(
+              color:
+                  Colors.white
+                      .withValues(
                 alpha: 0.78,
               ),
-              fontSize: 14,
-              height: 1.5,
+              height: 1.4,
             ),
           ),
         ],
@@ -493,566 +582,453 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginPanel({
-    required BuildContext context,
-    required AuthProvider authProvider,
+  Widget _buildLoginCard({
     required AppLocalizations l10n,
     required bool isArabic,
-    bool isMobile = false,
+    required AuthProvider
+        authProvider,
   }) {
     return Container(
-      color: const Color(0xFFF5F7F0),
-      child: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal:
-                isMobile ? 24 : 56,
-            vertical:
-                isMobile ? 32 : 48,
+      constraints:
+          const BoxConstraints(
+        minHeight: 620,
+      ),
+      padding:
+          const EdgeInsets.all(
+        34,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            Colors.white,
+        borderRadius:
+            BorderRadius.circular(
+          32,
+        ),
+        border:
+            Border.all(
+          color:
+              const Color(
+            0xFFDDE6D8,
           ),
-          child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(
-              maxWidth: 460,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color:
+                _darkGreen.withValues(
+              alpha: 0.07,
             ),
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Row(
+            blurRadius: 30,
+            offset:
+                const Offset(
+              0,
+              10,
+            ),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        mainAxisAlignment:
+            MainAxisAlignment.center,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
-                        children: [
-                          Text(
-                            l10n.login,
-                            style:
-                                const TextStyle(
-                              color:
-                                  Color(
-                                0xFF183124,
-                              ),
-                              fontSize: 34,
-                              fontWeight:
-                                  FontWeight
-                                      .w800,
-                              letterSpacing:
-                                  -0.7,
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
-                          Text(
-                            l10n
-                                .welcomeToFarmPilot,
-                            style:
-                                const TextStyle(
-                              color:
-                                  Color(
-                                0xFF6D756E,
-                              ),
-                              fontSize: 15,
-                              height: 1.45,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _buildLanguageMenu(
-                      isArabic:
-                          isArabic,
-                      l10n: l10n,
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 34,
-                ),
-                _buildSectionLabel(
-                  l10n.email,
-                ),
-                const SizedBox(
-                  height: 8,
-                ),
-                TextField(
-                  controller:
-                      emailController,
-                  keyboardType:
-                      TextInputType
-                          .emailAddress,
-                  textInputAction:
-                      TextInputAction
-                          .next,
-                  autofillHints:
-                      const [
-                    AutofillHints.username,
-                  ],
-                  decoration:
-                      InputDecoration(
-                    hintText:
-                        l10n.email,
-                    prefixIcon:
-                        const Icon(
-                      Icons
-                          .mail_outline_rounded,
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                _buildSectionLabel(
-                  l10n.password,
-                ),
-                const SizedBox(
-                  height: 8,
-                ),
-                TextField(
-                  controller:
-                      passwordController,
-                  obscureText:
-                      obscurePassword,
-                  textInputAction:
-                      TextInputAction
-                          .done,
-                  autofillHints:
-                      const [
-                    AutofillHints.password,
-                  ],
-                  onSubmitted: (_) {
-                    if (!authProvider
-                        .isLoading) {
-                      _login();
-                    }
-                  },
-                  decoration:
-                      InputDecoration(
-                    hintText:
-                        l10n.password,
-                    prefixIcon:
-                        const Icon(
-                      Icons
-                          .lock_outline_rounded,
-                    ),
-                    suffixIcon:
-                        IconButton(
-                      tooltip:
-                          obscurePassword
-                              ? l10n
-                                  .showPassword
-                              : l10n
-                                  .hidePassword,
-                      onPressed: () {
-                        setState(() {
-                          obscurePassword =
-                              !obscurePassword;
-                        });
-                      },
-                      icon: Icon(
-                        obscurePassword
-                            ? Icons
-                                .visibility_outlined
-                            : Icons
-                                .visibility_off_outlined,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 6,
-                ),
-                Align(
-                  alignment:
-                      AlignmentDirectional
-                          .centerEnd,
-                  child: TextButton(
-                    onPressed:
-                        authProvider
-                                .isLoading
-                            ? null
-                            : () {
-                                Navigator
-                                    .push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        const ForgotPasswordScreen(),
-                                  ),
-                                );
-                              },
-                    child: Text(
-                      l10n
-                          .forgotPassword,
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                SizedBox(
-                  width:
-                      double.infinity,
-                  height: 56,
-                  child:
-                      ElevatedButton(
-                    onPressed:
-                        authProvider
-                                .isLoading
-                            ? null
-                            : _login,
-                    style: ElevatedButton
-                        .styleFrom(
-                      backgroundColor:
-                          const Color(
-                        0xFF2D663B,
-                      ),
-                      foregroundColor:
-                          Colors.white,
-                      elevation: 0,
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius
-                                .circular(
-                          16,
+                    Text(
+                      l10n.login,
+                      style:
+                          const TextStyle(
+                        color:
+                            Color(
+                          0xFF1D2C21,
                         ),
-                      ),
-                    ),
-                    child: authProvider
-                            .isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child:
-                                CircularProgressIndicator(
-                              strokeWidth:
-                                  2,
-                              color:
-                                  Colors
-                                      .white,
-                            ),
-                          )
-                        : Text(
-                            l10n.login,
-                            style:
-                                const TextStyle(
-                              fontSize: 16,
-                              fontWeight:
-                                  FontWeight
-                                      .w700,
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 18,
-                ),
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment
-                          .center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        l10n
-                            .dontHaveAccount,
-                        textAlign:
-                            TextAlign.center,
-                        style:
-                            const TextStyle(
-                          color:
-                              Color(
-                            0xFF6D756E,
-                          ),
-                          fontSize: 14,
-                        ),
+                        fontSize: 32,
+                        fontWeight:
+                            FontWeight
+                                .w800,
                       ),
                     ),
                     const SizedBox(
-                      width: 4,
+                      height: 7,
                     ),
-                    TextButton(
-                      onPressed:
-                          authProvider
-                                  .isLoading
-                              ? null
-                              : () {
-                                  Navigator
-                                      .push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const RegisterScreen(),
-                                    ),
-                                  );
-                                },
-                      style: TextButton
-                          .styleFrom(
-                        foregroundColor:
-                            const Color(
-                          0xFF2D663B,
+                    Text(
+                      l10n
+                          .welcomeToFarmPilot,
+                      style:
+                          const TextStyle(
+                        color:
+                            Color(
+                          0xFF68756B,
                         ),
-                        padding:
-                            const EdgeInsets
-                                .symmetric(
-                          horizontal: 6,
-                        ),
-                      ),
-                      child: Text(
-                        l10n.registerNow,
-                        style:
-                            const TextStyle(
-                          fontSize: 14,
-                          fontWeight:
-                              FontWeight
-                                  .w800,
-                        ),
+                        fontSize: 14,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 18,
-                ),
-                Container(
-                  width:
-                      double.infinity,
-                  padding:
-                      const EdgeInsets.all(
-                    16,
+              ),
+              PopupMenuButton<String>(
+                tooltip:
+                    l10n.changeLanguage,
+                position:
+                    PopupMenuPosition
+                        .under,
+                onSelected:
+                    _changeLanguage,
+                itemBuilder:
+                    (context) => [
+                  PopupMenuItem<
+                      String>(
+                    value: 'en',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons
+                              .check_rounded,
+                          color: !isArabic
+                              ? _primaryGreen
+                              : Colors
+                                  .transparent,
+                        ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          l10n.english,
+                        ),
+                      ],
+                    ),
                   ),
+                  PopupMenuItem<
+                      String>(
+                    value: 'ar',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons
+                              .check_rounded,
+                          color: isArabic
+                              ? _primaryGreen
+                              : Colors
+                                  .transparent,
+                        ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          l10n.arabic,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  width: 46,
+                  height: 46,
                   decoration:
                       BoxDecoration(
                     color:
                         const Color(
-                      0xFFE8EFE3,
+                      0xFFF1F5ED,
                     ),
                     borderRadius:
                         BorderRadius
                             .circular(
-                      16,
+                      14,
                     ),
                   ),
-                  child: Row(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
-                    children: [
+                  child:
                       const Icon(
-                        Icons
-                            .shield_outlined,
-                        color:
-                            Color(
-                          0xFF537448,
-                        ),
-                        size: 20,
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Expanded(
-                        child: Text(
-                          l10n
-                              .secureAccessMessage,
-                          style:
-                              const TextStyle(
-                            color:
-                                Color(
-                              0xFF5B665D,
-                            ),
-                            fontSize: 13,
-                            height: 1.45,
-                          ),
-                        ),
-                      ),
-                    ],
+                    Icons.language_rounded,
+                    color:
+                        _primaryGreen,
                   ),
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 34,
+          ),
+          _buildTextField(
+            controller:
+                _emailController,
+            label:
+                l10n.email,
+            icon:
+                Icons.email_outlined,
+            keyboardType:
+                TextInputType
+                    .emailAddress,
+          ),
+          const SizedBox(
+            height: 18,
+          ),
+          _buildTextField(
+            controller:
+                _passwordController,
+            label:
+                l10n.password,
+            icon:
+                Icons.lock_outline_rounded,
+            obscureText:
+                _obscurePassword,
+            suffixIcon:
+                IconButton(
+              tooltip:
+                  _obscurePassword
+                      ? l10n
+                          .showPassword
+                      : l10n
+                          .hidePassword,
+              onPressed: () {
+                setState(
+                  () {
+                    _obscurePassword =
+                        !_obscurePassword;
+                  },
+                );
+              },
+              icon: Icon(
+                _obscurePassword
+                    ? Icons
+                        .visibility_outlined
+                    : Icons
+                        .visibility_off_outlined,
+              ),
+            ),
+            onSubmitted: (_) {
+              if (!authProvider
+                  .isLoading) {
+                _login();
+              }
+            },
+          ),
+          const SizedBox(
+            height: 12,
+          ),
+          Align(
+            alignment:
+                AlignmentDirectional
+                    .centerEnd,
+            child: TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const ForgotPasswordScreen(),
+                  ),
+                );
+              },
+              child: Text(
+                l10n.forgotPassword,
+                style:
+                    const TextStyle(
+                  color:
+                      _primaryGreen,
+                  fontWeight:
+                      FontWeight.w700,
+                ),
+              ),
             ),
           ),
-        ),
+          const SizedBox(
+            height: 16,
+          ),
+          SizedBox(
+            width:
+                double.infinity,
+            height: 54,
+            child:
+                ElevatedButton(
+              onPressed:
+                  authProvider.isLoading
+                      ? null
+                      : _login,
+              style:
+                  ElevatedButton
+                      .styleFrom(
+                backgroundColor:
+                    _primaryGreen,
+                foregroundColor:
+                    Colors.white,
+                disabledBackgroundColor:
+                    _primaryGreen
+                        .withValues(
+                  alpha: 0.55,
+                ),
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    16,
+                  ),
+                ),
+              ),
+              child:
+                  authProvider.isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child:
+                              CircularProgressIndicator(
+                            strokeWidth:
+                                2.4,
+                            color:
+                                Colors
+                                    .white,
+                          ),
+                        )
+                      : Text(
+                          l10n.login,
+                          style:
+                              const TextStyle(
+                            fontSize:
+                                16,
+                            fontWeight:
+                                FontWeight
+                                    .w700,
+                          ),
+                        ),
+            ),
+          ),
+          const SizedBox(
+            height: 24,
+          ),
+          Row(
+            mainAxisAlignment:
+                MainAxisAlignment.center,
+            children: [
+              Text(
+                l10n.dontHaveAccount,
+                style:
+                    const TextStyle(
+                  color:
+                      Color(
+                    0xFF68756B,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          const RegisterScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  l10n.registerNow,
+                  style:
+                      const TextStyle(
+                    color:
+                        _primaryGreen,
+                    fontWeight:
+                        FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildLogoBadge(
-    AppLocalizations l10n,
-  ) {
-    return Row(
-      mainAxisSize:
-          MainAxisSize.min,
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration:
-              BoxDecoration(
-            color:
-                const Color(
-              0xFFD7EB86,
-            ),
-            borderRadius:
-                BorderRadius.circular(
-              13,
-            ),
-          ),
-          child: const Icon(
-            Icons.eco_rounded,
-            color:
-                Color(
-              0xFF224B2C,
-            ),
-            size: 24,
-          ),
-        ),
-        const SizedBox(
-          width: 12,
-        ),
-        Text(
-          l10n.appName,
-          style:
-              const TextStyle(
-            color:
-                Colors.white,
-            fontSize: 22,
-            fontWeight:
-                FontWeight.w800,
-            letterSpacing:
-                -0.4,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLanguageMenu({
-    required bool isArabic,
-    required AppLocalizations l10n,
+  Widget _buildTextField({
+    required TextEditingController
+        controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    ValueChanged<String>?
+        onSubmitted,
   }) {
-    return PopupMenuButton<String>(
-      tooltip:
-          l10n.changeLanguage,
-      onSelected:
-          _changeLanguage,
-      color:
-          Colors.white,
-      shape:
-          RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(
-          14,
+    return TextField(
+      controller:
+          controller,
+      keyboardType:
+          keyboardType,
+      obscureText:
+          obscureText,
+      onSubmitted:
+          onSubmitted,
+      decoration:
+          InputDecoration(
+        labelText:
+            label,
+        prefixIcon:
+            Icon(
+          icon,
+          color:
+              _primaryGreen,
         ),
-      ),
-      itemBuilder:
-          (context) {
-        return [
-          PopupMenuItem(
-            value: 'en',
-            child: Row(
-              children: [
-                Icon(
-                  Icons.check,
-                  size: 18,
-                  color: !isArabic
-                      ? const Color(
-                          0xFF2D663B,
-                        )
-                      : Colors
-                          .transparent,
-                ),
-                const SizedBox(
-                  width: 8,
-                ),
-                Text(
-                  l10n.english,
-                ),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            value: 'ar',
-            child: Row(
-              children: [
-                Icon(
-                  Icons.check,
-                  size: 18,
-                  color: isArabic
-                      ? const Color(
-                          0xFF2D663B,
-                        )
-                      : Colors
-                          .transparent,
-                ),
-                const SizedBox(
-                  width: 8,
-                ),
-                Text(
-                  l10n.arabic,
-                ),
-              ],
-            ),
-          ),
-        ];
-      },
-      child: Container(
-        width: 46,
-        height: 46,
-        decoration:
-            BoxDecoration(
-          color: Colors.white,
+        suffixIcon:
+            suffixIcon,
+        filled: true,
+        fillColor:
+            const Color(
+          0xFFF7F9F4,
+        ),
+        border:
+            OutlineInputBorder(
           borderRadius:
               BorderRadius.circular(
-            14,
+            16,
           ),
-          border:
-              Border.all(
+          borderSide:
+              BorderSide.none,
+        ),
+        enabledBorder:
+            OutlineInputBorder(
+          borderRadius:
+              BorderRadius.circular(
+            16,
+          ),
+          borderSide:
+              const BorderSide(
             color:
-                const Color(
-              0xFFDDE4D8,
+                Color(
+              0xFFDDE6D8,
             ),
           ),
         ),
-        child: const Icon(
-          Icons.language_rounded,
-          color:
-              Color(
-            0xFF2D663B,
+        focusedBorder:
+            OutlineInputBorder(
+          borderRadius:
+              BorderRadius.circular(
+            16,
+          ),
+          borderSide:
+              const BorderSide(
+            color:
+                _primaryGreen,
+            width: 1.6,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSectionLabel(
-    String text,
-  ) {
-    return Text(
-      text,
-      style:
-          const TextStyle(
-        color:
-            Color(
-          0xFF334238,
-        ),
-        fontSize: 14,
-        fontWeight:
-            FontWeight.w700,
       ),
     );
   }
 }
 
-class _FeatureBadge
+class _BrandChip
     extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _FeatureBadge({
+  const _BrandChip({
     required this.icon,
     required this.label,
   });
@@ -1069,8 +1045,8 @@ class _FeatureBadge
       ),
       decoration:
           BoxDecoration(
-        color: Colors.white
-            .withValues(
+        color:
+            Colors.white.withValues(
           alpha: 0.10,
         ),
         borderRadius:
@@ -1079,9 +1055,9 @@ class _FeatureBadge
         ),
         border:
             Border.all(
-          color: Colors.white
-              .withValues(
-            alpha: 0.12,
+          color:
+              Colors.white.withValues(
+            alpha: 0.13,
           ),
         ),
       ),
@@ -1093,9 +1069,9 @@ class _FeatureBadge
             icon,
             color:
                 const Color(
-              0xFFD7EB86,
+              0xFFDDECB8,
             ),
-            size: 17,
+            size: 18,
           ),
           const SizedBox(
             width: 7,
@@ -1109,6 +1085,104 @@ class _FeatureBadge
               fontSize: 12,
               fontWeight:
                   FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoginBackdrop
+    extends StatelessWidget {
+  const _LoginBackdrop();
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return IgnorePointer(
+      child: Stack(
+        fit:
+            StackFit.expand,
+        children: [
+          const DecoratedBox(
+            decoration:
+                BoxDecoration(
+              gradient:
+                  LinearGradient(
+                begin:
+                    Alignment.topCenter,
+                end:
+                    Alignment.bottomCenter,
+                colors: [
+                  Color(
+                    0xFFF8FAF4,
+                  ),
+                  Color(
+                    0xFFFFFCF5,
+                  ),
+                  Color(
+                    0xFFF4F8ED,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            end: -170,
+            top: -120,
+            child: Container(
+              width: 440,
+              height: 440,
+              decoration:
+                  BoxDecoration(
+                shape:
+                    BoxShape.circle,
+                gradient:
+                    RadialGradient(
+                  colors: [
+                    const Color(
+                      0xFFCFE6B4,
+                    ).withValues(
+                      alpha: 0.35,
+                    ),
+                    const Color(
+                      0xFFCFE6B4,
+                    ).withValues(
+                      alpha: 0.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            start: -190,
+            bottom: -180,
+            child: Container(
+              width: 500,
+              height: 500,
+              decoration:
+                  BoxDecoration(
+                shape:
+                    BoxShape.circle,
+                gradient:
+                    RadialGradient(
+                  colors: [
+                    const Color(
+                      0xFFE7DFAF,
+                    ).withValues(
+                      alpha: 0.25,
+                    ),
+                    const Color(
+                      0xFFE7DFAF,
+                    ).withValues(
+                      alpha: 0.0,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],

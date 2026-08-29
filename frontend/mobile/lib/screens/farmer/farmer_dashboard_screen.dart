@@ -9,6 +9,8 @@ import '../../providers/notification_provider.dart';
 import '../notifications_screen.dart';
 import 'diagnose_plant_screen.dart';
 import 'diagnosis_history_screen.dart';
+import 'agricultural_supplies_screen.dart';
+import 'farmer_supply_orders_screen.dart';
 import 'farmer_orders_screen.dart';
 import 'my_crops_screen.dart';
 import 'my_products_screen.dart';
@@ -307,6 +309,8 @@ static const Color _textPrimary =
                             _buildQuickActions(
                               isWide:
                                   isWide,
+                              isArabic:
+                                  isArabic,
                               l10n:
                                   l10n,
                               dashboardProvider:
@@ -830,6 +834,7 @@ static const Color _textPrimary =
 
   Widget _buildQuickActions({
     required bool isWide,
+    required bool isArabic,
     required AppLocalizations l10n,
     required DashboardProvider
         dashboardProvider,
@@ -887,6 +892,58 @@ static const Color _textPrimary =
             notificationProvider
                 .loadNotifications(),
           ]);
+        },
+      ),
+      _ActionInfo(
+        title:
+            l10n.agriculturalSupplies,
+        subtitle:
+            l10n.agriculturalSuppliesSubtitle,
+        icon:
+            Icons.storefront_outlined,
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const AgriculturalSuppliesScreen(),
+            ),
+          );
+
+          if (!mounted) {
+            return;
+          }
+
+          await notificationProvider
+              .loadNotifications();
+        },
+      ),
+      _ActionInfo(
+        title:
+            isArabic
+                ? 'طلباتي من الموردين'
+                : 'My Supply Orders',
+        subtitle:
+            isArabic
+                ? 'تابع طلبات المستلزمات الزراعية'
+                : 'Track your agricultural supply orders',
+        icon:
+            Icons.local_shipping_outlined,
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const FarmerSupplyOrdersScreen(),
+            ),
+          );
+
+          if (!mounted) {
+            return;
+          }
+
+          await notificationProvider
+              .loadNotifications();
         },
       ),
       _ActionInfo(

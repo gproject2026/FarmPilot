@@ -370,7 +370,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get secureAccessMessage =>
-      'Secure access for farmers, customers and administrators.';
+      'Secure access for farmers, customers, suppliers and administrators.';
 
   @override
   String get mobileBrandDescription =>
@@ -505,6 +505,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customerAccount => 'Customer';
 
   @override
+  String get supplier => 'Supplier';
+
+  @override
+  String get supplierAccount => 'Supplier';
+
+  @override
   String get selectAccountType => 'Select Account Type';
 
   @override
@@ -534,5 +540,162 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get registerBrandDescription =>
-      'Create a farmer or customer account and access smart farming tools and the direct marketplace.';
+      'Create a farmer, customer or supplier account and access smart farming tools and the direct marketplace.';
+
+  @override
+  String get supplierDashboard => 'Supplier Dashboard';
+
+  @override
+  String get welcomeSupplier => 'Welcome Supplier';
+
+  @override
+  String get supplierDashboardSubtitle =>
+      'Manage your agricultural supplies, farmer orders and inventory in one place.';
+
+  @override
+  String get supplierProducts => 'Supplier Products';
+
+  @override
+  String get mySupplierProducts => 'My Products';
+
+  @override
+  String get manageSupplierProducts =>
+      'Manage the agricultural supplies you offer to farmers';
+
+  @override
+  String get supplierOrders => 'Farmer Orders';
+
+  @override
+  String get manageFarmerOrders =>
+      'View and update agricultural supply orders from farmers';
+
+  @override
+  String get supplierCategories => 'Supply Categories';
+
+  @override
+  String get browseSupplierCategories =>
+      'Browse agricultural supply categories';
+
+  @override
+  String get supplierInventory => 'Inventory';
+
+  @override
+  String get manageSupplierInventory =>
+      'Track product quantities and availability';
+
+  @override
+  String get storeLocation => 'Store Location';
+
+  @override
+  String get manageStoreLocation =>
+      'Manage supplier details and pickup location';
+
+  @override
+  String get agriculturalSupplies => 'Agricultural Supplies';
+
+  @override
+  String get agriculturalSuppliesSubtitle =>
+      'Seeds, fertilizers, pesticides, tools and farming supplies';
+
+  @override
+  String get supplierManagement => 'Supplier Management';
+
+  @override
+  String get supplierManagementSubtitle =>
+      'Manage products, orders, inventory and store information';
+
+  @override
+  String get addSupplierProduct => 'Add Supplier Product';
+
+  @override
+  String get editSupplierProduct => 'Edit Supplier Product';
+
+  @override
+  String get addSupplierProductSubtitle =>
+      'Add a new agricultural supply for farmers to purchase.';
+
+  @override
+  String get editSupplierProductSubtitle =>
+      'Update product details, instructions, image and availability information.';
+
+  @override
+  String get supplierProductInformation => 'Product Information';
+
+  @override
+  String get supplierProductInformationSubtitle =>
+      'Add the main details of the agricultural supply that farmers will see.';
+
+  @override
+  String get supplierProductImage => 'Product Image';
+
+  @override
+  String get supplierProductImageSubtitle =>
+      'Choose a clear photo of the agricultural supply for the store listing.';
+
+  @override
+  String get plantingInstructions => 'Planting Instructions';
+
+  @override
+  String get plantingInstructionsHint =>
+      'Enter planting or sowing instructions if applicable';
+
+  @override
+  String get irrigationInstructions => 'Irrigation Instructions';
+
+  @override
+  String get irrigationInstructionsHint =>
+      'Enter irrigation instructions if applicable';
+
+  @override
+  String get usageInstructions => 'Usage Instructions';
+
+  @override
+  String get usageInstructionsHint =>
+      'Enter safe and proper usage instructions if applicable';
+
+  @override
+  String get productInstructions => 'Product Instructions';
+
+  @override
+  String get productInstructionsSubtitle =>
+      'Add relevant instructions to help farmers use this product correctly.';
+
+  @override
+  String get selectSupplierCategory => 'Select Supply Category';
+
+  @override
+  String get noSupplierCategoriesFound => 'No supply categories are available';
+
+  @override
+  String get supplierProductAddedSuccessfully =>
+      'Supplier product added successfully';
+
+  @override
+  String get supplierProductUpdatedSuccessfully =>
+      'Supplier product updated successfully';
+
+  @override
+  String get supplierProductIdNotFound => 'Supplier product ID was not found';
+
+  @override
+  String get pleaseEnterValidSupplierProductData =>
+      'Please enter valid product data';
+
+  @override
+  String get failedToSaveSupplierProduct => 'Failed to save supplier product';
+
+  @override
+  String get supplierProductImageUploadFailed =>
+      'Failed to upload product image';
+
+  @override
+  String get supplierProductNoDescription =>
+      'No description is available for this product';
+
+  @override
+  String get noSupplierProductsFound => 'No Supplier Products Found';
+
+  @override
+  String get createFirstSupplierProduct =>
+      'Add your first agricultural supply so farmers can view and purchase it.';
 }

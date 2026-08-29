@@ -6,7 +6,9 @@ import '../providers/notification_provider.dart';
 
 import 'customer/customer_orders_screen.dart';
 import 'farmer/farmer_orders_screen.dart';
+import 'farmer/farmer_supply_orders_screen.dart';
 import 'farmer/notification_diagnosis_screen.dart';
+import 'supplier/supplier_orders_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({
@@ -221,93 +223,134 @@ class _NotificationsScreenState
       textDirection:
           _isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-      backgroundColor: _notifBackground,
-      body: Stack(
-        children: [
-          const Positioned.fill(child: _NotificationsBackdrop()),
-          RefreshIndicator(
-            onRefresh: _loadNotifications,
-            color: _notifPrimaryGreen,
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _NotificationsHeader(
-                    isArabic: _isArabic,
-                    onLanguageChanged: _setLanguage,
-                    unreadCount: notificationProvider.unreadCount,
-                    isLoading: notificationProvider.isLoading,
-                    onBack: () => Navigator.pop(context),
-                    onMarkAllRead: _markAllAsRead,
-                    onRefresh: _loadNotifications,
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(22, 24, 22, 18),
-                    child: _NotificationsIntro(
+        backgroundColor: _notifBackground,
+        body: Stack(
+          children: [
+            const Positioned.fill(
+              child: _NotificationsBackdrop(),
+            ),
+            RefreshIndicator(
+              onRefresh: _loadNotifications,
+              color: _notifPrimaryGreen,
+              child: CustomScrollView(
+                physics:
+                    const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: _NotificationsHeader(
                       isArabic: _isArabic,
-                      total: notificationProvider.notifications.length,
-                      unread: notificationProvider.unreadCount,
+                      onLanguageChanged: _setLanguage,
+                      unreadCount:
+                          notificationProvider.unreadCount,
+                      isLoading:
+                          notificationProvider.isLoading,
+                      onBack: () =>
+                          Navigator.pop(context),
+                      onMarkAllRead: _markAllAsRead,
+                      onRefresh: _loadNotifications,
                     ),
                   ),
-                ),
-                if (notificationProvider.isLoading &&
-                    notificationProvider.notifications.isEmpty)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: _notifPrimaryGreen,
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.fromLTRB(
+                        22,
+                        24,
+                        22,
+                        18,
+                      ),
+                      child: _NotificationsIntro(
+                        isArabic: _isArabic,
+                        total: notificationProvider
+                            .notifications.length,
+                        unread: notificationProvider
+                            .unreadCount,
                       ),
                     ),
-                  )
-                else if (notificationProvider.notifications.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: _EmptyNotifications(
-                      isArabic: _isArabic,
-                    ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(22, 0, 22, 42),
-                    sliver: SliverList.separated(
-                      itemCount: notificationProvider.notifications.length,
-separatorBuilder: (_, _) =>  
-                          const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final notification = Map<String, dynamic>.from(
-                          notificationProvider.notifications[index],
-                        );
-                        return _NotificationCard(
-                          isArabic: _isArabic,
-                          notification: notification,
-                          onDelete: () => _deleteNotification(
-                            notification,
-                          ),
-                        );
-                      },
-                    ),
                   ),
-              ],
+                  if (notificationProvider.isLoading &&
+                      notificationProvider
+                          .notifications.isEmpty)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child:
+                            CircularProgressIndicator(
+                          color:
+                              _notifPrimaryGreen,
+                        ),
+                      ),
+                    )
+                  else if (notificationProvider
+                      .notifications.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: _EmptyNotifications(
+                        isArabic: _isArabic,
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding:
+                          const EdgeInsets.fromLTRB(
+                        22,
+                        0,
+                        22,
+                        42,
+                      ),
+                      sliver:
+                          SliverList.separated(
+                        itemCount:
+                            notificationProvider
+                                .notifications.length,
+                        separatorBuilder:
+                            (_, _) =>
+                                const SizedBox(
+                          height: 12,
+                        ),
+                        itemBuilder:
+                            (context, index) {
+                          final notification =
+                              Map<String,
+                                  dynamic>.from(
+                            notificationProvider
+                                    .notifications[
+                                index],
+                          );
+
+                          return _NotificationCard(
+                            isArabic:
+                                _isArabic,
+                            notification:
+                                notification,
+                            onDelete: () =>
+                                _deleteNotification(
+                              notification,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 }
 
-
-class _NotificationsHeader extends StatelessWidget {
+class _NotificationsHeader
+    extends StatelessWidget {
   final bool isArabic;
-  final ValueChanged<bool> onLanguageChanged;
+  final ValueChanged<bool>
+      onLanguageChanged;
   final int unreadCount;
   final bool isLoading;
   final VoidCallback onBack;
-  final Future<void> Function() onMarkAllRead;
+  final Future<void> Function()
+      onMarkAllRead;
   final Future<void> Function() onRefresh;
 
   const _NotificationsHeader({
@@ -323,9 +366,16 @@ class _NotificationsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+      padding:
+          const EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        18,
+      ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient:
+            const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
@@ -336,9 +386,13 @@ class _NotificationsHeader extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: _notifDarkGreen.withValues(alpha: 0.18),
+            color:
+                _notifDarkGreen.withValues(
+              alpha: 0.18,
+            ),
             blurRadius: 24,
-            offset: const Offset(0, 8),
+            offset:
+                const Offset(0, 8),
           ),
         ],
       ),
@@ -347,42 +401,69 @@ class _NotificationsHeader extends StatelessWidget {
         child: Row(
           children: [
             _NotifHeaderButton(
-              icon: Icons.arrow_back_rounded,
-              tooltip: isArabic ? 'رجوع' : 'Back',
+              icon:
+                  Icons.arrow_back_rounded,
+              tooltip: isArabic
+                  ? 'رجوع'
+                  : 'Back',
               onTap: onBack,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(
+              width: 12,
+            ),
             Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(
-                color: _notifLightGreen,
-                borderRadius: BorderRadius.circular(13),
+              decoration:
+                  BoxDecoration(
+                color:
+                    _notifLightGreen,
+                borderRadius:
+                    BorderRadius.circular(
+                  13,
+                ),
               ),
-              child:  Icon(
+              child: const Icon(
                 Icons.eco_rounded,
-                color: _notifDarkGreen,
+                color:
+                    _notifDarkGreen,
                 size: 24,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(
+              width: 10,
+            ),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
                 children: [
-                  Text(
+                  const Text(
                     'FarmPilot',
-                    style: TextStyle(
-                      color: Colors.white,
+                    style:
+                        TextStyle(
+                      color:
+                          Colors.white,
                       fontSize: 19,
-                      fontWeight: FontWeight.w800,
+                      fontWeight:
+                          FontWeight
+                              .w800,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(
+                    height: 2,
+                  ),
                   Text(
-                    isArabic ? 'الإشعارات' : 'Notifications',
-                    style: const TextStyle(
-                      color: Color(0xCCFFFFFF),
+                    isArabic
+                        ? 'الإشعارات'
+                        : 'Notifications',
+                    style:
+                        const TextStyle(
+                      color:
+                          Color(
+                        0xCCFFFFFF,
+                      ),
                       fontSize: 12,
                     ),
                   ),
@@ -391,41 +472,75 @@ class _NotificationsHeader extends StatelessWidget {
             ),
             if (unreadCount > 0) ...[
               _NotifHeaderButton(
-                icon: Icons.done_all_rounded,
-                tooltip: isArabic ? 'تحديد الكل كمقروء' : 'Mark all as read',
-                onTap: isLoading ? null : onMarkAllRead,
+                icon:
+                    Icons.done_all_rounded,
+                tooltip: isArabic
+                    ? 'تحديد الكل كمقروء'
+                    : 'Mark all as read',
+                onTap: isLoading
+                    ? null
+                    : onMarkAllRead,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(
+                width: 8,
+              ),
             ],
             Directionality(
-              textDirection: TextDirection.ltr,
-              child: PopupMenuButton<String>(
-                tooltip:
-                    isArabic ? 'تغيير اللغة' : 'Change Language',
-                position: PopupMenuPosition.under,
-                offset: const Offset(0, 8),
-                color: const Color(0xFFF8FAF4),
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+              textDirection:
+                  TextDirection.ltr,
+              child:
+                  PopupMenuButton<String>(
+                tooltip: isArabic
+                    ? 'تغيير اللغة'
+                    : 'Change Language',
+                position:
+                    PopupMenuPosition
+                        .under,
+                offset:
+                    const Offset(
+                  0,
+                  8,
                 ),
-                onSelected: (language) {
-                  onLanguageChanged(language == 'ar');
+                color:
+                    const Color(
+                  0xFFF8FAF4,
+                ),
+                elevation: 8,
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius
+                          .circular(
+                    16,
+                  ),
+                ),
+                onSelected:
+                    (language) {
+                  onLanguageChanged(
+                    language == 'ar',
+                  );
                 },
-                itemBuilder: (context) => [
+                itemBuilder:
+                    (context) => [
                   PopupMenuItem<String>(
                     value: 'en',
                     child: Row(
                       children: [
                         Icon(
-                          Icons.check_rounded,
+                          Icons
+                              .check_rounded,
                           size: 20,
-                          color: !isArabic
-                              ? _notifPrimaryGreen
-                              : Colors.transparent,
+                          color:
+                              !isArabic
+                                  ? _notifPrimaryGreen
+                                  : Colors.transparent,
                         ),
-                        const SizedBox(width: 10),
-                        const Text('English'),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Text(
+                          'English',
+                        ),
                       ],
                     ),
                   ),
@@ -434,14 +549,20 @@ class _NotificationsHeader extends StatelessWidget {
                     child: Row(
                       children: [
                         Icon(
-                          Icons.check_rounded,
+                          Icons
+                              .check_rounded,
                           size: 20,
-                          color: isArabic
-                              ? _notifPrimaryGreen
-                              : Colors.transparent,
+                          color:
+                              isArabic
+                                  ? _notifPrimaryGreen
+                                  : Colors.transparent,
                         ),
-                        const SizedBox(width: 10),
-                        const Text('Arabic'),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Text(
+                          'Arabic',
+                        ),
                       ],
                     ),
                   ),
@@ -449,24 +570,43 @@ class _NotificationsHeader extends StatelessWidget {
                 child: Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(14),
+                  decoration:
+                      BoxDecoration(
+                    color: Colors.white
+                        .withValues(
+                      alpha: 0.10,
+                    ),
+                    borderRadius:
+                        BorderRadius
+                            .circular(
+                      14,
+                    ),
                   ),
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.language_rounded,
-                    color: Colors.white,
+                  alignment:
+                      Alignment.center,
+                  child:
+                      const Icon(
+                    Icons
+                        .language_rounded,
+                    color:
+                        Colors.white,
                     size: 21,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(
+              width: 8,
+            ),
             _NotifHeaderButton(
-              icon: Icons.refresh_rounded,
-              tooltip: isArabic ? 'تحديث' : 'Refresh',
-              onTap: isLoading ? null : onRefresh,
+              icon:
+                  Icons.refresh_rounded,
+              tooltip: isArabic
+                  ? 'تحديث'
+                  : 'Refresh',
+              onTap: isLoading
+                  ? null
+                  : onRefresh,
             ),
           ],
         ),
@@ -475,7 +615,8 @@ class _NotificationsHeader extends StatelessWidget {
   }
 }
 
-class _NotifHeaderButton extends StatelessWidget {
+class _NotifHeaderButton
+    extends StatelessWidget {
   final IconData icon;
   final String tooltip;
   final VoidCallback? onTap;
@@ -491,17 +632,32 @@ class _NotifHeaderButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: Colors.white.withValues(alpha: onTap == null ? 0.05 : 0.10),
-        borderRadius: BorderRadius.circular(14),
+        color:
+            Colors.white.withValues(
+          alpha:
+              onTap == null
+                  ? 0.05
+                  : 0.10,
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          14,
+        ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius:
+              BorderRadius.circular(
+            14,
+          ),
           child: SizedBox(
             width: 44,
             height: 44,
             child: Icon(
               icon,
-              color: onTap == null ? Colors.white54 : Colors.white,
+              color:
+                  onTap == null
+                      ? Colors.white54
+                      : Colors.white,
               size: 21,
             ),
           ),
@@ -511,7 +667,8 @@ class _NotifHeaderButton extends StatelessWidget {
   }
 }
 
-class _NotificationsIntro extends StatelessWidget {
+class _NotificationsIntro
+    extends StatelessWidget {
   final bool isArabic;
   final int total;
   final int unread;
@@ -525,53 +682,96 @@ class _NotificationsIntro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: AlignmentDirectional.centerStart,
-          end: AlignmentDirectional.centerEnd,
+      width:
+          double.infinity,
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 24,
+        vertical: 22,
+      ),
+      decoration:
+          BoxDecoration(
+        gradient:
+            const LinearGradient(
+          begin:
+              AlignmentDirectional
+                  .centerStart,
+          end:
+              AlignmentDirectional
+                  .centerEnd,
           colors: [
             Colors.white,
             Color(0xFFFFFEFA),
             Color(0xFFF5F9EE),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFDDE7D8)),
+        borderRadius:
+            BorderRadius.circular(
+          24,
+        ),
+        border:
+            Border.all(
+          color:
+              const Color(
+            0xFFDDE7D8,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
-            color: _notifDarkGreen.withValues(alpha: 0.045),
+            color:
+                _notifDarkGreen.withValues(
+              alpha: 0.045,
+            ),
             blurRadius: 18,
-            offset: const Offset(0, 6),
+            offset:
+                const Offset(
+              0,
+              6,
+            ),
           ),
         ],
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
+      child:
+          LayoutBuilder(
+        builder:
+            (context, constraints) {
           final info = Row(
             children: [
               const _IntroIcon(),
-              const SizedBox(width: 16),
+              const SizedBox(
+                width: 16,
+              ),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
                   children: [
                     Text(
-                      isArabic ? 'الإشعارات' : 'Notifications',
-                      style: const TextStyle(
-                        color: _notifTextPrimary,
+                      isArabic
+                          ? 'الإشعارات'
+                          : 'Notifications',
+                      style:
+                          const TextStyle(
+                        color:
+                            _notifTextPrimary,
                         fontSize: 24,
-                        fontWeight: FontWeight.w800,
+                        fontWeight:
+                            FontWeight
+                                .w800,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(
+                      height: 4,
+                    ),
                     Text(
                       isArabic
                           ? 'ابقَ على اطلاع بالطلبات والتشخيصات والتذكيرات ونشاط المزرعة.'
                           : 'Stay updated with orders, diagnoses, reminders and farm activity.',
-                      style: const TextStyle(
-                        color: _notifTextSecondary,
+                      style:
+                          const TextStyle(
+                        color:
+                            _notifTextSecondary,
                         fontSize: 13,
                         height: 1.45,
                       ),
@@ -582,31 +782,54 @@ class _NotificationsIntro extends StatelessWidget {
             ],
           );
 
-          final stats = Wrap(
+          final stats =
+              Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
               _NotifStat(
-                icon: Icons.notifications_outlined,
-                label: isArabic ? '$total إجمالي' : '$total total',
-                background: const Color(0xFFEAF3DF),
-                foreground: _notifPrimaryGreen,
+                icon:
+                    Icons.notifications_outlined,
+                label: isArabic
+                    ? '$total إجمالي'
+                    : '$total total',
+                background:
+                    const Color(
+                  0xFFEAF3DF,
+                ),
+                foreground:
+                    _notifPrimaryGreen,
               ),
               _NotifStat(
-                icon: Icons.mark_email_unread_outlined,
-                label: isArabic ? '$unread غير مقروء' : '$unread unread',
-                background: const Color(0xFFFFF0DE),
-                foreground: const Color(0xFFB46A2C),
+                icon:
+                    Icons.mark_email_unread_outlined,
+                label: isArabic
+                    ? '$unread غير مقروء'
+                    : '$unread unread',
+                background:
+                    const Color(
+                  0xFFFFF0DE,
+                ),
+                foreground:
+                    const Color(
+                  0xFFB46A2C,
+                ),
               ),
             ],
           );
 
-          if (constraints.maxWidth < 650) {
+          if (constraints
+                  .maxWidth <
+              650) {
             return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
               children: [
                 info,
-                const SizedBox(height: 18),
+                const SizedBox(
+                  height: 18,
+                ),
                 stats,
               ],
             );
@@ -614,8 +837,12 @@ class _NotificationsIntro extends StatelessWidget {
 
           return Row(
             children: [
-              Expanded(child: info),
-              const SizedBox(width: 18),
+              Expanded(
+                child: info,
+              ),
+              const SizedBox(
+                width: 18,
+              ),
               stats,
             ],
           );
@@ -625,7 +852,8 @@ class _NotificationsIntro extends StatelessWidget {
   }
 }
 
-class _IntroIcon extends StatelessWidget {
+class _IntroIcon
+    extends StatelessWidget {
   const _IntroIcon();
 
   @override
@@ -633,20 +861,30 @@ class _IntroIcon extends StatelessWidget {
     return Container(
       width: 54,
       height: 54,
-      decoration: BoxDecoration(
-        color: const Color(0xFFEAF3DF),
-        borderRadius: BorderRadius.circular(17),
+      decoration:
+          BoxDecoration(
+        color:
+            const Color(
+          0xFFEAF3DF,
+        ),
+        borderRadius:
+            BorderRadius.circular(
+          17,
+        ),
       ),
-      child: const Icon(
+      child:
+          const Icon(
         Icons.notifications_active_outlined,
-        color: _notifPrimaryGreen,
+        color:
+            _notifPrimaryGreen,
         size: 28,
       ),
     );
   }
 }
 
-class _NotifStat extends StatelessWidget {
+class _NotifStat
+    extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color background;
@@ -662,22 +900,41 @@ class _NotifStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(18),
+      padding:
+          const EdgeInsets.symmetric(
+        horizontal: 13,
+        vertical: 9,
+      ),
+      decoration:
+          BoxDecoration(
+        color:
+            background,
+        borderRadius:
+            BorderRadius.circular(
+          18,
+        ),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize:
+            MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: foreground),
-          const SizedBox(width: 6),
+          Icon(
+            icon,
+            size: 16,
+            color: foreground,
+          ),
+          const SizedBox(
+            width: 6,
+          ),
           Text(
             label,
-            style: TextStyle(
-              color: foreground,
+            style:
+                TextStyle(
+              color:
+                  foreground,
               fontSize: 12,
-              fontWeight: FontWeight.w700,
+              fontWeight:
+                  FontWeight.w700,
             ),
           ),
         ],
@@ -686,7 +943,8 @@ class _NotifStat extends StatelessWidget {
   }
 }
 
-class _EmptyNotifications extends StatelessWidget {
+class _EmptyNotifications
+    extends StatelessWidget {
   final bool isArabic;
 
   const _EmptyNotifications({
@@ -697,47 +955,89 @@ class _EmptyNotifications extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding:
+            const EdgeInsets.all(
+          24,
+        ),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 470),
-          padding: const EdgeInsets.all(30),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: const Color(0xFFDDE6D8)),
+          constraints:
+              const BoxConstraints(
+            maxWidth: 470,
+          ),
+          padding:
+              const EdgeInsets.all(
+            30,
+          ),
+          decoration:
+              BoxDecoration(
+            color:
+                Colors.white,
+            borderRadius:
+                BorderRadius.circular(
+              26,
+            ),
+            border:
+                Border.all(
+              color:
+                  const Color(
+                0xFFDDE6D8,
+              ),
+            ),
             boxShadow: [
               BoxShadow(
-                color: _notifDarkGreen.withValues(alpha: 0.05),
+                color:
+                    _notifDarkGreen
+                        .withValues(
+                  alpha: 0.05,
+                ),
                 blurRadius: 20,
-                offset: const Offset(0, 8),
+                offset:
+                    const Offset(
+                  0,
+                  8,
+                ),
               ),
             ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize:
+                MainAxisSize.min,
             children: [
               Icon(
                 Icons.notifications_none_rounded,
                 size: 72,
-                color: _notifPrimaryGreen,
+                color:
+                    _notifPrimaryGreen,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(
+                height: 16,
+              ),
               Text(
-                isArabic ? 'لا توجد إشعارات بعد' : 'No notifications yet',
-                style: const TextStyle(
-                  color: _notifTextPrimary,
+                isArabic
+                    ? 'لا توجد إشعارات بعد'
+                    : 'No notifications yet',
+                style:
+                    const TextStyle(
+                  color:
+                      _notifTextPrimary,
                   fontSize: 21,
-                  fontWeight: FontWeight.w800,
+                  fontWeight:
+                      FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(
+                height: 8,
+              ),
               Text(
                 isArabic
                     ? 'ستظهر آخر تحديثات FarmPilot هنا.'
                     : 'Your latest FarmPilot updates will appear here.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: _notifTextSecondary,
+                textAlign:
+                    TextAlign.center,
+                style:
+                    const TextStyle(
+                  color:
+                      _notifTextSecondary,
                   fontSize: 14,
                   height: 1.5,
                 ),
@@ -750,41 +1050,69 @@ class _EmptyNotifications extends StatelessWidget {
   }
 }
 
-class _NotificationsBackdrop extends StatelessWidget {
+class _NotificationsBackdrop
+    extends StatelessWidget {
   const _NotificationsBackdrop();
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: Stack(
-        fit: StackFit.expand,
+        fit:
+            StackFit.expand,
         children: [
           const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+            decoration:
+                BoxDecoration(
+              gradient:
+                  LinearGradient(
+                begin:
+                    Alignment.topCenter,
+                end:
+                    Alignment.bottomCenter,
                 colors: [
-                  Color(0xFFF8FAF4),
-                  Color(0xFFFFFCF5),
-                  Color(0xFFF4F8ED),
+                  Color(
+                    0xFFF8FAF4,
+                  ),
+                  Color(
+                    0xFFFFFCF5,
+                  ),
+                  Color(
+                    0xFFF4F8ED,
+                  ),
                 ],
-                stops: [0.0, 0.50, 1.0],
+                stops: [
+                  0.0,
+                  0.50,
+                  1.0,
+                ],
               ),
             ),
           ),
           PositionedDirectional(
             end: -190,
             top: 210,
-            child: Container(
+            child:
+                Container(
               width: 470,
               height: 470,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
+              decoration:
+                  BoxDecoration(
+                shape:
+                    BoxShape.circle,
+                gradient:
+                    RadialGradient(
                   colors: [
-                    const Color(0xFFCFE6B4).withValues(alpha: 0.28),
-                    const Color(0xFFCFE6B4).withValues(alpha: 0.0),
+                    const Color(
+                      0xFFCFE6B4,
+                    ).withValues(
+                      alpha: 0.28,
+                    ),
+                    const Color(
+                      0xFFCFE6B4,
+                    ).withValues(
+                      alpha: 0.0,
+                    ),
                   ],
                 ),
               ),
@@ -793,15 +1121,27 @@ class _NotificationsBackdrop extends StatelessWidget {
           PositionedDirectional(
             start: -190,
             bottom: -220,
-            child: Container(
+            child:
+                Container(
               width: 520,
               height: 520,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
+              decoration:
+                  BoxDecoration(
+                shape:
+                    BoxShape.circle,
+                gradient:
+                    RadialGradient(
                   colors: [
-                    const Color(0xFFE7DFAF).withValues(alpha: 0.22),
-                    const Color(0xFFE7DFAF).withValues(alpha: 0.0),
+                    const Color(
+                      0xFFE7DFAF,
+                    ).withValues(
+                      alpha: 0.22,
+                    ),
+                    const Color(
+                      0xFFE7DFAF,
+                    ).withValues(
+                      alpha: 0.0,
+                    ),
                   ],
                 ),
               ),
@@ -895,7 +1235,9 @@ class _NotificationCard
             : customerFallbackMessage;
 
     final type =
-        notification['type']?.toString() ?? '';
+        notification['type']
+                ?.toString() ??
+            '';
 
     final diagnosisId =
         notification['diagnosisId']
@@ -904,7 +1246,8 @@ class _NotificationCard
     final isRead =
         notification['isRead'] == true;
 
-    final createdAt = DateTime.tryParse(
+    final createdAt =
+        DateTime.tryParse(
       notification['createdAt']
               ?.toString() ??
           '',
@@ -912,37 +1255,66 @@ class _NotificationCard
 
     final hasDiagnosis =
         diagnosisId != null &&
-            diagnosisId.trim().isNotEmpty;
+            diagnosisId
+                .trim()
+                .isNotEmpty;
 
     final normalizedType =
         type.trim().toUpperCase();
 
     final isOrderNotification =
-        normalizedType.contains('ORDER');
+        normalizedType.contains(
+      'ORDER',
+    );
+
+    final isSupplierOrderNotification =
+        normalizedType.contains(
+      'SUPPLIER_ORDER',
+    );
 
     return Card(
       elevation: 0,
-      margin: EdgeInsets.zero,
-      color: isRead ? Colors.white : const Color(0xFFF4F9ED),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-        side: BorderSide(
-          color: isRead
-              ? const Color(0xFFDDE6D8)
-              : const Color(0xFFC7DDB8),
+      margin:
+          EdgeInsets.zero,
+      color:
+          isRead
+              ? Colors.white
+              : const Color(
+                  0xFFF4F9ED,
+                ),
+      shape:
+          RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular(
+          22,
+        ),
+        side:
+            BorderSide(
+          color:
+              isRead
+                  ? const Color(
+                      0xFFDDE6D8,
+                    )
+                  : const Color(
+                      0xFFC7DDB8,
+                    ),
         ),
       ),
       child: InkWell(
         borderRadius:
-            BorderRadius.circular(22),
+            BorderRadius.circular(
+          22,
+        ),
         onTap: () async {
           final notificationProvider =
-              Provider.of<NotificationProvider>(
+              Provider.of<
+                  NotificationProvider>(
             context,
             listen: false,
           );
 
-          if (!isRead && id.isNotEmpty) {
+          if (!isRead &&
+              id.isNotEmpty) {
             final success =
                 await notificationProvider
                     .markAsRead(
@@ -954,11 +1326,14 @@ class _NotificationCard
             }
 
             if (!success) {
-              ScaffoldMessenger.of(context)
+              ScaffoldMessenger.of(
+                context,
+              )
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
                   SnackBar(
-                    content: Text(
+                    content:
+                        Text(
                       notificationProvider
                               .errorMessage ??
                           (isArabic
@@ -978,7 +1353,6 @@ class _NotificationCard
             return;
           }
 
-          // Diagnosis notification
           if (hasDiagnosis) {
             await Navigator.push(
               context,
@@ -986,7 +1360,8 @@ class _NotificationCard
                 builder: (_) =>
                     NotificationDiagnosisScreen(
                   diagnosisId:
-                      diagnosisId.trim(),
+                      diagnosisId
+                          .trim(),
                 ),
               ),
             );
@@ -994,10 +1369,10 @@ class _NotificationCard
             return;
           }
 
-          // Order notification
           if (isOrderNotification) {
             final authProvider =
-                Provider.of<AuthProvider>(
+                Provider.of<
+                    AuthProvider>(
               context,
               listen: false,
             );
@@ -1018,7 +1393,9 @@ class _NotificationCard
                 context,
                 MaterialPageRoute(
                   builder: (_) =>
-                      const FarmerOrdersScreen(),
+                      isSupplierOrderNotification
+                          ? const FarmerSupplyOrdersScreen()
+                          : const FarmerOrdersScreen(),
                 ),
               );
 
@@ -1036,27 +1413,49 @@ class _NotificationCard
 
               return;
             }
+
+            if (role == 'SUPPLIER' &&
+                isSupplierOrderNotification) {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const SupplierOrdersScreen(),
+                ),
+              );
+
+              return;
+            }
           }
         },
         child: Padding(
           padding:
-              const EdgeInsets.all(16),
+              const EdgeInsets.all(
+            16,
+          ),
           child: Row(
             crossAxisAlignment:
-                CrossAxisAlignment.start,
+                CrossAxisAlignment
+                    .start,
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: isRead
-                    ? const Color(0xFFF0F2EF)
-                    : const Color(0xFFE0EECF),
+                backgroundColor:
+                    isRead
+                        ? const Color(
+                            0xFFF0F2EF,
+                          )
+                        : const Color(
+                            0xFFE0EECF,
+                          ),
                 child: Icon(
                   _getNotificationIcon(
                     type,
                   ),
-                  color: isRead
-                      ? _notifTextSecondary
-                      : _notifPrimaryGreen,
+                  color:
+                      isRead
+                          ? _notifTextSecondary
+                          : _notifPrimaryGreen,
                 ),
               ),
               const SizedBox(
@@ -1065,18 +1464,23 @@ class _NotificationCard
               Expanded(
                 child: Column(
                   crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                      CrossAxisAlignment
+                          .start,
                   children: [
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
+                          child:
+                              Text(
                             title,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: isRead
-                                  ? FontWeight.w600
-                                  : FontWeight.bold,
+                            style:
+                                TextStyle(
+                              fontSize:
+                                  16,
+                              fontWeight:
+                                  isRead
+                                      ? FontWeight.w600
+                                      : FontWeight.bold,
                             ),
                           ),
                         ),
@@ -1086,41 +1490,57 @@ class _NotificationCard
                             height: 10,
                             decoration:
                                 const BoxDecoration(
-                              color: _notifPrimaryGreen,
+                              color:
+                                  _notifPrimaryGreen,
                               shape:
                                   BoxShape.circle,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(
+                            width: 8,
+                          ),
                         ],
                         Tooltip(
                           message:
-                              isArabic ? 'حذف' : 'Delete',
-                          child: InkWell(
-                            onTap: onDelete,
+                              isArabic
+                                  ? 'حذف'
+                                  : 'Delete',
+                          child:
+                              InkWell(
+                            onTap:
+                                onDelete,
                             borderRadius:
-                                BorderRadius.circular(10),
-                            child: const Padding(
+                                BorderRadius.circular(
+                              10,
+                            ),
+                            child:
+                                const Padding(
                               padding:
-                                  EdgeInsets.all(6),
-                              child: Icon(
+                                  EdgeInsets.all(
+                                6,
+                              ),
+                              child:
+                                  Icon(
                                 Icons.delete_outline_rounded,
-                                size: 20,
-                                color: Colors.red,
+                                size:
+                                    20,
+                                color:
+                                    Colors.red,
                               ),
                             ),
                           ),
                         ),
                       ],
                     ),
-
-                    if (message.isNotEmpty) ...[
+                    if (message
+                        .isNotEmpty) ...[
                       const SizedBox(
                         height: 8,
                       ),
                       Text(
                         message,
-                        style: TextStyle(
+                        style:
+                            const TextStyle(
                           fontSize: 14,
                           color:
                               _notifTextSecondary,
@@ -1128,14 +1548,13 @@ class _NotificationCard
                         ),
                       ),
                     ],
-
                     if (hasDiagnosis) ...[
                       const SizedBox(
                         height: 10,
                       ),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.open_in_new_outlined,
                             size: 16,
                             color:
@@ -1145,8 +1564,11 @@ class _NotificationCard
                             width: 5,
                           ),
                           Text(
-                            isArabic ? 'اضغط لعرض التشخيص' : 'Tap to view diagnosis',
-                            style: TextStyle(
+                            isArabic
+                                ? 'اضغط لعرض التشخيص'
+                                : 'Tap to view diagnosis',
+                            style:
+                                const TextStyle(
                               fontSize: 12,
                               color:
                                   _notifPrimaryGreen,
@@ -1157,14 +1579,13 @@ class _NotificationCard
                         ],
                       ),
                     ],
-
                     if (isOrderNotification) ...[
                       const SizedBox(
                         height: 10,
                       ),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.open_in_new_outlined,
                             size: 16,
                             color:
@@ -1174,8 +1595,11 @@ class _NotificationCard
                             width: 5,
                           ),
                           Text(
-                            isArabic ? 'اضغط لعرض الطلبات' : 'Tap to view orders',
-                            style: TextStyle(
+                            isArabic
+                                ? 'اضغط لعرض الطلبات'
+                                : 'Tap to view orders',
+                            style:
+                                const TextStyle(
                               fontSize: 12,
                               color:
                                   _notifPrimaryGreen,
@@ -1186,11 +1610,9 @@ class _NotificationCard
                         ],
                       ),
                     ],
-
                     const SizedBox(
                       height: 10,
                     ),
-
                     Row(
                       children: [
                         if (type.isNotEmpty)
@@ -1198,30 +1620,38 @@ class _NotificationCard
                             padding:
                                 const EdgeInsets
                                     .symmetric(
-                              horizontal: 8,
-                              vertical: 4,
+                              horizontal:
+                                  8,
+                              vertical:
+                                  4,
                             ),
                             decoration:
                                 BoxDecoration(
-                              color: Colors
-                                  .green.shade100,
+                              color:
+                                  Colors.green
+                                      .shade100,
                               borderRadius:
                                   BorderRadius
                                       .circular(
                                 10,
                               ),
                             ),
-                            child: Text(
+                            child:
+                                Text(
                               _localizedNotificationType(
                                 type,
                                 isArabic,
                               ),
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors
-                                    .green.shade800,
+                              style:
+                                  TextStyle(
+                                fontSize:
+                                    11,
+                                color:
+                                    Colors.green
+                                        .shade800,
                                 fontWeight:
-                                    FontWeight.w600,
+                                    FontWeight
+                                        .w600,
                               ),
                             ),
                           ),
@@ -1231,8 +1661,10 @@ class _NotificationCard
                             _formatDate(
                               createdAt,
                             ),
-                            style: TextStyle(
-                              fontSize: 11,
+                            style:
+                                const TextStyle(
+                              fontSize:
+                                  11,
                               color:
                                   _notifTextSecondary,
                             ),
@@ -1242,7 +1674,6 @@ class _NotificationCard
                   ],
                 ),
               ),
-
               if (hasDiagnosis ||
                   isOrderNotification)
                 const Padding(
@@ -1250,9 +1681,12 @@ class _NotificationCard
                       EdgeInsets.only(
                     left: 8,
                   ),
-                  child: Icon(
-                    Icons.chevron_right,
-                    color: Colors.grey,
+                  child:
+                      Icon(
+                    Icons
+                        .chevron_right,
+                    color:
+                        Colors.grey,
                   ),
                 ),
             ],
@@ -1390,43 +1824,63 @@ class _NotificationCard
     final normalized =
         type.toUpperCase();
 
-    if (normalized.contains('ORDER')) {
+    if (normalized.contains(
+      'ORDER',
+    )) {
       return 'طلب';
     }
 
-    if (normalized.contains('DIAGNOSIS_HIGH_RISK')) {
+    if (normalized.contains(
+      'DIAGNOSIS_HIGH_RISK',
+    )) {
       return 'تشخيص عالي الخطورة';
     }
 
-    if (normalized.contains('DIAGNOSIS_MODERATE_RISK')) {
+    if (normalized.contains(
+      'DIAGNOSIS_MODERATE_RISK',
+    )) {
       return 'تشخيص متوسط الخطورة';
     }
 
-    if (normalized.contains('DIAGNOSIS_HEALTHY')) {
+    if (normalized.contains(
+      'DIAGNOSIS_HEALTHY',
+    )) {
       return 'تشخيص سليم';
     }
 
-    if (normalized.contains('DIAGNOSIS_EXPERT_REVIEW')) {
+    if (normalized.contains(
+      'DIAGNOSIS_EXPERT_REVIEW',
+    )) {
       return 'مراجعة مختص';
     }
 
-    if (normalized.contains('DIAGNOSIS')) {
+    if (normalized.contains(
+      'DIAGNOSIS',
+    )) {
       return 'تشخيص';
     }
 
-    if (normalized.contains('REMINDER')) {
+    if (normalized.contains(
+      'REMINDER',
+    )) {
       return 'تذكير';
     }
 
-    if (normalized.contains('PRODUCT')) {
+    if (normalized.contains(
+      'PRODUCT',
+    )) {
       return 'منتج';
     }
 
-    if (normalized.contains('CROP')) {
+    if (normalized.contains(
+      'CROP',
+    )) {
       return 'محصول';
     }
 
-    if (normalized.contains('REVIEW')) {
+    if (normalized.contains(
+      'REVIEW',
+    )) {
       return 'تقييم';
     }
 

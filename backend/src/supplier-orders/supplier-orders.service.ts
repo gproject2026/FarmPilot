@@ -693,10 +693,10 @@ export class SupplierOrdersService {
               UserRole.FARMER
             ) {
               notificationMessageEn =
-                'Your supply order has been cancelled successfully.';
+                'A farmer has cancelled a supply order.';
 
               notificationMessageAr =
-                'تم إلغاء طلب المستلزمات بنجاح.';
+                'قام المزارع بإلغاء طلب مستلزمات.';
             } else {
               notificationMessageEn =
                 'Your supply order has been cancelled by the supplier.';
@@ -723,10 +723,16 @@ export class SupplierOrdersService {
               )}.`;
         }
 
+        const notificationUserId =
+          userRole === UserRole.FARMER &&
+          newStatus === OrderStatus.CANCELLED
+            ? order.supplierId
+            : order.farmerId;
+
         await tx.notification.create({
           data: {
             userId:
-              order.farmerId,
+              notificationUserId,
 
             title:
               notificationTitleEn,

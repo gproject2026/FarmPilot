@@ -23,192 +23,248 @@
   "settings": "Settings",
   "language": "Language",
   "english": "English",
-  "arabic": "Arabic"
-  ,
-"welcomeToFarmPilot": "Welcome to FarmPilot",
-"pleaseEnterEmailPassword": "Please enter email and password",
-"unsupportedRole": "Unsupported role",
-"unknown": "Unknown",
-"showPassword": "Show password",
-"hidePassword": "Hide password",
-"changeLanguage": "Change language"
-,
-"farmerDashboard": "Farmer Dashboard",
-"welcomeFarmer": "Welcome Farmer 🌱",
-"myProducts": "My Products",
-"myCrops": "My Crops",
-"plantDiagnosis": "Plant Diagnosis",
-"diagnosisHistory": "Diagnosis History",
-"myProfile": "My Profile",
-"noData": "No Data",
-"aiDiagnoses": "AI Diagnoses",
-"totalSales": "Total Sales",
-"customerDashboard": "Customer Dashboard",
-"customer": "Customer",
-"welcomeCustomer": "Welcome {name} 👋",
-"@welcomeCustomer": {
-  "placeholders": {
-    "name": {
-      "type": "String"
-    }
-  }
-},
-"customerDashboardSubtitle": "Browse fresh products and follow your orders.",
-"browseMarketplace": "Browse Marketplace",
-"myOrders": "My Orders",
-"myOrdersSubtitle": "View your current and previous orders",
-"marketplace": "Marketplace",
-"marketplaceSubtitle": "Browse available products and add them to your cart",
-"myFavorites": "My Favorites",
-"myFavoritesSubtitle": "View products you saved for later",
-"latestNotifications": "View your latest notifications",
-"unreadNotifications": "{count} unread notifications",
-"@unreadNotifications": {
-  "placeholders": {
-    "count": {
-      "type": "int"
-    }
-  }
-},
-"shoppingCart": "Shopping Cart",
-"shoppingCartSubtitle": "Review your products and complete checkout",
-"myProfileSubtitle": "View and edit your personal information",
-"adminDashboard": "Admin Dashboard",
-"refresh": "Refresh",
-"unableToLoadAdminDashboard": "Unable to load admin dashboard",
-"tryAgain": "Try Again",
-"welcomeAdmin": "Welcome Admin",
-"systemOverviewStatistics": "System overview and statistics",
-"totalUsers": "Total Users",
-"farmers": "Farmers",
-"customers": "Customers",
-"diagnoses": "Diagnoses",
-"adminTools": "Admin Tools",
-"manageUsers": "Manage Users",
-"manageOrders": "Manage Orders",
-"manageProducts": "Manage Products",
-"manageCategories": "Manage Categories",
-"addProduct": "Add Product",
-"noProductsFound": "No Products Found",
-"unnamedProduct": "Unnamed Product",
-"price": "Price",
-"quantity": "Quantity",
-"status": "Status",
-"category": "Category",
-"editProduct": "Edit Product",
-"deleteProduct": "Delete Product",
-"deleteProductConfirmation": "Are you sure you want to delete \"{productName}\"?",
-"@deleteProductConfirmation": {
-  "placeholders": {
-    "productName": {
-      "type": "String"
-    }
-  }
-},
-"cancel": "Cancel",
-"delete": "Delete",
-"productDeletedSuccessfully": "Product deleted successfully",
-"failedToDeleteProduct": "Failed to delete product: {error}",
-"@failedToDeleteProduct": {
-  "placeholders": {
-    "error": {
-      "type": "String"
-    }
-  }
-},
-"productUpdatedSuccessfully": "Product updated successfully",
-"productName": "Product Name",
-"description": "Description",
-"unit": "Unit",
-"chooseProductImage": "Choose Product Image",
-"changeProductImage": "Change Product Image",
-"saveChanges": "Save Changes",
-"pleaseSelectCategory": "Please select a category",
-"pleaseEnterValidProductData": "Please enter valid product data",
-"failedToSelectImage": "Failed to select image: {error}",
-"@failedToSelectImage": {
-  "placeholders": {
-    "error": {
-      "type": "String"
-    }
-  }
-},
-"pleaseEnterProductNameFirst": "Please enter the product name first",
-"freshFarmProduct": "Fresh farm product",
-"marketingContent": "Marketing Content",
-"suggestedTitle": "Suggested Title",
-"suggestedDescription": "Suggested Description",
-"keywords": "Keywords",
-"marketingSuggestions": "Marketing Suggestions",
-"close": "Close",
-"useContent": "Use Content",
-"marketingContentAdded": "Marketing content added to the form",
-"generateMarketingContent": "Generate Marketing Content",
-"productIdNotFound": "Product ID was not found",
-"available": "Available",
-"outOfStock": "Out of Stock",
-"hidden": "Hidden",
-"loginBrandTitle": "YOUR FARM.\nSMARTER.",
-"loginBrandDescription": "Manage crops, diagnose plant health, organize farm tasks and sell products directly through one smart platform.",
-"smartCrops": "Smart Crops",
-"aiDiagnosis": "AI Diagnosis",
-"secureAccessMessage": "Secure access for farmers, customers and administrators.",
-"mobileBrandDescription": "Smart farming and direct marketplace in one platform.",
-"quickActions": "Quick Actions",
-"quickActionsSubtitle": "Access the tools you use most",
-"farmManagement": "Farm Management",
-"farmManagementSubtitle": "Everything you need to manage your farm",
-"farmerWelcomeSubtitle": "Here is what is happening on your farm today.",
-"manageListings": "Manage listings",
-"manageCustomerOrders": "Manage customer orders",
-"trackYourCrops": "Track your crops",
-"aiPoweredDiagnosis": "AI-powered diagnosis",
-"reviewPreviousPlantAnalyses": "Review previous plant analyses",
-"stayOnTopFarmTasks": "Stay on top of farm tasks",
-"viewLatestUpdates": "View your latest updates",
-"manageAccountDetails": "Manage account details",
-"back": "Back",
-"myProductsSubtitle": "Manage your farm listings, prices, quantities and product availability.",
-"productsCount": "{count} products",
-"@productsCount": {
-  "placeholders": {
-    "count": {
-      "type": "int"
-    }
-  }
-},
-"imagePreviewZoomHint": "Use pinch or scroll to zoom the image.",
-"createFirstProductListing": "Create your first product listing to start selling through the marketplace.",
-"editProductSubtitle": "Update product details, image and marketplace information.",
-"addProductSubtitle": "Create a marketplace listing and use AI to help prepare the marketing content.",
-"productInformation": "Product Information",
-"productInformationSubtitle": "Add the core product details customers will see in the marketplace.",
-"productImage": "Product Image",
-"productImageSubtitle": "Choose a clear product photo for the marketplace listing.",
-"saving": "Saving...",
-"removeImage": "Remove image",
-"createAccount": "Create Account",
-"createAccountSubtitle": "Create your account and start using FarmPilot.",
-"alreadyHaveAccount": "Already have an account?",
-"dontHaveAccount": "Don't have an account?",
-"loginHere": "Login",
-"registerNow": "Create Account",
-"fullName": "Full Name",
-"phone": "Phone Number",
-"address": "Address",
-"confirmPassword": "Confirm Password",
-"accountType": "Account Type",
-"farmer": "Farmer",
-"customerAccount": "Customer",
-"selectAccountType": "Select Account Type",
-"createAccountButton": "Create Account",
-"creatingAccount": "Creating account...",
-"accountCreatedSuccessfully": "Account created successfully. You can now log in.",
-"pleaseFillAllFields": "Please fill in all fields",
-"passwordsDoNotMatch": "Passwords do not match",
-"passwordTooShort": "Password must be at least 6 characters",
-"invalidEmail": "Please enter a valid email address",
-"joinFarmPilot": "Join FarmPilot",
-"registerBrandDescription": "Create a farmer or customer account and access smart farming tools and the direct marketplace."
+  "arabic": "Arabic",
 
+  "welcomeToFarmPilot": "Welcome to FarmPilot",
+  "pleaseEnterEmailPassword": "Please enter email and password",
+  "unsupportedRole": "Unsupported role",
+  "unknown": "Unknown",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "changeLanguage": "Change language",
+
+  "farmerDashboard": "Farmer Dashboard",
+  "welcomeFarmer": "Welcome Farmer 🌱",
+  "myProducts": "My Products",
+  "myCrops": "My Crops",
+  "plantDiagnosis": "Plant Diagnosis",
+  "diagnosisHistory": "Diagnosis History",
+  "myProfile": "My Profile",
+  "noData": "No Data",
+  "aiDiagnoses": "AI Diagnoses",
+  "totalSales": "Total Sales",
+
+  "customerDashboard": "Customer Dashboard",
+  "customer": "Customer",
+  "welcomeCustomer": "Welcome {name} 👋",
+  "@welcomeCustomer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "customerDashboardSubtitle": "Browse fresh products and follow your orders.",
+  "browseMarketplace": "Browse Marketplace",
+  "myOrders": "My Orders",
+  "myOrdersSubtitle": "View your current and previous orders",
+  "marketplace": "Marketplace",
+  "marketplaceSubtitle": "Browse available products and add them to your cart",
+  "myFavorites": "My Favorites",
+  "myFavoritesSubtitle": "View products you saved for later",
+  "latestNotifications": "View your latest notifications",
+  "unreadNotifications": "{count} unread notifications",
+  "@unreadNotifications": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingCart": "Shopping Cart",
+  "shoppingCartSubtitle": "Review your products and complete checkout",
+  "myProfileSubtitle": "View and edit your personal information",
+
+  "adminDashboard": "Admin Dashboard",
+  "refresh": "Refresh",
+  "unableToLoadAdminDashboard": "Unable to load admin dashboard",
+  "tryAgain": "Try Again",
+  "welcomeAdmin": "Welcome Admin",
+  "systemOverviewStatistics": "System overview and statistics",
+  "totalUsers": "Total Users",
+  "farmers": "Farmers",
+  "customers": "Customers",
+  "diagnoses": "Diagnoses",
+  "adminTools": "Admin Tools",
+  "manageUsers": "Manage Users",
+  "manageOrders": "Manage Orders",
+  "manageProducts": "Manage Products",
+  "manageCategories": "Manage Categories",
+
+  "addProduct": "Add Product",
+  "noProductsFound": "No Products Found",
+  "unnamedProduct": "Unnamed Product",
+  "price": "Price",
+  "quantity": "Quantity",
+  "status": "Status",
+  "category": "Category",
+  "editProduct": "Edit Product",
+  "deleteProduct": "Delete Product",
+  "deleteProductConfirmation": "Are you sure you want to delete \"{productName}\"?",
+  "@deleteProductConfirmation": {
+    "placeholders": {
+      "productName": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "productDeletedSuccessfully": "Product deleted successfully",
+  "failedToDeleteProduct": "Failed to delete product: {error}",
+  "@failedToDeleteProduct": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "productUpdatedSuccessfully": "Product updated successfully",
+  "productName": "Product Name",
+  "description": "Description",
+  "unit": "Unit",
+  "chooseProductImage": "Choose Product Image",
+  "changeProductImage": "Change Product Image",
+  "saveChanges": "Save Changes",
+  "pleaseSelectCategory": "Please select a category",
+  "pleaseEnterValidProductData": "Please enter valid product data",
+  "failedToSelectImage": "Failed to select image: {error}",
+  "@failedToSelectImage": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseEnterProductNameFirst": "Please enter the product name first",
+  "freshFarmProduct": "Fresh farm product",
+  "marketingContent": "Marketing Content",
+  "suggestedTitle": "Suggested Title",
+  "suggestedDescription": "Suggested Description",
+  "keywords": "Keywords",
+  "marketingSuggestions": "Marketing Suggestions",
+  "close": "Close",
+  "useContent": "Use Content",
+  "marketingContentAdded": "Marketing content added to the form",
+  "generateMarketingContent": "Generate Marketing Content",
+  "productIdNotFound": "Product ID was not found",
+  "available": "Available",
+  "outOfStock": "Out of Stock",
+  "hidden": "Hidden",
+
+  "loginBrandTitle": "YOUR FARM.\nSMARTER.",
+  "loginBrandDescription": "Manage crops, diagnose plant health, organize farm tasks and sell products directly through one smart platform.",
+  "smartCrops": "Smart Crops",
+  "aiDiagnosis": "AI Diagnosis",
+  "secureAccessMessage": "Secure access for farmers, customers, suppliers and administrators.",
+  "mobileBrandDescription": "Smart farming and direct marketplace in one platform.",
+
+  "quickActions": "Quick Actions",
+  "quickActionsSubtitle": "Access the tools you use most",
+  "farmManagement": "Farm Management",
+  "farmManagementSubtitle": "Everything you need to manage your farm",
+  "farmerWelcomeSubtitle": "Here is what is happening on your farm today.",
+  "manageListings": "Manage listings",
+  "manageCustomerOrders": "Manage customer orders",
+  "trackYourCrops": "Track your crops",
+  "aiPoweredDiagnosis": "AI-powered diagnosis",
+  "reviewPreviousPlantAnalyses": "Review previous plant analyses",
+  "stayOnTopFarmTasks": "Stay on top of farm tasks",
+  "viewLatestUpdates": "View your latest updates",
+  "manageAccountDetails": "Manage account details",
+  "back": "Back",
+
+  "myProductsSubtitle": "Manage your farm listings, prices, quantities and product availability.",
+  "productsCount": "{count} products",
+  "@productsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "imagePreviewZoomHint": "Use pinch or scroll to zoom the image.",
+  "createFirstProductListing": "Create your first product listing to start selling through the marketplace.",
+  "editProductSubtitle": "Update product details, image and marketplace information.",
+  "addProductSubtitle": "Create a marketplace listing and use AI to help prepare the marketing content.",
+  "productInformation": "Product Information",
+  "productInformationSubtitle": "Add the core product details customers will see in the marketplace.",
+  "productImage": "Product Image",
+  "productImageSubtitle": "Choose a clear product photo for the marketplace listing.",
+  "saving": "Saving...",
+  "removeImage": "Remove image",
+
+  "createAccount": "Create Account",
+  "createAccountSubtitle": "Create your account and start using FarmPilot.",
+  "alreadyHaveAccount": "Already have an account?",
+  "dontHaveAccount": "Don't have an account?",
+  "loginHere": "Login",
+  "registerNow": "Create Account",
+  "fullName": "Full Name",
+  "phone": "Phone Number",
+  "address": "Address",
+  "confirmPassword": "Confirm Password",
+  "accountType": "Account Type",
+  "farmer": "Farmer",
+  "customerAccount": "Customer",
+  "supplier": "Supplier",
+  "supplierAccount": "Supplier",
+  "selectAccountType": "Select Account Type",
+  "createAccountButton": "Create Account",
+  "creatingAccount": "Creating account...",
+  "accountCreatedSuccessfully": "Account created successfully. You can now log in.",
+  "pleaseFillAllFields": "Please fill in all fields",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "passwordTooShort": "Password must be at least 6 characters",
+  "invalidEmail": "Please enter a valid email address",
+  "joinFarmPilot": "Join FarmPilot",
+  "registerBrandDescription": "Create a farmer, customer or supplier account and access smart farming tools and the direct marketplace.",
+
+  "supplierDashboard": "Supplier Dashboard",
+  "welcomeSupplier": "Welcome Supplier",
+  "supplierDashboardSubtitle": "Manage your agricultural supplies, farmer orders and inventory in one place.",
+  "supplierProducts": "Supplier Products",
+  "mySupplierProducts": "My Products",
+  "manageSupplierProducts": "Manage the agricultural supplies you offer to farmers",
+  "supplierOrders": "Farmer Orders",
+  "manageFarmerOrders": "View and update agricultural supply orders from farmers",
+  "supplierCategories": "Supply Categories",
+  "browseSupplierCategories": "Browse agricultural supply categories",
+  "supplierInventory": "Inventory",
+  "manageSupplierInventory": "Track product quantities and availability",
+  "storeLocation": "Store Location",
+  "manageStoreLocation": "Manage supplier details and pickup location",
+  "agriculturalSupplies": "Agricultural Supplies",
+  "agriculturalSuppliesSubtitle": "Seeds, fertilizers, pesticides, tools and farming supplies",
+  "supplierManagement": "Supplier Management",
+  "supplierManagementSubtitle": "Manage products, orders, inventory and store information",
+
+  "addSupplierProduct": "Add Supplier Product",
+  "editSupplierProduct": "Edit Supplier Product",
+  "addSupplierProductSubtitle": "Add a new agricultural supply for farmers to purchase.",
+  "editSupplierProductSubtitle": "Update product details, instructions, image and availability information.",
+  "supplierProductInformation": "Product Information",
+  "supplierProductInformationSubtitle": "Add the main details of the agricultural supply that farmers will see.",
+  "supplierProductImage": "Product Image",
+  "supplierProductImageSubtitle": "Choose a clear photo of the agricultural supply for the store listing.",
+  "plantingInstructions": "Planting Instructions",
+  "plantingInstructionsHint": "Enter planting or sowing instructions if applicable",
+  "irrigationInstructions": "Irrigation Instructions",
+  "irrigationInstructionsHint": "Enter irrigation instructions if applicable",
+  "usageInstructions": "Usage Instructions",
+  "usageInstructionsHint": "Enter safe and proper usage instructions if applicable",
+  "productInstructions": "Product Instructions",
+  "productInstructionsSubtitle": "Add relevant instructions to help farmers use this product correctly.",
+  "selectSupplierCategory": "Select Supply Category",
+  "noSupplierCategoriesFound": "No supply categories are available",
+  "supplierProductAddedSuccessfully": "Supplier product added successfully",
+  "supplierProductUpdatedSuccessfully": "Supplier product updated successfully",
+  "supplierProductIdNotFound": "Supplier product ID was not found",
+  "pleaseEnterValidSupplierProductData": "Please enter valid product data",
+  "failedToSaveSupplierProduct": "Failed to save supplier product",
+  "supplierProductImageUploadFailed": "Failed to upload product image",
+  "supplierProductNoDescription": "No description is available for this product",
+"noSupplierProductsFound": "No Supplier Products Found",
+"createFirstSupplierProduct": "Add your first agricultural supply so farmers can view and purchase it."
 }

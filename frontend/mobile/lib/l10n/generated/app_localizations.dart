@@ -791,7 +791,7 @@ abstract class AppLocalizations {
   /// No description provided for @secureAccessMessage.
   ///
   /// In en, this message translates to:
-  /// **'Secure access for farmers, customers and administrators.'**
+  /// **'Secure access for farmers, customers, suppliers and administrators.'**
   String get secureAccessMessage;
 
   /// No description provided for @mobileBrandDescription.
@@ -1034,6 +1034,18 @@ abstract class AppLocalizations {
   /// **'Customer'**
   String get customerAccount;
 
+  /// No description provided for @supplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier'**
+  String get supplier;
+
+  /// No description provided for @supplierAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier'**
+  String get supplierAccount;
+
   /// No description provided for @selectAccountType.
   ///
   /// In en, this message translates to:
@@ -1091,8 +1103,278 @@ abstract class AppLocalizations {
   /// No description provided for @registerBrandDescription.
   ///
   /// In en, this message translates to:
-  /// **'Create a farmer or customer account and access smart farming tools and the direct marketplace.'**
+  /// **'Create a farmer, customer or supplier account and access smart farming tools and the direct marketplace.'**
   String get registerBrandDescription;
+
+  /// No description provided for @supplierDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier Dashboard'**
+  String get supplierDashboard;
+
+  /// No description provided for @welcomeSupplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Supplier'**
+  String get welcomeSupplier;
+
+  /// No description provided for @supplierDashboardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your agricultural supplies, farmer orders and inventory in one place.'**
+  String get supplierDashboardSubtitle;
+
+  /// No description provided for @supplierProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier Products'**
+  String get supplierProducts;
+
+  /// No description provided for @mySupplierProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'My Products'**
+  String get mySupplierProducts;
+
+  /// No description provided for @manageSupplierProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage the agricultural supplies you offer to farmers'**
+  String get manageSupplierProducts;
+
+  /// No description provided for @supplierOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Farmer Orders'**
+  String get supplierOrders;
+
+  /// No description provided for @manageFarmerOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'View and update agricultural supply orders from farmers'**
+  String get manageFarmerOrders;
+
+  /// No description provided for @supplierCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Supply Categories'**
+  String get supplierCategories;
+
+  /// No description provided for @browseSupplierCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse agricultural supply categories'**
+  String get browseSupplierCategories;
+
+  /// No description provided for @supplierInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get supplierInventory;
+
+  /// No description provided for @manageSupplierInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Track product quantities and availability'**
+  String get manageSupplierInventory;
+
+  /// No description provided for @storeLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Location'**
+  String get storeLocation;
+
+  /// No description provided for @manageStoreLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage supplier details and pickup location'**
+  String get manageStoreLocation;
+
+  /// No description provided for @agriculturalSupplies.
+  ///
+  /// In en, this message translates to:
+  /// **'Agricultural Supplies'**
+  String get agriculturalSupplies;
+
+  /// No description provided for @agriculturalSuppliesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Seeds, fertilizers, pesticides, tools and farming supplies'**
+  String get agriculturalSuppliesSubtitle;
+
+  /// No description provided for @supplierManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier Management'**
+  String get supplierManagement;
+
+  /// No description provided for @supplierManagementSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage products, orders, inventory and store information'**
+  String get supplierManagementSubtitle;
+
+  /// No description provided for @addSupplierProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Supplier Product'**
+  String get addSupplierProduct;
+
+  /// No description provided for @editSupplierProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Supplier Product'**
+  String get editSupplierProduct;
+
+  /// No description provided for @addSupplierProductSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a new agricultural supply for farmers to purchase.'**
+  String get addSupplierProductSubtitle;
+
+  /// No description provided for @editSupplierProductSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update product details, instructions, image and availability information.'**
+  String get editSupplierProductSubtitle;
+
+  /// No description provided for @supplierProductInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Information'**
+  String get supplierProductInformation;
+
+  /// No description provided for @supplierProductInformationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the main details of the agricultural supply that farmers will see.'**
+  String get supplierProductInformationSubtitle;
+
+  /// No description provided for @supplierProductImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Image'**
+  String get supplierProductImage;
+
+  /// No description provided for @supplierProductImageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a clear photo of the agricultural supply for the store listing.'**
+  String get supplierProductImageSubtitle;
+
+  /// No description provided for @plantingInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting Instructions'**
+  String get plantingInstructions;
+
+  /// No description provided for @plantingInstructionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter planting or sowing instructions if applicable'**
+  String get plantingInstructionsHint;
+
+  /// No description provided for @irrigationInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Irrigation Instructions'**
+  String get irrigationInstructions;
+
+  /// No description provided for @irrigationInstructionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter irrigation instructions if applicable'**
+  String get irrigationInstructionsHint;
+
+  /// No description provided for @usageInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage Instructions'**
+  String get usageInstructions;
+
+  /// No description provided for @usageInstructionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter safe and proper usage instructions if applicable'**
+  String get usageInstructionsHint;
+
+  /// No description provided for @productInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Instructions'**
+  String get productInstructions;
+
+  /// No description provided for @productInstructionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add relevant instructions to help farmers use this product correctly.'**
+  String get productInstructionsSubtitle;
+
+  /// No description provided for @selectSupplierCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Supply Category'**
+  String get selectSupplierCategory;
+
+  /// No description provided for @noSupplierCategoriesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No supply categories are available'**
+  String get noSupplierCategoriesFound;
+
+  /// No description provided for @supplierProductAddedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier product added successfully'**
+  String get supplierProductAddedSuccessfully;
+
+  /// No description provided for @supplierProductUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier product updated successfully'**
+  String get supplierProductUpdatedSuccessfully;
+
+  /// No description provided for @supplierProductIdNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier product ID was not found'**
+  String get supplierProductIdNotFound;
+
+  /// No description provided for @pleaseEnterValidSupplierProductData.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid product data'**
+  String get pleaseEnterValidSupplierProductData;
+
+  /// No description provided for @failedToSaveSupplierProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save supplier product'**
+  String get failedToSaveSupplierProduct;
+
+  /// No description provided for @supplierProductImageUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload product image'**
+  String get supplierProductImageUploadFailed;
+
+  /// No description provided for @supplierProductNoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No description is available for this product'**
+  String get supplierProductNoDescription;
+
+  /// No description provided for @noSupplierProductsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Supplier Products Found'**
+  String get noSupplierProductsFound;
+
+  /// No description provided for @createFirstSupplierProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first agricultural supply so farmers can view and purchase it.'**
+  String get createFirstSupplierProduct;
 }
 
 class _AppLocalizationsDelegate
