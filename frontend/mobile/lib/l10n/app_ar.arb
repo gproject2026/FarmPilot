@@ -266,5 +266,14 @@
   "supplierProductImageUploadFailed": "فشل رفع صورة المنتج",
   "supplierProductNoDescription": "لا يوجد وصف لهذا المنتج",
 "noSupplierProductsFound": "لا توجد منتجات للمورد",
-"createFirstSupplierProduct": "أضف أول مستلزم زراعي لك ليظهر للمزارعين ويتمكنوا من شرائه."
+"createFirstSupplierProduct": "أضف أول مستلزم زراعي لك ليظهر للمزارعين ويتمكنوا من شرائه",
+"inventoryManagement": "إدارة المخزون",
+"inventoryManagementSubtitle": "حدّث كميات المنتجات وحالة توفرها",
+"updateInventory": "تحديث المخزون",
+"inventoryUpdatedSuccessfully": "تم تحديث المخزون بنجاح",
+"failedToUpdateInventory": "فشل تحديث المخزون",
+"enterValidQuantity": "يرجى إدخال كمية صحيحة",
+"currentStock": "المخزون الحالي",
+"stockStatus": "حالة المخزون",
+"noInventoryProducts": "لا توجد منتجات في المخزون"
 }

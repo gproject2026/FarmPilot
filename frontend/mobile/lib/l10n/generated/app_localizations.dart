@@ -1373,8 +1373,62 @@ abstract class AppLocalizations {
   /// No description provided for @createFirstSupplierProduct.
   ///
   /// In en, this message translates to:
-  /// **'Add your first agricultural supply so farmers can view and purchase it.'**
+  /// **'Add your first agricultural supply so farmers can view and purchase it'**
   String get createFirstSupplierProduct;
+
+  /// No description provided for @inventoryManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory Management'**
+  String get inventoryManagement;
+
+  /// No description provided for @inventoryManagementSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update product quantities and availability'**
+  String get inventoryManagementSubtitle;
+
+  /// No description provided for @updateInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Inventory'**
+  String get updateInventory;
+
+  /// No description provided for @inventoryUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory updated successfully'**
+  String get inventoryUpdatedSuccessfully;
+
+  /// No description provided for @failedToUpdateInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update inventory'**
+  String get failedToUpdateInventory;
+
+  /// No description provided for @enterValidQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid quantity'**
+  String get enterValidQuantity;
+
+  /// No description provided for @currentStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Stock'**
+  String get currentStock;
+
+  /// No description provided for @stockStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Status'**
+  String get stockStatus;
+
+  /// No description provided for @noInventoryProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'No products available in inventory'**
+  String get noInventoryProducts;
 }
 
 class _AppLocalizationsDelegate

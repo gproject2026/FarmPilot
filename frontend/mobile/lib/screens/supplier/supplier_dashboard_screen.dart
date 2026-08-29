@@ -6,8 +6,11 @@ import '../../providers/auth_provider.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../notifications_screen.dart';
+import 'supplier_categories_screen.dart';
+import 'supplier_inventory_screen.dart';
 import 'supplier_orders_screen.dart';
 import 'supplier_products_screen.dart';
+import 'supplier_store_location_screen.dart';
 
 class SupplierDashboardScreen extends StatefulWidget {
   const SupplierDashboardScreen({
@@ -709,8 +712,12 @@ class _SupplierDashboardScreenState
         icon:
             Icons.category_outlined,
         onTap: () {
-          _showComingSoon(
-            l10n.supplierCategories,
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const SupplierCategoriesScreen(),
+            ),
           );
         },
       ),
@@ -722,8 +729,12 @@ class _SupplierDashboardScreenState
         icon:
             Icons.warehouse_outlined,
         onTap: () {
-          _showComingSoon(
-            l10n.supplierInventory,
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const SupplierInventoryScreen(),
+            ),
           );
         },
       ),
@@ -803,8 +814,12 @@ class _SupplierDashboardScreenState
         icon:
             Icons.location_on_outlined,
         onTap: () {
-          _showComingSoon(
-            l10n.storeLocation,
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const SupplierStoreLocationScreen(),
+            ),
           );
         },
       ),
@@ -848,20 +863,6 @@ class _SupplierDashboardScreenState
         );
       },
     );
-  }
-
-  void _showComingSoon(
-    String title,
-  ) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            '$title - Coming soon',
-          ),
-        ),
-      );
   }
 
   Widget _buildSectionTitle(

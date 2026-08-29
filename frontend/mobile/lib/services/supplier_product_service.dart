@@ -275,12 +275,7 @@ class SupplierProductService {
         'quantity': quantity,
         'unit': unit.trim(),
 
-        // Important:
-        // Always send imageUrl during update.
-        // If the user removed the image,
-        // null becomes an empty string.
-        // The backend converts '' to null
-        // and removes the stored imageUrl.
+        
         'imageUrl': imageUrl?.trim() ?? '',
 
         if (status != null &&
@@ -304,6 +299,31 @@ class SupplierProductService {
       );
     }
   }
+  Future<void> updateSupplierInventory({
+  required String productId,
+  required int quantity,
+  required String status,
+}) async {
+  try {
+    await apiClient.dio.patch(
+      '/supplier-products/$productId',
+      data: {
+        'quantity': quantity,
+        'status': status.trim(),
+      },
+    );
+  } on DioException catch (e) {
+    _throwDioMessage(
+      e,
+      fallback:
+          'Failed to update supplier inventory',
+    );
+  } catch (e) {
+    throw Exception(
+      'Failed to update supplier inventory: $e',
+    );
+  }
+}
 
   Future<void> deleteSupplierProduct(
     String productId,

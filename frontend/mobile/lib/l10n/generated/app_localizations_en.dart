@@ -697,5 +697,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createFirstSupplierProduct =>
-      'Add your first agricultural supply so farmers can view and purchase it.';
+      'Add your first agricultural supply so farmers can view and purchase it';
+
+  @override
+  String get inventoryManagement => 'Inventory Management';
+
+  @override
+  String get inventoryManagementSubtitle =>
+      'Update product quantities and availability';
+
+  @override
+  String get updateInventory => 'Update Inventory';
+
+  @override
+  String get inventoryUpdatedSuccessfully => 'Inventory updated successfully';
+
+  @override
+  String get failedToUpdateInventory => 'Failed to update inventory';
+
+  @override
+  String get enterValidQuantity => 'Please enter a valid quantity';
+
+  @override
+  String get currentStock => 'Current Stock';
+
+  @override
+  String get stockStatus => 'Stock Status';
+
+  @override
+  String get noInventoryProducts => 'No products available in inventory';
 }

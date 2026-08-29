@@ -266,5 +266,14 @@
   "supplierProductImageUploadFailed": "Failed to upload product image",
   "supplierProductNoDescription": "No description is available for this product",
 "noSupplierProductsFound": "No Supplier Products Found",
-"createFirstSupplierProduct": "Add your first agricultural supply so farmers can view and purchase it."
+"createFirstSupplierProduct": "Add your first agricultural supply so farmers can view and purchase it",
+"inventoryManagement": "Inventory Management",
+"inventoryManagementSubtitle": "Update product quantities and availability",
+"updateInventory": "Update Inventory",
+"inventoryUpdatedSuccessfully": "Inventory updated successfully",
+"failedToUpdateInventory": "Failed to update inventory",
+"enterValidQuantity": "Please enter a valid quantity",
+"currentStock": "Current Stock",
+"stockStatus": "Stock Status",
+"noInventoryProducts": "No products available in inventory"
 }

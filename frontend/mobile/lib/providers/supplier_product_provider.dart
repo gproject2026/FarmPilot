@@ -255,6 +255,43 @@ class SupplierProductProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateSupplierInventory({
+    required String productId,
+    required int quantity,
+    required String status,
+  }) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await supplierProductService
+          .updateSupplierInventory(
+        productId: productId,
+        quantity: quantity,
+        status: status,
+      );
+
+      supplierProducts =
+          await supplierProductService
+              .getMySupplierProducts();
+
+      return true;
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> deleteSupplierProduct(
     String productId,
   ) async {

@@ -684,5 +684,32 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get createFirstSupplierProduct =>
-      'أضف أول مستلزم زراعي لك ليظهر للمزارعين ويتمكنوا من شرائه.';
+      'أضف أول مستلزم زراعي لك ليظهر للمزارعين ويتمكنوا من شرائه';
+
+  @override
+  String get inventoryManagement => 'إدارة المخزون';
+
+  @override
+  String get inventoryManagementSubtitle => 'حدّث كميات المنتجات وحالة توفرها';
+
+  @override
+  String get updateInventory => 'تحديث المخزون';
+
+  @override
+  String get inventoryUpdatedSuccessfully => 'تم تحديث المخزون بنجاح';
+
+  @override
+  String get failedToUpdateInventory => 'فشل تحديث المخزون';
+
+  @override
+  String get enterValidQuantity => 'يرجى إدخال كمية صحيحة';
+
+  @override
+  String get currentStock => 'المخزون الحالي';
+
+  @override
+  String get stockStatus => 'حالة المخزون';
+
+  @override
+  String get noInventoryProducts => 'لا توجد منتجات في المخزون';
 }
