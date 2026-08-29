@@ -26,8 +26,17 @@ export class RegisterDto {
   @MaxLength(20)
   phone?: string;
 
-  @IsEnum(['FARMER', 'CUSTOMER', 'ADMIN'])
-  role!: 'FARMER' | 'CUSTOMER' | 'ADMIN';
+  @IsEnum([
+    'FARMER',
+    'CUSTOMER',
+    'SUPPLIER',
+    'ADMIN',
+  ])
+  role!:
+    | 'FARMER'
+    | 'CUSTOMER'
+    | 'SUPPLIER'
+    | 'ADMIN';
 
   @IsOptional()
   @IsString()

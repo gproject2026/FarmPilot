@@ -21,6 +21,9 @@ import { RemindersModule } from './reminders/reminders.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { UsersModule } from './users/users.module';
+import { SupplierCategoriesModule } from './supplier-categories/supplier-categories.module';
+import { SupplierProductsModule } from './supplier-products/supplier-products.module';
+import { SupplierOrdersModule } from './supplier-orders/supplier-orders.module';
 
 @Module({
   imports: [
@@ -46,6 +49,9 @@ import { UsersModule } from './users/users.module';
     DashboardModule,
     AiModule,
     PushDevicesModule,
+    SupplierCategoriesModule,
+    SupplierProductsModule,
+    SupplierOrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
