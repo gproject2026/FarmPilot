@@ -9,6 +9,8 @@ class SupplierCategoryProvider
       SupplierCategoryService();
 
   bool isLoading = false;
+  bool isSaving = false;
+  bool isDeleting = false;
 
   String? errorMessage;
 
@@ -60,6 +62,125 @@ class SupplierCategoryProvider
       selectedCategoryId = null;
     } finally {
       isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> createSupplierCategory({
+    required String name,
+    String? description,
+    String? nameEn,
+    String? nameAr,
+    String? descriptionEn,
+    String? descriptionAr,
+  }) async {
+    isSaving = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await supplierCategoryService
+          .createSupplierCategory(
+        name: name,
+        description: description,
+        nameEn: nameEn,
+        nameAr: nameAr,
+        descriptionEn:
+            descriptionEn,
+        descriptionAr:
+            descriptionAr,
+      );
+
+      await loadSupplierCategories();
+
+      return true;
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateSupplierCategory({
+    required String id,
+    required String name,
+    String? description,
+    String? nameEn,
+    String? nameAr,
+    String? descriptionEn,
+    String? descriptionAr,
+  }) async {
+    isSaving = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await supplierCategoryService
+          .updateSupplierCategory(
+        id: id,
+        name: name,
+        description: description,
+        nameEn: nameEn,
+        nameAr: nameAr,
+        descriptionEn:
+            descriptionEn,
+        descriptionAr:
+            descriptionAr,
+      );
+
+      await loadSupplierCategories();
+
+      return true;
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      return false;
+    } finally {
+      isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> deleteSupplierCategory({
+    required String id,
+  }) async {
+    isDeleting = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await supplierCategoryService
+          .deleteSupplierCategory(
+        id: id,
+      );
+
+      await loadSupplierCategories();
+
+      return true;
+    } catch (error) {
+      errorMessage = error
+          .toString()
+          .replaceFirst(
+            'Exception: ',
+            '',
+          );
+
+      return false;
+    } finally {
+      isDeleting = false;
       notifyListeners();
     }
   }

@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/locale_provider.dart';
 import 'admin_categories_screen.dart';
+import 'admin_supplier_categories_screen.dart';
 import 'admin_orders_screen.dart';
 import 'admin_products_screen.dart';
 import 'admin_users_screen.dart';
@@ -74,6 +75,15 @@ class _AdminDashboardScreenState
       MaterialPageRoute(
         builder: (_) =>
             const AdminCategoriesScreen(),
+      ),
+    );
+  }
+
+  void _openManageSupplierCategories() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            const AdminSupplierCategoriesScreen(),
       ),
     );
   }
@@ -507,6 +517,20 @@ class _AdminDashboardScreenState
                                   : 'Organize marketplace product categories.',
                           onPressed:
                               _openManageCategories,
+                        ),
+                        _adminToolCard(
+                          icon: Icons
+                              .agriculture_outlined,
+                          title:
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'تصنيفات المستلزمات'
+                                  : 'Supply Categories',
+                          subtitle:
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'إدارة تصنيفات منتجات ومستلزمات الموردين.'
+                                  : 'Manage supplier product and agricultural supply categories.',
+                          onPressed:
+                              _openManageSupplierCategories,
                         ),
                       ],
                     ),
