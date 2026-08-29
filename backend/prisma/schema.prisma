@@ -9,6 +9,7 @@ datasource db {
 enum UserRole {
   FARMER
   CUSTOMER
+  SUPPLIER
   ADMIN
 }
 
@@ -72,6 +73,10 @@ model User {
   aiMarketingLogs AIMarketingLog[]
   pushDevices     PushDevice[]
 
+  supplierProducts   SupplierProduct[] @relation("SupplierProducts")
+  supplierOrders     SupplierOrder[]   @relation("SupplierOrders")
+  farmerSupplyOrders SupplierOrder[]   @relation("FarmerSupplyOrders")
+
   @@map("users")
 }
 
@@ -133,6 +138,100 @@ model Product {
   aiMarketingLogs AIMarketingLog[]
 
   @@map("products")
+}
+
+model SupplierCategory {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String   @db.VarChar(100)
+  description   String?
+  nameEn        String?  @map("name_en") @db.VarChar(100)
+  nameAr        String?  @map("name_ar") @db.VarChar(100)
+  descriptionEn String?  @map("description_en")
+  descriptionAr String?  @map("description_ar")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  products SupplierProduct[]
+
+  @@map("supplier_categories")
+}
+
+model SupplierProduct {
+  id         String @id @default(uuid()) @db.Uuid
+  supplierId String @map("supplier_id") @db.Uuid
+  categoryId String @map("category_id") @db.Uuid
+
+  name        String  @db.VarChar(150)
+  description String?
+
+  nameEn        String? @map("name_en") @db.VarChar(150)
+  nameAr        String? @map("name_ar") @db.VarChar(150)
+  descriptionEn String? @map("description_en")
+  descriptionAr String? @map("description_ar")
+
+  plantingInstructions   String? @map("planting_instructions")
+  plantingInstructionsEn String? @map("planting_instructions_en")
+  plantingInstructionsAr String? @map("planting_instructions_ar")
+
+  irrigationInstructions   String? @map("irrigation_instructions")
+  irrigationInstructionsEn String? @map("irrigation_instructions_en")
+  irrigationInstructionsAr String? @map("irrigation_instructions_ar")
+
+  usageInstructions   String? @map("usage_instructions")
+  usageInstructionsEn String? @map("usage_instructions_en")
+  usageInstructionsAr String? @map("usage_instructions_ar")
+
+  price     Decimal       @db.Decimal(10, 2)
+  quantity  Int
+  unit      String        @db.VarChar(30)
+  imageUrl  String?       @map("image_url")
+  status    ProductStatus @default(AVAILABLE)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  supplier   User                @relation("SupplierProducts", fields: [supplierId], references: [id])
+  category   SupplierCategory    @relation(fields: [categoryId], references: [id])
+  orderItems SupplierOrderItem[]
+
+  @@index([supplierId])
+  @@index([categoryId])
+  @@map("supplier_products")
+}
+
+model SupplierOrder {
+  id              String         @id @default(uuid()) @db.Uuid
+  farmerId        String         @map("farmer_id") @db.Uuid
+  supplierId      String         @map("supplier_id") @db.Uuid
+  totalPrice      Decimal        @map("total_price") @db.Decimal(10, 2)
+  status          OrderStatus    @default(PENDING)
+  deliveryMethod  DeliveryMethod @map("delivery_method")
+  paymentMethod   PaymentMethod  @default(CASH) @map("payment_method")
+  deliveryAddress String?        @map("delivery_address")
+  pickupLocation  String?        @map("pickup_location")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  farmer     User                @relation("FarmerSupplyOrders", fields: [farmerId], references: [id])
+  supplier   User                @relation("SupplierOrders", fields: [supplierId], references: [id])
+  orderItems SupplierOrderItem[]
+
+  @@index([farmerId])
+  @@index([supplierId])
+  @@map("supplier_orders")
+}
+
+model SupplierOrderItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  orderId   String  @map("order_id") @db.Uuid
+  productId String  @map("product_id") @db.Uuid
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+
+  order   SupplierOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product SupplierProduct @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("supplier_order_items")
 }
 
 model Crop {
