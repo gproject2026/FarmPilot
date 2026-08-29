@@ -274,9 +274,15 @@ class SupplierProductService {
         'price': price,
         'quantity': quantity,
         'unit': unit.trim(),
-        if (imageUrl != null &&
-            imageUrl.trim().isNotEmpty)
-          'imageUrl': imageUrl.trim(),
+
+        // Important:
+        // Always send imageUrl during update.
+        // If the user removed the image,
+        // null becomes an empty string.
+        // The backend converts '' to null
+        // and removes the stored imageUrl.
+        'imageUrl': imageUrl?.trim() ?? '',
+
         if (status != null &&
             status.trim().isNotEmpty)
           'status': status.trim(),
