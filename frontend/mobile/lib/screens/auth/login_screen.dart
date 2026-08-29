@@ -31,6 +31,9 @@ class _LoginScreenState
       _passwordController =
       TextEditingController();
 
+  final FocusNode _passwordFocusNode =
+      FocusNode();
+
   bool _obscurePassword = true;
 
   static const Color _darkGreen =
@@ -46,6 +49,7 @@ class _LoginScreenState
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _passwordFocusNode.dispose();
 
     super.dispose();
   }
@@ -766,6 +770,12 @@ class _LoginScreenState
             keyboardType:
                 TextInputType
                     .emailAddress,
+            textInputAction:
+                TextInputAction.next,
+            onSubmitted: (_) {
+              _passwordFocusNode
+                  .requestFocus();
+            },
           ),
           const SizedBox(
             height: 18,
@@ -773,12 +783,16 @@ class _LoginScreenState
           _buildTextField(
             controller:
                 _passwordController,
+            focusNode:
+                _passwordFocusNode,
             label:
                 l10n.password,
             icon:
                 Icons.lock_outline_rounded,
             obscureText:
                 _obscurePassword,
+            textInputAction:
+                TextInputAction.done,
             suffixIcon:
                 IconButton(
               tooltip:
@@ -950,7 +964,9 @@ class _LoginScreenState
         controller,
     required String label,
     required IconData icon,
+    FocusNode? focusNode,
     TextInputType? keyboardType,
+    TextInputAction? textInputAction,
     bool obscureText = false,
     Widget? suffixIcon,
     ValueChanged<String>?
@@ -959,8 +975,12 @@ class _LoginScreenState
     return TextField(
       controller:
           controller,
+      focusNode:
+          focusNode,
       keyboardType:
           keyboardType,
+      textInputAction:
+          textInputAction,
       obscureText:
           obscureText,
       onSubmitted:
