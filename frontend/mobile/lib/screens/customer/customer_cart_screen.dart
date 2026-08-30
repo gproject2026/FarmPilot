@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/product_provider.dart';
 import 'customer_orders_screen.dart';
 import 'customer_products_screen.dart';
 
@@ -69,6 +70,12 @@ String _localizedCartUnit(String unit, bool isArabic) {
   switch (unit.trim().toLowerCase()) {
     case 'kg':
       return 'كغ';
+    case 'ton':
+    case 'tons':
+      return 'طن';
+    case 'box':
+    case 'boxes':
+      return 'صندوق';
     case 'g':
     case 'gram':
     case 'grams':
@@ -148,7 +155,7 @@ class CustomerCartScreen extends StatelessWidget {
                                     width: 360,
                                     child: _CartSummary(
                                       isArabic: isArabic,
-                                      totalQuantity: cartProvider.totalQuantity,
+                                      totalQuantity: cartProvider.itemCount.toDouble(),
                                       totalPrice: cartProvider.totalPrice,
                                       isLoading: orderProvider.isLoading,
                                       onCheckout: () => _checkout(context),
@@ -166,7 +173,7 @@ class CustomerCartScreen extends StatelessWidget {
                                   const SizedBox(height: 20),
                                   _CartSummary(
                                     isArabic: isArabic,
-                                    totalQuantity: cartProvider.totalQuantity,
+                                    totalQuantity: cartProvider.itemCount.toDouble(),
                                     totalPrice: cartProvider.totalPrice,
                                     isLoading: orderProvider.isLoading,
                                     onCheckout: () => _checkout(context),
@@ -429,6 +436,17 @@ class CustomerCartScreen extends StatelessWidget {
 
     if (success) {
       cartProvider.clearCart();
+
+      // Refresh marketplace stock immediately after the order succeeds.
+      // This keeps the available quantity in sync without a browser refresh.
+      await Provider.of<ProductProvider>(
+        context,
+        listen: false,
+      ).loadAllProducts();
+
+      if (!context.mounted) {
+        return;
+      }
 
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -1054,7 +1072,7 @@ class _CartItemCard extends StatelessWidget {
                           item.name,
                           isArabic,
                         ),
-                        displayUnit: _localizedCartUnit(item.unit, isArabic),
+                        displayUnit: _localizedCartUnit(item.selectedUnit, isArabic),
                       ),
                     ),
                   ],
@@ -1075,7 +1093,7 @@ class _CartItemCard extends StatelessWidget {
                   item: item,
                   isArabic: isArabic,
                   displayName: _localizedCartProductName(item.name, isArabic),
-                  displayUnit: _localizedCartUnit(item.unit, isArabic),
+                  displayUnit: _localizedCartUnit(item.selectedUnit, isArabic),
                 ),
               ),
               const SizedBox(width: 18),
@@ -1097,56 +1115,175 @@ class _CartItemCard extends StatelessWidget {
     required BuildContext context,
     required CartProvider cartProvider,
   }) {
-    return Row(
-      children: [
-        _QuantityButton(
-          icon: item.quantity > 1
-              ? Icons.remove_rounded
-              : Icons.delete_outline_rounded,
-          onPressed: isLoading
-              ? null
-              : () {
-                  cartProvider.decreaseQuantity(item.productId);
-                },
-        ),
-        Expanded(
-          child: Container(
-            alignment: Alignment.center,
-            child: Text(
-              item.quantity.toString(),
-              style: const TextStyle(
-                color: _cartTextPrimary,
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
+    final availableUnits = item.availableUnits;
+    final quantityText = _formatQuantity(item.quantity);
+
+    final unitSelector = availableUnits.length > 1
+        ? DropdownButtonFormField<String>(
+            initialValue: item.selectedUnit,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: isArabic ? 'الوحدة' : 'Unit',
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-          ),
-        ),
-        _QuantityButton(
-          icon: Icons.add_rounded,
-          onPressed: isLoading
-              ? null
-              : () {
-                  cartProvider.increaseQuantity(item.productId);
+            items: availableUnits
+                .map(
+                  (unit) => DropdownMenuItem<String>(
+                    value: unit,
+                    child: Text(
+                      _localizedCartUnit(unit, isArabic),
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: isLoading
+                ? null
+                : (value) {
+                    if (value == null) {
+                      return;
+                    }
+
+                    cartProvider.changeUnit(
+                      productId: item.productId,
+                      unit: value,
+                    );
+                  },
+          )
+        : Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F8F0),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFFDDE6D8),
+              ),
+            ),
+            child: Text(
+              _localizedCartUnit(item.selectedUnit, isArabic),
+              style: const TextStyle(
+                color: _cartTextPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                key: ValueKey(
+                  '${item.productId}-${item.selectedUnit}-$quantityText',
+                ),
+                initialValue: quantityText,
+                enabled: !isLoading,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                textInputAction: TextInputAction.done,
+                decoration: InputDecoration(
+                  labelText: isArabic ? 'الكمية' : 'Quantity',
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onChanged: (value) {
+                  final parsed = double.tryParse(
+                    value.trim().replaceAll(',', '.'),
+                  );
+
+                  if (parsed == null || parsed <= 0) {
+                    return;
+                  }
+
+                  cartProvider.updateQuantity(
+                    productId: item.productId,
+                    quantity: parsed,
+                  );
                 },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(child: unitSelector),
+          ],
         ),
-        const SizedBox(width: 8),
-        IconButton(
-          onPressed: isLoading
-              ? null
-              : () {
-                  cartProvider.removeItem(item.productId);
-                },
-          tooltip: isArabic ? 'إزالة المنتج' : 'Remove product',
-          style: IconButton.styleFrom(
-            backgroundColor: const Color(0xFFFCE7E7),
-            foregroundColor: const Color(0xFFB44F4F),
-          ),
-          icon: const Icon(Icons.delete_outline_rounded),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _QuantityButton(
+              icon: Icons.remove_rounded,
+              onPressed: isLoading
+                  ? null
+                  : () {
+                      cartProvider.decreaseQuantity(
+                        item.productId,
+                      );
+                    },
+            ),
+            const SizedBox(width: 8),
+            _QuantityButton(
+              icon: Icons.add_rounded,
+              onPressed: isLoading
+                  ? null
+                  : () {
+                      cartProvider.increaseQuantity(
+                        item.productId,
+                      );
+                    },
+            ),
+            const Spacer(),
+            IconButton(
+              onPressed: isLoading
+                  ? null
+                  : () {
+                      cartProvider.removeItem(
+                        item.productId,
+                      );
+                    },
+              tooltip: isArabic
+                  ? 'إزالة المنتج'
+                  : 'Remove product',
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFFCE7E7),
+                foregroundColor: const Color(0xFFB44F4F),
+              ),
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
+
+  String _formatQuantity(double value) {
+    if (value == value.roundToDouble()) {
+      return value.toInt().toString();
+    }
+
+    return value
+        .toStringAsFixed(3)
+        .replaceFirst(RegExp(r'0+$'), '')
+        .replaceFirst(RegExp(r'\.$'), '');
+  }
+
 }
 
 class _ProductInfo extends StatelessWidget {
@@ -1179,9 +1316,12 @@ class _ProductInfo extends StatelessWidget {
         ),
         const SizedBox(height: 7),
         Text(
-          '${item.price.toStringAsFixed(2)} ₪'
+          '${_priceForSelectedUnit(item).toStringAsFixed(2)} ₪'
           '${displayUnit.isEmpty ? '' : ' / $displayUnit'}',
-          style: const TextStyle(color: _cartTextSecondary, fontSize: 13),
+          style: const TextStyle(
+            color: _cartTextSecondary,
+            fontSize: 13,
+          ),
         ),
         const SizedBox(height: 9),
         Container(
@@ -1203,6 +1343,32 @@ class _ProductInfo extends StatelessWidget {
       ],
     );
   }
+  double _priceForSelectedUnit(
+    CartItem item,
+  ) {
+    final productUnit =
+        item.productUnit.trim().toLowerCase();
+
+    final selectedUnit =
+        item.selectedUnit.trim().toLowerCase();
+
+    if (productUnit == selectedUnit) {
+      return item.price;
+    }
+
+    if (productUnit == 'ton' &&
+        selectedUnit == 'kg') {
+      return item.price / 1000.0;
+    }
+
+    if (productUnit == 'kg' &&
+        selectedUnit == 'ton') {
+      return item.price * 1000.0;
+    }
+
+    return item.price;
+  }
+
 }
 
 class _ProductImage extends StatelessWidget {
@@ -1302,7 +1468,7 @@ class _QuantityButton extends StatelessWidget {
 
 class _CartSummary extends StatelessWidget {
   final bool isArabic;
-  final int totalQuantity;
+  final double totalQuantity;
   final double totalPrice;
   final bool isLoading;
   final VoidCallback onCheckout;
@@ -1359,7 +1525,7 @@ class _CartSummary extends StatelessWidget {
           const SizedBox(height: 20),
           _SummaryRow(
             label: isArabic ? 'إجمالي المنتجات' : 'Total products',
-            value: totalQuantity.toString(),
+            value: totalQuantity.toInt().toString(),
           ),
           const SizedBox(height: 12),
           const Divider(color: Color(0xFFE1E8DD)),

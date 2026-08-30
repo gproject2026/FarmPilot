@@ -55,6 +55,93 @@ export class OrdersService {
     },
   } satisfies Prisma.OrderInclude;
 
+  private normalizeUnit(
+    unit: string,
+  ): string {
+    const value =
+      unit.trim().toLowerCase();
+
+    switch (value) {
+      case 'kg':
+      case 'kilogram':
+      case 'kilograms':
+      case 'كغ':
+      case 'كغم':
+      case 'كيلو':
+      case 'كيلوغرام':
+        return 'kg';
+
+      case 'ton':
+      case 'tons':
+      case 'tonne':
+      case 'tonnes':
+      case 'طن':
+        return 'ton';
+
+      case 'piece':
+      case 'pieces':
+      case 'pc':
+      case 'pcs':
+      case 'حبة':
+        return 'piece';
+
+      case 'box':
+      case 'boxes':
+      case 'صندوق':
+        return 'box';
+
+      default:
+        return value;
+    }
+  }
+
+  private convertRequestedQuantityToProductUnit(
+    quantity: number,
+    requestedUnit: string,
+    productUnit: string,
+  ): Prisma.Decimal {
+    const requested =
+      this.normalizeUnit(
+        requestedUnit,
+      );
+
+    const product =
+      this.normalizeUnit(
+        productUnit,
+      );
+
+    const requestedQuantity =
+      new Prisma.Decimal(
+        quantity,
+      );
+
+    if (requested === product) {
+      return requestedQuantity;
+    }
+
+    if (
+      requested === 'kg' &&
+      product === 'ton'
+    ) {
+      return requestedQuantity.div(
+        1000,
+      );
+    }
+
+    if (
+      requested === 'ton' &&
+      product === 'kg'
+    ) {
+      return requestedQuantity.mul(
+        1000,
+      );
+    }
+
+    throw new BadRequestException(
+      `Unit ${requestedUnit} cannot be converted to ${productUnit}`,
+    );
+  }
+
   async create(
     createOrderDto: CreateOrderDto,
     customerId: string,
@@ -204,9 +291,17 @@ export class OrdersService {
             );
           }
 
+          const requestedQuantityInProductUnit =
+            this.convertRequestedQuantityToProductUnit(
+              item.quantity,
+              item.unit,
+              product.unit,
+            );
+
           if (
-            product.quantity <
-            item.quantity
+            product.quantity.lt(
+              requestedQuantityInProductUnit,
+            )
           ) {
             throw new BadRequestException(
               `Not enough quantity for product: ${product.name}`,
@@ -216,7 +311,7 @@ export class OrdersService {
           totalPrice =
             totalPrice.plus(
               product.price.mul(
-                item.quantity,
+                requestedQuantityInProductUnit,
               ),
             );
 
@@ -227,7 +322,7 @@ export class OrdersService {
               },
             },
             quantity:
-              item.quantity,
+              requestedQuantityInProductUnit,
             price:
               product.price,
           });
@@ -237,6 +332,26 @@ export class OrdersService {
           const item of
           createOrderDto.items
         ) {
+          const product =
+            products.find(
+              (currentProduct) =>
+                currentProduct.id ===
+                item.productId,
+            );
+
+          if (!product) {
+            throw new NotFoundException(
+              'Product not found',
+            );
+          }
+
+          const requestedQuantityInProductUnit =
+            this.convertRequestedQuantityToProductUnit(
+              item.quantity,
+              item.unit,
+              product.unit,
+            );
+
           const updatedResult =
             await tx.product.updateMany({
               where: {
@@ -246,13 +361,13 @@ export class OrdersService {
                   ProductStatus.AVAILABLE,
                 quantity: {
                   gte:
-                    item.quantity,
+                    requestedQuantityInProductUnit,
                 },
               },
               data: {
                 quantity: {
                   decrement:
-                    item.quantity,
+                    requestedQuantityInProductUnit,
                 },
               },
             });
@@ -277,8 +392,10 @@ export class OrdersService {
             });
 
           if (
-            updatedProduct
-              ?.quantity === 0
+            updatedProduct &&
+            updatedProduct.quantity.lte(
+              0,
+            )
           ) {
             await tx.product.update({
               where: {

@@ -613,7 +613,7 @@ class _CustomerProductsScreenState extends State<CustomerProductsScreen> {
                   icon: Icons.shopping_cart_outlined,
                   onTap: _openCart,
                 ),
-                if (cartProvider.totalQuantity > 0)
+                if (cartProvider.itemCount > 0)
                   Positioned(
                     right: -4,
                     top: -4,
@@ -630,7 +630,7 @@ class _CustomerProductsScreenState extends State<CustomerProductsScreen> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        cartProvider.totalQuantity.toString(),
+                        cartProvider.itemCount.toString(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 9,
@@ -812,6 +812,32 @@ class _ProductCard extends StatelessWidget {
     required this.onImageTap,
   });
 
+  String _localizedUnit(String unit) {
+    switch (unit.trim().toLowerCase()) {
+      case 'kg':
+        return isArabic ? 'كغ' : 'kg';
+      case 'ton':
+        return isArabic ? 'طن' : 'ton';
+      case 'piece':
+        return isArabic ? 'حبة' : 'piece';
+      case 'box':
+        return isArabic ? 'صندوق' : 'box';
+      default:
+        return unit.trim();
+    }
+  }
+
+  String _formatQuantity(double value) {
+    if (value == value.roundToDouble()) {
+      return value.toInt().toString();
+    }
+
+    return value
+        .toStringAsFixed(3)
+        .replaceFirst(RegExp(r'0+$'), '')
+        .replaceFirst(RegExp(r'\.$'), '');
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -822,11 +848,14 @@ class _ProductCard extends StatelessWidget {
 
     final unit = product['unit']?.toString() ?? '';
 
+    final displayUnit = _localizedUnit(unit);
+
     final imageUrl = product['imageUrl']?.toString();
 
     final status = product['status']?.toString() ?? '';
 
-    final quantity = int.tryParse(product['quantity']?.toString() ?? '0') ?? 0;
+    final quantity =
+        double.tryParse(product['quantity']?.toString() ?? '0') ?? 0.0;
 
     final price = double.tryParse(product['price']?.toString() ?? '0') ?? 0.0;
 
@@ -1105,7 +1134,7 @@ class _ProductCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               '${price.toStringAsFixed(2)} ₪'
-                              '${unit.isEmpty ? '' : ' / $unit'}',
+                              '${displayUnit.isEmpty ? '' : ' / $displayUnit'}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -1128,7 +1157,8 @@ class _ProductCard extends StatelessWidget {
                             ),
                             child: Text(
                               isAvailable
-                                  ? '${l10n.available}: $quantity'
+                                  ? '${l10n.available}: ${_formatQuantity(quantity)}'
+                                      '${displayUnit.isEmpty ? '' : ' $displayUnit'}'
                                   : l10n.outOfStock,
                               style: TextStyle(
                                 color: isAvailable

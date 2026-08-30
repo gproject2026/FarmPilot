@@ -4,7 +4,8 @@ import {
   ArrayMinSize,
   IsArray,
   IsEnum,
-  IsInt,
+  IsIn,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -23,9 +24,20 @@ export class CreateOrderItemDto {
   productId!: string;
 
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsNumber({
+    maxDecimalPlaces: 3,
+  })
+  @Min(0.001)
   quantity!: number;
+
+  @IsString()
+  @IsIn([
+    'kg',
+    'ton',
+    'piece',
+    'box',
+  ])
+  unit!: string;
 }
 
 export class CreateOrderDto {

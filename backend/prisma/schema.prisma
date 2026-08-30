@@ -123,7 +123,7 @@ model Product {
   descriptionAr String? @map("description_ar")
 
   price     Decimal       @db.Decimal(10, 2)
-  quantity  Int
+  quantity  Decimal       @db.Decimal(12, 3)
   unit      String        @db.VarChar(30)
   imageUrl  String?       @map("image_url")
   status    ProductStatus @default(AVAILABLE)
@@ -358,7 +358,7 @@ model OrderItem {
   id        String  @id @default(uuid()) @db.Uuid
   orderId   String  @map("order_id") @db.Uuid
   productId String  @map("product_id") @db.Uuid
-  quantity  Int
+  quantity  Decimal @db.Decimal(12, 3)
   price     Decimal @db.Decimal(10, 2)
 
   order   Order   @relation(fields: [orderId], references: [id])

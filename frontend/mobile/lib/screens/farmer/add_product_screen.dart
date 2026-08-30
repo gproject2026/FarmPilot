@@ -52,6 +52,13 @@ class _AddProductScreenState
 
   String? currentImageUrl;
 
+  static const List<String> _standardUnits = <String>[
+    'kg',
+    'ton',
+    'piece',
+    'box',
+  ];
+
   bool localizedDataLoaded = false;
 
   @override
@@ -287,6 +294,46 @@ class _AddProductScreenState
     }
 
     return '';
+  }
+
+  List<String> _availableUnits() {
+    final currentUnit = unitController.text.trim();
+
+    if (currentUnit.isEmpty ||
+        _standardUnits.contains(currentUnit)) {
+      return List<String>.from(_standardUnits);
+    }
+
+    return <String>[
+      ..._standardUnits,
+      currentUnit,
+    ];
+  }
+
+  String _unitLabel(
+    String unit,
+    bool isArabic,
+  ) {
+    switch (unit) {
+      case 'kg':
+        return isArabic
+            ? 'كيلوغرام (kg)'
+            : 'Kilogram (kg)';
+      case 'ton':
+        return isArabic
+            ? 'طن (ton)'
+            : 'Ton (ton)';
+      case 'piece':
+        return isArabic
+            ? 'حبة (piece)'
+            : 'Piece';
+      case 'box':
+        return isArabic
+            ? 'صندوق (box)'
+            : 'Box';
+      default:
+        return unit;
+    }
   }
 
   Future<void> _pickImage() async {
@@ -1238,18 +1285,72 @@ class _AddProductScreenState
                                       ),
                                     );
 
+                                    final availableUnits =
+                                        _availableUnits();
+
+                                    final currentUnit =
+                                        unitController.text
+                                            .trim();
+
                                     final unitField =
-                                        TextField(
-                                      controller:
-                                          unitController,
+                                        DropdownButtonFormField<
+                                            String>(
+                                      initialValue:
+                                          currentUnit.isEmpty
+                                              ? null
+                                              : currentUnit,
+                                      isExpanded: true,
                                       decoration:
                                           _fieldDecoration(
                                         label:
                                             l10n.unit,
-                                        hint: 'kg',
+                                        hint: isArabic
+                                            ? 'اختر الوحدة'
+                                            : 'Select unit',
                                         icon: Icons
                                             .scale_outlined,
                                       ),
+                                      items:
+                                          availableUnits
+                                              .map(
+                                        (
+                                          unit,
+                                        ) {
+                                          return DropdownMenuItem<
+                                              String>(
+                                            value: unit,
+                                            child: Text(
+                                              _unitLabel(
+                                                unit,
+                                                isArabic,
+                                              ),
+                                              overflow:
+                                                  TextOverflow
+                                                      .ellipsis,
+                                            ),
+                                          );
+                                        },
+                                      ).toList(),
+                                      onChanged:
+                                          productProvider
+                                                  .isLoading
+                                              ? null
+                                              : (
+                                                  value,
+                                                ) {
+                                                  if (value ==
+                                                      null) {
+                                                    return;
+                                                  }
+
+                                                  setState(
+                                                    () {
+                                                      unitController
+                                                              .text =
+                                                          value;
+                                                    },
+                                                  );
+                                                },
                                     );
 
                                     if (narrow) {
