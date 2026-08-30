@@ -1402,7 +1402,7 @@ class _SupplierProductsScreenState
 
     return Image.network(
       imageUrl,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       errorBuilder: (
         context,
         error,
