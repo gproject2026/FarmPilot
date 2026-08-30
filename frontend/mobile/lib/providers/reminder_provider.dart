@@ -43,6 +43,7 @@ class ReminderProvider extends ChangeNotifier {
     String? cropId,
     String type = 'OTHER',
     required DateTime reminderDate,
+    List<int> repeatDays = const [],
   }) async {
     _setLoading(true);
     _errorMessage = null;
@@ -56,6 +57,7 @@ class ReminderProvider extends ChangeNotifier {
         cropId: cropId,
         type: type,
         reminderDate: reminderDate,
+        repeatDays: repeatDays,
       );
 
       _reminders.add(newReminder);
@@ -78,6 +80,7 @@ class ReminderProvider extends ChangeNotifier {
     String? cropId,
     String? type,
     DateTime? reminderDate,
+    List<int>? repeatDays,
     bool? status,
   }) async {
     _setLoading(true);
@@ -93,20 +96,24 @@ class ReminderProvider extends ChangeNotifier {
         cropId: cropId,
         type: type,
         reminderDate: reminderDate,
+        repeatDays: repeatDays,
         status: status,
       );
 
       final reminderIndex =
           _reminders.indexWhere(
         (reminder) =>
-            reminder.id == reminderId,
+            reminder.id ==
+            reminderId,
       );
 
       if (reminderIndex != -1) {
         _reminders[reminderIndex] =
             updatedReminder;
       } else {
-        _reminders.add(updatedReminder);
+        _reminders.add(
+          updatedReminder,
+        );
       }
 
       _sortReminders();
@@ -146,7 +153,8 @@ class ReminderProvider extends ChangeNotifier {
 
       _reminders.removeWhere(
         (reminder) =>
-            reminder.id == reminderId,
+            reminder.id ==
+            reminderId,
       );
 
       return true;

@@ -1039,6 +1039,8 @@ class _AddReminderDialogState
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
 
+  final Set<int> _selectedRepeatDays = <int>{};
+
   bool _isSaving = false;
 
   @override
@@ -1146,6 +1148,7 @@ class _AddReminderDialogState
               cropName.isEmpty ? null : cropName,
           type: 'OTHER',
           reminderDate: reminderDate,
+          repeatDays: _selectedRepeatDays.toList()..sort(),
         );
 
     if (!mounted) {
@@ -1301,6 +1304,21 @@ class _AddReminderDialogState
                     : _selectedTime!.format(context),
                 onTap: _isSaving ? null : _selectTime,
               ),
+               const SizedBox(height: 16),
+               _RepeatDaysSelector(
+                 isArabic: isArabic,
+                 selectedDays: _selectedRepeatDays,
+                 enabled: !_isSaving,
+                 onDayChanged: (day) {
+                   setState(() {
+                     if (_selectedRepeatDays.contains(day)) {
+                       _selectedRepeatDays.remove(day);
+                     } else {
+                       _selectedRepeatDays.add(day);
+                     }
+                   });
+                 },
+               ),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -1366,6 +1384,125 @@ class _AddReminderDialogState
     );
   }
 }
+
+class _RepeatDaysSelector extends StatelessWidget {
+  final bool isArabic;
+  final Set<int> selectedDays;
+  final bool enabled;
+  final ValueChanged<int> onDayChanged;
+
+  const _RepeatDaysSelector({
+    required this.isArabic,
+    required this.selectedDays,
+    required this.enabled,
+    required this.onDayChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const days = <int, Map<String, String>>{
+      0: {'en': 'Sun', 'ar': 'أحد'},
+      1: {'en': 'Mon', 'ar': 'إثن'},
+      2: {'en': 'Tue', 'ar': 'ثلا'},
+      3: {'en': 'Wed', 'ar': 'أرب'},
+      4: {'en': 'Thu', 'ar': 'خمي'},
+      5: {'en': 'Fri', 'ar': 'جمع'},
+      6: {'en': 'Sat', 'ar': 'سبت'},
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFCFDFB),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFD8E2D4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: _reminderLight,
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: const Icon(
+                  Icons.repeat_rounded,
+                  color: _reminderPrimary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isArabic ? 'تكرار أسبوعي' : 'Weekly Repeat',
+                      style: const TextStyle(
+                        color: _reminderText,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      selectedDays.isEmpty
+                          ? (isArabic
+                              ? 'بدون تكرار - مرة واحدة'
+                              : 'No repeat - one time')
+                          : (isArabic
+                              ? 'يتكرر في الأيام المحددة'
+                              : 'Repeats on selected days'),
+                      style: const TextStyle(
+                        color: _reminderMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: days.entries.map((entry) {
+              final day = entry.key;
+              final selected = selectedDays.contains(day);
+
+              return FilterChip(
+                selected: selected,
+                onSelected: enabled ? (_) => onDayChanged(day) : null,
+                label: Text(entry.value[isArabic ? 'ar' : 'en']!),
+                showCheckmark: false,
+                selectedColor: _reminderPrimary,
+                backgroundColor: const Color(0xFFF1F6E9),
+                disabledColor: const Color(0xFFF3F4F1),
+                side: BorderSide(
+                  color: selected
+                      ? _reminderPrimary
+                      : const Color(0xFFD8E2D4),
+                ),
+                labelStyle: TextStyle(
+                  color: selected ? Colors.white : _reminderText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 class _ReminderPickerTile extends StatelessWidget {
   final IconData icon;

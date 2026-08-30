@@ -122,6 +122,9 @@ export class RemindersService {
         reminderDate: new Date(
           createReminderDto.reminderDate,
         ),
+
+        repeatDays:
+          createReminderDto.repeatDays ?? [],
       },
       include: {
         crop: true,
@@ -316,6 +319,12 @@ export class RemindersService {
       }
     }
 
+    const reminderDateChanged =
+      updateReminderDto.reminderDate !== undefined;
+
+    const repeatDaysChanged =
+      updateReminderDto.repeatDays !== undefined;
+
     return this.prisma.reminder.update({
       where: {
         id,
@@ -342,8 +351,17 @@ export class RemindersService {
               )
             : undefined,
 
+        repeatDays:
+          updateReminderDto.repeatDays,
+
         status:
           updateReminderDto.status,
+
+        notificationSentAt:
+          reminderDateChanged ||
+          repeatDaysChanged
+            ? null
+            : undefined,
       },
       include: {
         crop: true,

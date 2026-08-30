@@ -38,6 +38,7 @@ class ReminderService {
     String? cropId,
     String type = 'OTHER',
     required DateTime reminderDate,
+    List<int> repeatDays = const [],
   }) async {
     final response = await http.post(
       Uri.parse('${AppConstants.baseUrl}/reminders'),
@@ -48,6 +49,8 @@ class ReminderService {
           'cropName': cropName.trim(),
         if (cropId != null && cropId.isNotEmpty) 'cropId': cropId,
         'type': type,
+
+        'repeatDays': repeatDays,
         'reminderDate': reminderDate.toUtc().toIso8601String(),
       }),
     );
@@ -71,6 +74,7 @@ class ReminderService {
     String? cropId,
     String? type,
     DateTime? reminderDate,
+    List<int>? repeatDays,
     bool? status,
   }) async {
     final body = <String, dynamic>{};
@@ -93,6 +97,10 @@ class ReminderService {
 
     if (reminderDate != null) {
       body['reminderDate'] = reminderDate.toUtc().toIso8601String();
+    }
+
+    if (repeatDays != null) {
+      body['repeatDays'] = repeatDays;
     }
 
     if (status != null) {

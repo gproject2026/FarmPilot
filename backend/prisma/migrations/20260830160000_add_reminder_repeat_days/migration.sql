@@ -1,0 +1,1 @@
+ALTER TABLE "reminders" ADD COLUMN "repeat_days" INTEGER[] NOT NULL DEFAULT ARRAY[]::INTEGER[];

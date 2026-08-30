@@ -15,6 +15,7 @@ class ReminderModel {
   final String type;
 
   final DateTime reminderDate;
+  final List<int> repeatDays;
   final bool status;
   final DateTime createdAt;
 
@@ -32,6 +33,7 @@ class ReminderModel {
     this.cropNameAr,
     required this.type,
     required this.reminderDate,
+    this.repeatDays = const [],
     required this.status,
     required this.createdAt,
     this.cropType,
@@ -63,6 +65,30 @@ class ReminderModel {
         json['cropNameAr']
             ?.toString()
             .trim();
+
+    final rawRepeatDays =
+        json['repeatDays'];
+
+    final repeatDays =
+        rawRepeatDays is List
+            ? rawRepeatDays
+                .map(
+                  (day) =>
+                      int.tryParse(
+                        day.toString(),
+                      ),
+                )
+                .whereType<int>()
+                .where(
+                  (day) =>
+                      day >= 0 &&
+                      day <= 6,
+                )
+                .toSet()
+                .toList()
+            : <int>[];
+
+    repeatDays.sort();
 
     return ReminderModel(
       id:
@@ -122,6 +148,8 @@ class ReminderModel {
             .toString(),
       ),
 
+      repeatDays: repeatDays,
+
       status:
           json['status'] == true,
 
@@ -160,6 +188,8 @@ class ReminderModel {
           reminderDate
               .toIso8601String(),
 
+      'repeatDays': repeatDays,
+
       'status': status,
 
       'createdAt':
@@ -185,6 +215,7 @@ class ReminderModel {
     String? type,
 
     DateTime? reminderDate,
+    List<int>? repeatDays,
     bool? status,
     DateTime? createdAt,
 
@@ -234,6 +265,10 @@ class ReminderModel {
       reminderDate:
           reminderDate ??
           this.reminderDate,
+
+      repeatDays:
+          repeatDays ??
+          this.repeatDays,
 
       status:
           status ??
