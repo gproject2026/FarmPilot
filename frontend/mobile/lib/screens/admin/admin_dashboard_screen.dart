@@ -472,10 +472,10 @@ class _AdminDashboardScreenState
                           toolColumns,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
-                      childAspectRatio:
+                      mainAxisExtent:
                           toolColumns == 1
-                              ? 3.4
-                              : 2.7,
+                              ? 112
+                              : 128,
                       shrinkWrap: true,
                       physics:
                           const NeverScrollableScrollPhysics(),

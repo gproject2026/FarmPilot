@@ -439,16 +439,23 @@ class _NotificationsHeader
                     CrossAxisAlignment
                         .start,
                 children: [
-                  const Text(
-                    'FarmPilot',
-                    style:
-                        TextStyle(
-                      color:
-                          Colors.white,
-                      fontSize: 19,
-                      fontWeight:
-                          FontWeight
-                              .w800,
+                  const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment:
+                        AlignmentDirectional.centerStart,
+                    child: Text(
+                      'FarmPilot',
+                      maxLines: 1,
+                      softWrap: false,
+                      style:
+                          TextStyle(
+                        color:
+                            Colors.white,
+                        fontSize: 19,
+                        fontWeight:
+                            FontWeight
+                                .w800,
+                      ),
                     ),
                   ),
                   const SizedBox(
@@ -458,6 +465,10 @@ class _NotificationsHeader
                     isArabic
                         ? 'الإشعارات'
                         : 'Notifications',
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow:
+                        TextOverflow.ellipsis,
                     style:
                         const TextStyle(
                       color:
@@ -1613,7 +1624,11 @@ class _NotificationCard
                     const SizedBox(
                       height: 10,
                     ),
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      crossAxisAlignment:
+                          WrapCrossAlignment.center,
                       children: [
                         if (type.isNotEmpty)
                           Container(
@@ -1655,7 +1670,6 @@ class _NotificationCard
                               ),
                             ),
                           ),
-                        const Spacer(),
                         if (createdAt != null)
                           Text(
                             _formatDate(

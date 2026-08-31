@@ -392,14 +392,19 @@ class _CustomerProductsScreenState extends State<CustomerProductsScreen> {
                     )
                   else
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(22, 0, 22, 36),
+                      padding: EdgeInsets.fromLTRB(
+                        22,
+                        0,
+                        22,
+                        36 + MediaQuery.paddingOf(context).bottom,
+                      ),
                       sliver: SliverGrid(
                         gridDelegate:
                             const SliverGridDelegateWithMaxCrossAxisExtent(
                               maxCrossAxisExtent: 340,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
-                              mainAxisExtent: 480,
+                              mainAxisExtent: 492,
                             ),
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final product = Map<String, dynamic>.from(
@@ -480,53 +485,139 @@ class _CustomerProductsScreenState extends State<CustomerProductsScreen> {
       ),
       child: SafeArea(
         bottom: false,
-        child: Row(
-          children: [
-            Material(
-              color: Colors.white.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(14),
-              child: InkWell(
-                onTap: () {
-                  Navigator.pop(context);
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact = constraints.maxWidth < 520;
+
+            Widget languageButton() {
+              return PopupMenuButton<String>(
+                tooltip: isArabic ? 'تغيير اللغة' : 'Change Language',
+                offset: const Offset(0, 48),
+                position: PopupMenuPosition.under,
+                color: const Color(0xFFF8FAF4),
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onSelected: _changeLanguage,
+                itemBuilder: (context) {
+                  return [
+                    PopupMenuItem<String>(
+                      value: 'en',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.check_rounded,
+                            size: 20,
+                            color: !isArabic
+                                ? _marketPrimaryGreen
+                                : Colors.transparent,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(isArabic ? 'الإنجليزية' : 'English'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'ar',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.check_rounded,
+                            size: 20,
+                            color: isArabic
+                                ? _marketPrimaryGreen
+                                : Colors.transparent,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(isArabic ? 'العربية' : 'Arabic'),
+                        ],
+                      ),
+                    ),
+                  ];
                 },
-                borderRadius: BorderRadius.circular(14),
-                child: const SizedBox(
+                child: Container(
                   width: 44,
                   height: 44,
-                  child: Icon(Icons.arrow_back_rounded, color: Colors.white),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.language_rounded,
+                    color: Colors.white,
+                    size: 21,
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: _marketLightGreen,
-                borderRadius: BorderRadius.circular(13),
-              ),
-              child: const Icon(
-                Icons.eco_rounded,
-                color: _marketDarkGreen,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
+              );
+            }
+
+            Widget cartButton() {
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _HeaderActionButton(
+                    tooltip: l10n.shoppingCart,
+                    icon: Icons.shopping_cart_outlined,
+                    onTap: _openCart,
+                  ),
+                  if (cartProvider.itemCount > 0)
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE35D5D),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          cartProvider.itemCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            }
+
+            final titleBlock = Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    l10n.appName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 19,
-                      fontWeight: FontWeight.w800,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      l10n.appName,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     l10n.marketplace,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.78),
                       fontSize: 12,
@@ -534,120 +625,103 @@ class _CustomerProductsScreenState extends State<CustomerProductsScreen> {
                   ),
                 ],
               ),
-            ),
-            PopupMenuButton<String>(
-              tooltip: isArabic ? 'تغيير اللغة' : 'Change Language',
-              offset: const Offset(0, 48),
-              position: PopupMenuPosition.under,
-              color: const Color(0xFFF8FAF4),
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+            );
+
+            final leading = [
+              Material(
+                color: Colors.white.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(14),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: const SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
-              onSelected: _changeLanguage,
-              itemBuilder: (context) {
-                return [
-                  PopupMenuItem<String>(
-                    value: 'en',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_rounded,
-                          size: 20,
-                          color: !isArabic
-                              ? _marketPrimaryGreen
-                              : Colors.transparent,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(isArabic ? 'الإنجليزية' : 'English'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'ar',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_rounded,
-                          size: 20,
-                          color: isArabic
-                              ? _marketPrimaryGreen
-                              : Colors.transparent,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(isArabic ? 'العربية' : 'Arabic'),
-                      ],
-                    ),
-                  ),
-                ];
-              },
-              child: Container(
+              const SizedBox(width: 12),
+              Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(14),
+                  color: _marketLightGreen,
+                  borderRadius: BorderRadius.circular(13),
                 ),
-                alignment: Alignment.center,
                 child: const Icon(
-                  Icons.language_rounded,
-                  color: Colors.white,
-                  size: 21,
+                  Icons.eco_rounded,
+                  color: _marketDarkGreen,
+                  size: 24,
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            _HeaderActionButton(
-              tooltip: l10n.myFavorites,
-              icon: Icons.favorite_outline_rounded,
-              onTap: _openFavorites,
-            ),
-            const SizedBox(width: 8),
-            Stack(
-              clipBehavior: Clip.none,
+              const SizedBox(width: 10),
+              titleBlock,
+            ];
+
+            final actions = [
+              languageButton(),
+              const SizedBox(width: 8),
+              _HeaderActionButton(
+                tooltip: l10n.myFavorites,
+                icon: Icons.favorite_outline_rounded,
+                onTap: _openFavorites,
+              ),
+              const SizedBox(width: 8),
+              cartButton(),
+              const SizedBox(width: 8),
+              _HeaderActionButton(
+                tooltip: l10n.refresh,
+                icon: Icons.refresh_rounded,
+                onTap: productProvider.isLoading ? null : _loadData,
+              ),
+            ];
+
+            if (!isCompact) {
+              return Row(
+                children: [
+                  ...leading,
+                  ...actions,
+                ],
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _HeaderActionButton(
-                  tooltip: l10n.shoppingCart,
-                  icon: Icons.shopping_cart_outlined,
-                  onTap: _openCart,
+                Row(
+                  children: leading,
                 ),
-                if (cartProvider.itemCount > 0)
-                  Positioned(
-                    right: -4,
-                    top: -4,
-                    child: Container(
-                      constraints: const BoxConstraints(
-                        minWidth: 18,
-                        minHeight: 18,
+                const SizedBox(height: 12),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      languageButton(),
+                      _HeaderActionButton(
+                        tooltip: l10n.myFavorites,
+                        icon: Icons.favorite_outline_rounded,
+                        onTap: _openFavorites,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE35D5D),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white, width: 1.5),
+                      cartButton(),
+                      _HeaderActionButton(
+                        tooltip: l10n.refresh,
+                        icon: Icons.refresh_rounded,
+                        onTap: productProvider.isLoading ? null : _loadData,
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        cartProvider.itemCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
+                ),
               ],
-            ),
-            const SizedBox(width: 8),
-            _HeaderActionButton(
-              tooltip: l10n.refresh,
-              icon: Icons.refresh_rounded,
-              onTap: productProvider.isLoading ? null : _loadData,
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -1174,7 +1248,7 @@ class _ProductCard extends StatelessWidget {
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
-                        height: 42,
+                        height: 54,
                         child: ElevatedButton.icon(
                           onPressed: isAvailable
                               ? () {

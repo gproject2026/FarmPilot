@@ -917,42 +917,51 @@ class _LoginScreenState
           const SizedBox(
             height: 24,
           ),
-          Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
-            children: [
-              Text(
-                l10n.dontHaveAccount,
-                style:
-                    const TextStyle(
-                  color:
-                      Color(
-                    0xFF68756B,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const RegisterScreen(),
+          Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.dontHaveAccount,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: const TextStyle(
+                      color: Color(0xFF68756B),
                     ),
-                  );
-                },
-                child: Text(
-                  l10n.registerNow,
-                  style:
-                      const TextStyle(
-                    color:
-                        _primaryGreen,
-                    fontWeight:
-                        FontWeight.w700,
                   ),
-                ),
+                  const SizedBox(width: 6),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RegisterScreen(),
+                        ),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      l10n.registerNow,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: const TextStyle(
+                        color: _primaryGreen,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),

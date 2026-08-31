@@ -363,11 +363,11 @@ class _CustomerFavoritesScreenState
                   )
                 else
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(
+                    padding: EdgeInsets.fromLTRB(
                       22,
                       0,
                       22,
-                      40,
+                      40 + MediaQuery.paddingOf(context).bottom,
                     ),
                     sliver: SliverGrid(
                       gridDelegate:
@@ -375,7 +375,7 @@ class _CustomerFavoritesScreenState
                         maxCrossAxisExtent: 340,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        mainAxisExtent: 455,
+                        mainAxisExtent: 467,
                       ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
@@ -489,43 +489,160 @@ class _CustomerFavoritesScreenState
       ),
       child: SafeArea(
         bottom: false,
-        child: Row(
-          children: [
-            _HeaderButton(
-              icon: Icons.arrow_back_rounded,
-              tooltip: isArabic ? 'رجوع' : 'Back',
-              onTap: () => Navigator.pop(context),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: _lightGreen,
-                borderRadius: BorderRadius.circular(13),
-              ),
-              child: const Icon(
-                Icons.eco_rounded,
-                color: _darkGreen,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact = constraints.maxWidth < 470;
+
+            Widget languageButton() {
+              return PopupMenuButton<String>(
+                tooltip:
+                    isArabic
+                        ? 'تغيير اللغة'
+                        : 'Change Language',
+                offset: const Offset(0, 48),
+                position: PopupMenuPosition.under,
+                color: const Color(0xFFF8FAF4),
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onSelected: _changeLanguage,
+                itemBuilder: (context) {
+                  return [
+                    PopupMenuItem<String>(
+                      value: 'en',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.check_rounded,
+                            size: 20,
+                            color: !isArabic
+                                ? _primaryGreen
+                                : Colors.transparent,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            isArabic
+                                ? 'الإنجليزية'
+                                : 'English',
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'ar',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.check_rounded,
+                            size: 20,
+                            color: isArabic
+                                ? _primaryGreen
+                                : Colors.transparent,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            isArabic
+                                ? 'العربية'
+                                : 'Arabic',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ];
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color:
+                        Colors.white.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.language_rounded,
+                    color: Colors.white,
+                    size: 21,
+                  ),
+                ),
+              );
+            }
+
+            Widget cartButton() {
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _HeaderButton(
+                    icon: Icons.shopping_cart_outlined,
+                    tooltip: isArabic
+                        ? 'سلة التسوق'
+                        : 'Shopping Cart',
+                    onTap: _openCart,
+                  ),
+                  if (cartProvider.totalQuantity > 0)
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE35D5D),
+                          borderRadius:
+                              BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 1.5,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          cartProvider.totalQuantity.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            }
+
+            final titleBlock = Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'FarmPilot',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 19,
-                      fontWeight: FontWeight.w800,
+                  const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment:
+                        AlignmentDirectional.centerStart,
+                    child: Text(
+                      'FarmPilot',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
                     isArabic ? 'المفضلة' : 'My Favorites',
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Color(0xCCFFFFFF),
                       fontSize: 12,
@@ -533,133 +650,78 @@ class _CustomerFavoritesScreenState
                   ),
                 ],
               ),
-            ),
-            PopupMenuButton<String>(
-              tooltip:
-                  isArabic
-                      ? 'تغيير اللغة'
-                      : 'Change Language',
-              offset: const Offset(0, 48),
-              position: PopupMenuPosition.under,
-              color: const Color(0xFFF8FAF4),
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+            );
+
+            final leading = <Widget>[
+              _HeaderButton(
+                icon: Icons.arrow_back_rounded,
+                tooltip: isArabic ? 'رجوع' : 'Back',
+                onTap: () => Navigator.pop(context),
               ),
-              onSelected: _changeLanguage,
-              itemBuilder: (context) {
-                return [
-                  PopupMenuItem<String>(
-                    value: 'en',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_rounded,
-                          size: 20,
-                          color: !isArabic
-                              ? _primaryGreen
-                              : Colors.transparent,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          isArabic
-                              ? 'الإنجليزية'
-                              : 'English',
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'ar',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_rounded,
-                          size: 20,
-                          color: isArabic
-                              ? _primaryGreen
-                              : Colors.transparent,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          isArabic
-                              ? 'العربية'
-                              : 'Arabic',
-                        ),
-                      ],
-                    ),
-                  ),
-                ];
-              },
-              child: Container(
+              const SizedBox(width: 12),
+              Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color:
-                      Colors.white.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(14),
+                  color: _lightGreen,
+                  borderRadius: BorderRadius.circular(13),
                 ),
-                alignment: Alignment.center,
                 child: const Icon(
-                  Icons.language_rounded,
-                  color: Colors.white,
-                  size: 21,
+                  Icons.eco_rounded,
+                  color: _darkGreen,
+                  size: 24,
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                _HeaderButton(
-                  icon: Icons.shopping_cart_outlined,
-                  tooltip: isArabic ? 'سلة التسوق' : 'Shopping Cart',
-                  onTap: _openCart,
-                ),
-                if (cartProvider.totalQuantity > 0)
-                  Positioned(
-                    right: -4,
-                    top: -4,
-                    child: Container(
-                      constraints: const BoxConstraints(
-                        minWidth: 18,
-                        minHeight: 18,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE35D5D),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 1.5,
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        cartProvider.totalQuantity.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+              const SizedBox(width: 10),
+              titleBlock,
+            ];
+
+            if (!isCompact) {
+              return Row(
+                children: [
+                  ...leading,
+                  languageButton(),
+                  const SizedBox(width: 8),
+                  cartButton(),
+                  const SizedBox(width: 8),
+                  _HeaderButton(
+                    icon: Icons.refresh_rounded,
+                    tooltip: isArabic ? 'تحديث' : 'Refresh',
+                    onTap: favoriteProvider.isLoading
+                        ? null
+                        : _loadFavorites,
                   ),
+                ],
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(children: leading),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      languageButton(),
+                      cartButton(),
+                      _HeaderButton(
+                        icon: Icons.refresh_rounded,
+                        tooltip:
+                            isArabic ? 'تحديث' : 'Refresh',
+                        onTap: favoriteProvider.isLoading
+                            ? null
+                            : _loadFavorites,
+                      ),
+                    ],
+                  ),
+                ),
               ],
-            ),
-            const SizedBox(width: 8),
-            _HeaderButton(
-              icon: Icons.refresh_rounded,
-              tooltip: isArabic ? 'تحديث' : 'Refresh',
-              onTap: favoriteProvider.isLoading
-                  ? null
-                  : _loadFavorites,
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -1161,7 +1223,7 @@ class _FavoriteProductCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
-                    height: 42,
+                    height: 54,
                     child: ElevatedButton.icon(
                       onPressed: isAvailable
                           ? () {
