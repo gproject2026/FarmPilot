@@ -1519,70 +1519,30 @@ class _ProductImage extends StatelessWidget {
       height: 205,
       color: Colors.white,
       alignment: Alignment.center,
-      child:
-          hasImage
-              ? Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Image.network(
-                    _buildImageUrl(
-                      imageUrl!,
-                    ),
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.contain,
-                    errorBuilder: (
-                      context,
-                      error,
-                      stackTrace,
-                    ) {
-                      return const _ImagePlaceholder();
-                    },
-                  ),
-                )
-              : const _ImagePlaceholder(),
+      child: hasImage
+          ? Padding(
+              padding: const EdgeInsets.all(8),
+              child: Image.network(
+                AppConstants.getImageUrl(
+                  imageUrl,
+                ),
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.contain,
+                errorBuilder: (
+                  context,
+                  error,
+                  stackTrace,
+                ) {
+                  return const _ImagePlaceholder();
+                },
+              ),
+            )
+          : const _ImagePlaceholder(),
     );
   }
-
-  String _buildImageUrl(
-    String value,
-  ) {
-    final trimmed = value.trim();
-
-    if (trimmed.isEmpty) {
-      return '';
-    }
-
-    if (trimmed.startsWith(
-          'http://localhost:3000',
-        ) ||
-        trimmed.startsWith(
-          'http://127.0.0.1:3000',
-        )) {
-      return trimmed.replaceFirst(
-        RegExp(
-          r'http://(localhost|127\.0\.0\.1):3000',
-        ),
-        AppConstants.baseUrl,
-      );
-    }
-
-    if (trimmed.startsWith(
-          'http://',
-        ) ||
-        trimmed.startsWith(
-          'https://',
-        )) {
-      return trimmed;
-    }
-
-    final normalized =
-        trimmed.startsWith('/')
-            ? trimmed
-            : '/$trimmed';
-
-    return '${AppConstants.baseUrl}$normalized';
-  }
 }
+
 
 class _ImagePlaceholder extends StatelessWidget {
   const _ImagePlaceholder();

@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@prisma/client';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+import { memoryStorage } from 'multer';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -58,32 +58,7 @@ export class SupplierProductsController {
   @Roles(UserRole.SUPPLIER)
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads',
-
-        filename: (
-          request,
-          file,
-          callback,
-        ) => {
-          const uniqueName =
-            Date.now() +
-            '-' +
-            Math.round(
-              Math.random() * 1e9,
-            );
-
-          const fileExtension =
-            extname(
-              file.originalname,
-            ).toLowerCase();
-
-          callback(
-            null,
-            `supplier-product-${uniqueName}${fileExtension}`,
-          );
-        },
-      }),
+      storage: memoryStorage(),
 
       fileFilter: (
         request,
@@ -117,12 +92,11 @@ export class SupplierProductsController {
       },
 
       limits: {
-        fileSize:
-          5 * 1024 * 1024,
+        fileSize: 5 * 1024 * 1024,
       },
     }),
   )
-  uploadProductImage(
+  async uploadProductImage(
     @UploadedFile()
     file?: Express.Multer.File,
   ) {
@@ -132,16 +106,94 @@ export class SupplierProductsController {
       );
     }
 
+    cloudinary.config({
+      cloud_name:
+        process.env.CLOUDINARY_CLOUD_NAME,
+      api_key:
+        process.env.CLOUDINARY_API_KEY,
+      api_secret:
+        process.env.CLOUDINARY_API_SECRET,
+    });
+
+    if (
+      !process.env.CLOUDINARY_CLOUD_NAME ||
+      !process.env.CLOUDINARY_API_KEY ||
+      !process.env.CLOUDINARY_API_SECRET
+    ) {
+      throw new BadRequestException(
+        'Cloudinary configuration is missing',
+      );
+    }
+
+    const result =
+        await this.uploadToCloudinary(
+      file.buffer,
+    );
+
     return {
       message:
         'Image uploaded successfully',
-
       imageUrl:
-        `/uploads/${file.filename}`,
-
+        result.secure_url,
       filename:
-        file.filename,
+        result.public_id,
     };
+  }
+
+  private uploadToCloudinary(
+    buffer: Buffer,
+  ): Promise<{
+    secure_url: string;
+    public_id: string;
+  }> {
+    return new Promise(
+      (
+        resolve,
+        reject,
+      ) => {
+        const uploadStream =
+            cloudinary.uploader.upload_stream(
+          {
+            folder:
+              'farmpilot/supplier-products',
+            resource_type: 'image',
+          },
+          (
+            error,
+            result,
+          ) => {
+            if (error) {
+              reject(
+                new BadRequestException(
+                  'Failed to upload image to Cloudinary',
+                ),
+              );
+              return;
+            }
+
+            if (!result) {
+              reject(
+                new BadRequestException(
+                  'Cloudinary did not return an upload result',
+                ),
+              );
+              return;
+            }
+
+            resolve({
+              secure_url:
+                  result.secure_url,
+              public_id:
+                  result.public_id,
+            });
+          },
+        );
+
+        uploadStream.end(
+          buffer,
+        );
+      },
+    );
   }
 
   @Get()
