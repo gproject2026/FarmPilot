@@ -1514,23 +1514,30 @@ class _ProductImage extends StatelessWidget {
         imageUrl != null &&
         imageUrl!.trim().isNotEmpty;
 
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: 205,
+      color: Colors.white,
+      alignment: Alignment.center,
       child:
           hasImage
-              ? Image.network(
-                  _buildImageUrl(
-                    imageUrl!,
+              ? Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Image.network(
+                    _buildImageUrl(
+                      imageUrl!,
+                    ),
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.contain,
+                    errorBuilder: (
+                      context,
+                      error,
+                      stackTrace,
+                    ) {
+                      return const _ImagePlaceholder();
+                    },
                   ),
-                  fit: BoxFit.cover,
-                  errorBuilder: (
-                    context,
-                    error,
-                    stackTrace,
-                  ) {
-                    return const _ImagePlaceholder();
-                  },
                 )
               : const _ImagePlaceholder(),
     );

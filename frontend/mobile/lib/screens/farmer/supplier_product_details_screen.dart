@@ -815,28 +815,31 @@ class SupplierProductDetailsScreen extends StatelessWidget {
                   imageUrl
                       .trim()
                       .isNotEmpty
-              ? Image.network(
-                  _resolveImageUrl(
-                    imageUrl,
-                  ),
-                  fit:
-                      BoxFit.cover,
-                  errorBuilder: (
-                    context,
-                    error,
-                    stackTrace,
-                  ) {
-                    return const Center(
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        size: 70,
-                        color:
-                            Color(
-                          0xFF9AA59B,
+              ? Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Image.network(
+                    _resolveImageUrl(
+                      imageUrl,
+                    ),
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.contain,
+                    errorBuilder: (
+                      context,
+                      error,
+                      stackTrace,
+                    ) {
+                      return const Center(
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 70,
+                          color: Color(
+                            0xFF9AA59B,
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 )
               : const Center(
                   child: Icon(
