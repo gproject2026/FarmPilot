@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -6,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../services/push_notification_service.dart';
 import '../notifications_screen.dart';
 import 'diagnose_plant_screen.dart';
 import 'diagnosis_history_screen.dart';
@@ -28,7 +32,8 @@ class FarmerDashboardScreen extends StatefulWidget {
 }
 
 class _FarmerDashboardScreenState
-    extends State<FarmerDashboardScreen> {
+    extends State<FarmerDashboardScreen>
+    with WidgetsBindingObserver {
   static const Color _darkGreen =
       Color(0xFF173F24);
 
@@ -45,17 +50,61 @@ static const Color _textPrimary =
 
   static const Color _textSecondary =
       Color(0xFF68756B);
+      StreamSubscription<RemoteMessage>?
+    _foregroundMessageSubscription;
 
   @override
-  void initState() {
-    super.initState();
+void initState() {
+  super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        _loadData();
-      },
-    );
+  WidgetsBinding.instance.addObserver(this);
+
+  _foregroundMessageSubscription =
+      PushNotificationService
+          .instance
+          .foregroundMessages
+          .listen(
+    (_) {
+      _refreshNotifications();
+    },
+  );
+
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) {
+      _loadData();
+    },
+  );
+}
+
+Future<void> _refreshNotifications() async {
+  if (!mounted) {
+    return;
   }
+
+  try {
+    await Provider.of<NotificationProvider>(
+      context,
+      listen: false,
+    ).loadNotifications();
+  } catch (_) {
+  }
+}
+
+@override
+void didChangeAppLifecycleState(
+  AppLifecycleState state,
+) {
+  if (state == AppLifecycleState.resumed) {
+    _refreshNotifications();
+  }
+}
+
+@override
+void dispose() {
+  WidgetsBinding.instance.removeObserver(this);
+  _foregroundMessageSubscription?.cancel();
+  super.dispose();
+}
 
   Future<void> _loadData() async {
     await Future.wait([
