@@ -258,7 +258,7 @@ class _LoginScreenState
                           children: [
                             Expanded(
                               child: SizedBox(
-                                height: 620,
+                                height: 650,
                                 child: _buildBrandPanel(
                                   l10n,
                                 ),
@@ -269,7 +269,7 @@ class _LoginScreenState
                             ),
                             Expanded(
                               child: SizedBox(
-                                height: 620,
+                                height: 650,
                                 child: _buildLoginCard(
                                   l10n: l10n,
                                   isArabic: isArabic,
@@ -282,22 +282,10 @@ class _LoginScreenState
                         );
                       }
 
-                      return Column(
-                        children: [
-                          _buildMobileBrand(
-                            l10n,
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          _buildLoginCard(
-                            l10n: l10n,
-                            isArabic:
-                                isArabic,
-                            authProvider:
-                                authProvider,
-                          ),
-                        ],
+                      return _buildMobileLoginLayout(
+                        l10n: l10n,
+                        isArabic: isArabic,
+                        authProvider: authProvider,
                       );
                     },
                   ),
@@ -316,7 +304,7 @@ class _LoginScreenState
     return Container(
       constraints:
           const BoxConstraints(
-        minHeight: 620,
+        minHeight: 650,
       ),
       padding:
           const EdgeInsets.all(
@@ -324,18 +312,7 @@ class _LoginScreenState
       ),
       decoration:
           BoxDecoration(
-        gradient:
-            const LinearGradient(
-          begin:
-              Alignment.topLeft,
-          end:
-              Alignment.bottomRight,
-          colors: [
-            Color(0xFF123A22),
-            Color(0xFF205A34),
-            Color(0xFF2E6F40),
-          ],
-        ),
+        color: const Color(0xFFF4F8EE),
         borderRadius:
             BorderRadius.circular(
           32,
@@ -359,56 +336,22 @@ class _LoginScreenState
         crossAxisAlignment:
             CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration:
-                    BoxDecoration(
-                  color:
-                      const Color(
-                    0xFFDDECB8,
-                  ),
-                  borderRadius:
-                      BorderRadius
-                          .circular(
-                    17,
-                  ),
-                ),
-                child:
-                    const Icon(
-                  Icons.eco_rounded,
-                  color:
-                      _darkGreen,
-                  size: 30,
-                ),
-              ),
-              const SizedBox(
-                width: 14,
-              ),
-              Text(
-                l10n.appName,
-                style:
-                    const TextStyle(
-                  color:
-                      Colors.white,
-                  fontSize: 25,
-                  fontWeight:
-                      FontWeight.w800,
-                ),
-              ),
-            ],
+          Center(
+            child: Image.asset(
+              'assets/images/farmpilot_logo.png',
+              height: 155,
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(
-            height: 110,
+            height: 70,
           ),
           Text(
             l10n.loginBrandTitle,
             style:
                 const TextStyle(
               color:
-                  Colors.white,
+                  _darkGreen,
               fontSize: 48,
               height: 1.05,
               fontWeight:
@@ -425,8 +368,7 @@ class _LoginScreenState
             style:
                 TextStyle(
               color:
-                  Colors.white
-                      .withValues(
+                  _darkGreen.withValues(
                 alpha: 0.82,
               ),
               fontSize: 16,
@@ -462,7 +404,7 @@ class _LoginScreenState
             ],
           ),
           const SizedBox(
-            height: 80,
+            height: 36,
           ),
           Row(
             children: [
@@ -470,9 +412,7 @@ class _LoginScreenState
                 Icons
                     .verified_user_outlined,
                 color:
-                    Color(
-                  0xFFDDECB8,
-                ),
+                    _primaryGreen,
                 size: 21,
               ),
               const SizedBox(
@@ -485,7 +425,7 @@ class _LoginScreenState
                   style:
                       TextStyle(
                     color:
-                        Colors.white
+                        _darkGreen
                             .withValues(
                       alpha: 0.75,
                     ),
@@ -500,89 +440,235 @@ class _LoginScreenState
     );
   }
 
-  Widget _buildMobileBrand(
-    AppLocalizations l10n,
-  ) {
-    return Container(
-      width:
-          double.infinity,
-      padding:
-          const EdgeInsets.all(
-        24,
-      ),
-      decoration:
-          BoxDecoration(
-        gradient:
-            const LinearGradient(
-          colors: [
-            Color(0xFF173F24),
-            Color(0xFF2F6B3D),
-          ],
+  Widget _buildMobileLoginLayout({
+    required AppLocalizations l10n,
+    required bool isArabic,
+    required AuthProvider authProvider,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: PopupMenuButton<String>(
+            tooltip: l10n.changeLanguage,
+            position: PopupMenuPosition.under,
+            onSelected: _changeLanguage,
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'en',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_rounded,
+                      color: !isArabic
+                          ? _primaryGreen
+                          : Colors.transparent,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(l10n.english),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'ar',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_rounded,
+                      color: isArabic
+                          ? _primaryGreen
+                          : Colors.transparent,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(l10n.arabic),
+                  ],
+                ),
+              ),
+            ],
+            child: Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5ED),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Icons.language_rounded,
+                color: _primaryGreen,
+              ),
+            ),
+          ),
         ),
-        borderRadius:
-            BorderRadius.circular(
-          26,
+        const SizedBox(height: 2),
+        Image.asset(
+          'assets/images/farmpilot_logo.png',
+          height: 190,
+          fit: BoxFit.contain,
         ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration:
-                BoxDecoration(
-              color:
-                  const Color(
-                0xFFDDECB8,
+        const SizedBox(height: 8),
+        const Text(
+          'Welcome Back!',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: _darkGreen,
+            fontSize: 27,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 7),
+        Text(
+          l10n.welcomeToFarmPilot,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF68756B),
+            fontSize: 15,
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 28),
+        _buildTextField(
+          controller: _emailController,
+          label: l10n.email,
+          icon: Icons.email_outlined,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) {
+            _passwordFocusNode.requestFocus();
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          controller: _passwordController,
+          focusNode: _passwordFocusNode,
+          label: l10n.password,
+          icon: Icons.lock_outline_rounded,
+          obscureText: _obscurePassword,
+          textInputAction: TextInputAction.done,
+          suffixIcon: IconButton(
+            tooltip: _obscurePassword
+                ? l10n.showPassword
+                : l10n.hidePassword,
+            onPressed: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+            icon: Icon(
+              _obscurePassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+            ),
+          ),
+          onSubmitted: (_) {
+            if (!authProvider.isLoading) {
+              _login();
+            }
+          },
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ForgotPasswordScreen(),
+                ),
+              );
+            },
+            child: Text(
+              l10n.forgotPassword,
+              style: const TextStyle(
+                color: _primaryGreen,
+                fontWeight: FontWeight.w700,
               ),
-              borderRadius:
-                  BorderRadius
-                      .circular(
-                18,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 54,
+          child: ElevatedButton(
+            onPressed: authProvider.isLoading ? null : _login,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primaryGreen,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor:
+                  _primaryGreen.withValues(alpha: 0.55),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
-            child:
-                const Icon(
-              Icons.eco_rounded,
-              color:
-                  _darkGreen,
-              size: 32,
+            child: authProvider.isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    l10n.login,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.dontHaveAccount,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: const TextStyle(
+                    color: Color(0xFF68756B),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RegisterScreen(),
+                      ),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    l10n.registerNow,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: const TextStyle(
+                      color: _primaryGreen,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(
-            height: 12,
-          ),
-          Text(
-            l10n.appName,
-            style:
-                const TextStyle(
-              color:
-                  Colors.white,
-              fontSize: 25,
-              fontWeight:
-                  FontWeight.w800,
-            ),
-          ),
-          const SizedBox(
-            height: 7,
-          ),
-          Text(
-            l10n
-                .mobileBrandDescription,
-            textAlign:
-                TextAlign.center,
-            style:
-                TextStyle(
-              color:
-                  Colors.white
-                      .withValues(
-                alpha: 0.78,
-              ),
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 
@@ -595,7 +681,7 @@ class _LoginScreenState
     return Container(
       constraints:
           const BoxConstraints(
-        minHeight: 620,
+        minHeight: 650,
       ),
       padding:
           const EdgeInsets.all(
@@ -1075,9 +1161,7 @@ class _BrandChip
       decoration:
           BoxDecoration(
         color:
-            Colors.white.withValues(
-          alpha: 0.10,
-        ),
+            const Color(0xFFEAF3E2),
         borderRadius:
             BorderRadius.circular(
           30,
@@ -1085,9 +1169,7 @@ class _BrandChip
         border:
             Border.all(
           color:
-              Colors.white.withValues(
-            alpha: 0.13,
-          ),
+              const Color(0xFFD6E6CF),
         ),
       ),
       child: Row(
@@ -1097,9 +1179,7 @@ class _BrandChip
           Icon(
             icon,
             color:
-                const Color(
-              0xFFDDECB8,
-            ),
+                const Color(0xFF2F6B3D),
             size: 18,
           ),
           const SizedBox(
@@ -1110,10 +1190,10 @@ class _BrandChip
             style:
                 const TextStyle(
               color:
-                  Colors.white,
+                  Color(0xFF173F24),
               fontSize: 12,
               fontWeight:
-                  FontWeight.w600,
+                  FontWeight.w700,
             ),
           ),
         ],

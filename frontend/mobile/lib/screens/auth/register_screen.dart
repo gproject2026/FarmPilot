@@ -225,19 +225,19 @@ class _RegisterScreenState
           ) {
             final isDesktop =
                 constraints.maxWidth >=
-                    900;
+                    1050;
 
             if (isDesktop) {
               return Row(
                 children: [
                   Expanded(
-                    flex: 5,
+                    flex: 4,
                     child: _buildBrandPanel(
                       isArabic,
                     ),
                   ),
                   Expanded(
-                    flex: 5,
+                    flex: 6,
                     child: _buildFormArea(
                       authProvider,
                       isArabic,
@@ -262,98 +262,61 @@ class _RegisterScreenState
     bool isArabic,
   ) {
     return SingleChildScrollView(
-      padding:
-          const EdgeInsets.fromLTRB(
+      padding: const EdgeInsets.fromLTRB(
         20,
         18,
         20,
         32,
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
               IconButton(
                 onPressed: () {
-                  Navigator.of(context)
-                      .pop();
+                  Navigator.of(context).pop();
                 },
                 icon: Icon(
                   isArabic
-                      ? Icons
-                          .arrow_forward_rounded
-                      : Icons
-                          .arrow_back_rounded,
+                      ? Icons.arrow_forward_rounded
+                      : Icons.arrow_back_rounded,
                 ),
               ),
               const Spacer(),
-              _languageButton(
-                isArabic,
-              ),
+              _languageButton(isArabic),
             ],
           ),
-          const SizedBox(height: 14),
-          Container(
-            padding:
-                const EdgeInsets.all(24),
-            decoration: BoxDecoration(
+          const SizedBox(height: 2),
+          Image.asset(
+            'assets/images/farmpilot_logo.png',
+            height: 190,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.createAccount,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
               color: _darkGreen,
-              borderRadius:
-                  BorderRadius.circular(
-                28,
-              ),
+              fontSize: 27,
+              fontWeight: FontWeight.w900,
             ),
-            child: Column(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration:
-                      const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons
-                        .agriculture_rounded,
-                    color: _green,
-                    size: 34,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.joinFarmPilot,
-                  textAlign:
-                      TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 25,
-                    fontWeight:
-                        FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n
-                      .registerBrandDescription,
-                  textAlign:
-                      TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white
-                        .withValues(
-                      alpha: 0.82,
-                    ),
-                    height: 1.5,
-                  ),
-                ),
-              ],
+          ),
+          const SizedBox(height: 7),
+          Text(
+            l10n.createAccountSubtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF68746D),
+              fontSize: 15,
+              height: 1.4,
             ),
           ),
           const SizedBox(height: 24),
           _buildRegisterCard(
             authProvider,
+            showHeader: false,
           ),
         ],
       ),
@@ -364,51 +327,28 @@ class _RegisterScreenState
     bool isArabic,
   ) {
     return Container(
-      color: _darkGreen,
+      color: const Color(0xFFF4F8EE),
       padding:
           const EdgeInsets.symmetric(
-        horizontal: 60,
-        vertical: 44,
+        horizontal: 42,
+        vertical: 36,
       ),
       child: Column(
         crossAxisAlignment:
             CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration:
-                    const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons
-                      .agriculture_rounded,
-                  color: _green,
-                  size: 27,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Text(
-                l10n.appName,
-                style:
-                    const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight:
-                      FontWeight.w800,
-                ),
-              ),
-            ],
+          Center(
+            child: Image.asset(
+              'assets/images/farmpilot_logo.png',
+              height: 155,
+              fit: BoxFit.contain,
+            ),
           ),
           const Spacer(),
           Text(
             l10n.joinFarmPilot,
             style: const TextStyle(
-              color: Colors.white,
+              color: _darkGreen,
               fontSize: 46,
               height: 1.05,
               fontWeight:
@@ -425,7 +365,7 @@ class _RegisterScreenState
               l10n
                   .registerBrandDescription,
               style: TextStyle(
-                color: Colors.white
+                color: _darkGreen
                     .withValues(
                   alpha: 0.82,
                 ),
@@ -451,10 +391,6 @@ class _RegisterScreenState
             l10n.marketplace,
           ),
           const Spacer(),
-          _languageButton(
-            isArabic,
-            darkBackground: true,
-          ),
         ],
       ),
     );
@@ -470,10 +406,7 @@ class _RegisterScreenState
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: Colors.white
-                .withValues(
-              alpha: 0.10,
-            ),
+            color: const Color(0xFFEAF3E2),
             borderRadius:
                 BorderRadius.circular(
               12,
@@ -481,7 +414,7 @@ class _RegisterScreenState
           ),
           child: Icon(
             icon,
-            color: Colors.white,
+            color: _green,
             size: 21,
           ),
         ),
@@ -489,7 +422,7 @@ class _RegisterScreenState
         Text(
           text,
           style: const TextStyle(
-            color: Colors.white,
+            color: _green,
             fontWeight:
                 FontWeight.w600,
           ),
@@ -507,14 +440,14 @@ class _RegisterScreenState
       child: SingleChildScrollView(
         padding:
             const EdgeInsets.symmetric(
-          horizontal: 60,
-          vertical: 42,
+          horizontal: 36,
+          vertical: 28,
         ),
         child: Center(
           child: ConstrainedBox(
             constraints:
                 const BoxConstraints(
-              maxWidth: 560,
+              maxWidth: 760,
             ),
             child: Column(
               crossAxisAlignment:
@@ -558,11 +491,16 @@ class _RegisterScreenState
   }
 
   Widget _buildRegisterCard(
-    AuthProvider authProvider,
-  ) {
+    AuthProvider authProvider, {
+    bool showHeader = true,
+  }) {
     return Container(
-      padding:
-          const EdgeInsets.all(30),
+      padding: const EdgeInsets.fromLTRB(
+        24,
+        24,
+        24,
+        26,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius:
@@ -590,30 +528,32 @@ class _RegisterScreenState
           crossAxisAlignment:
               CrossAxisAlignment.stretch,
           children: [
-            Text(
-              l10n.createAccount,
-              style: const TextStyle(
-                color: Color(
-                  0xFF17251D,
+            if (showHeader) ...[
+              Text(
+                l10n.createAccount,
+                style: const TextStyle(
+                  color: Color(
+                    0xFF17251D,
+                  ),
+                  fontSize: 30,
+                  fontWeight:
+                      FontWeight.w900,
                 ),
-                fontSize: 30,
-                fontWeight:
-                    FontWeight.w900,
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.createAccountSubtitle,
-              style: const TextStyle(
-                color: Color(
-                  0xFF68746D,
+              const SizedBox(height: 8),
+              Text(
+                l10n.createAccountSubtitle,
+                style: const TextStyle(
+                  color: Color(
+                    0xFF68746D,
+                  ),
+                  fontSize: 15,
+                  height: 1.4,
                 ),
-                fontSize: 15,
-                height: 1.4,
               ),
-            ),
-            const SizedBox(height: 28),
-
+              const SizedBox(height: 28),
+  
+            ],
             _field(
               controller:
                   _fullNameController,
