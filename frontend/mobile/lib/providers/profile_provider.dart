@@ -21,7 +21,8 @@ class ProfileProvider extends ChangeNotifier {
     try {
       user = await profileService.getProfile();
     } catch (e) {
-      errorMessage = e.toString().replaceFirst('Exception: ', '');
+      errorMessage =
+          e.toString().replaceFirst('Exception: ', '');
     } finally {
       isLoading = false;
       notifyListeners();
@@ -30,6 +31,7 @@ class ProfileProvider extends ChangeNotifier {
 
   Future<void> updateProfile({
     required String fullName,
+    required String email,
     required String phone,
     required String address,
     String? profileImage,
@@ -41,12 +43,14 @@ class ProfileProvider extends ChangeNotifier {
     try {
       user = await profileService.updateProfile(
         fullName: fullName,
+        email: email,
         phone: phone,
         address: address,
         profileImage: profileImage,
       );
     } catch (e) {
-      errorMessage = e.toString().replaceFirst('Exception: ', '');
+      errorMessage =
+          e.toString().replaceFirst('Exception: ', '');
       rethrow;
     } finally {
       isSaving = false;

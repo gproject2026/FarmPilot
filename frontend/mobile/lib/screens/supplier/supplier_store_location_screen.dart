@@ -133,12 +133,13 @@ class _SupplierStoreLocationScreenState
 
     try {
       await provider.updateProfile(
-        fullName: user.fullName,
-        phone: user.phone ?? '',
-        address: address,
-        profileImage:
-            user.profileImage,
-      );
+  fullName: user.fullName,
+  email: user.email,
+  phone: user.phone ?? '',
+  address: address,
+  profileImage:
+      user.profileImage,
+);
 
       if (!mounted) {
         return;

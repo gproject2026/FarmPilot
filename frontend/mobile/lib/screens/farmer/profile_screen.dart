@@ -171,6 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> saveProfile() async {
     final fullName = fullNameController.text.trim();
+    final email = emailController.text.trim();
 
     final phone = phoneController.text.trim();
 
@@ -195,6 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await profileProvider.updateProfile(
         fullName: fullName,
+        email: email,
         phone: phone,
         address: address,
       );
@@ -800,7 +802,7 @@ class _ProfileFormCard extends StatelessWidget {
                       controller: emailController,
                       label: isArabic ? 'البريد الإلكتروني' : 'Email',
                       icon: Icons.email_outlined,
-                      readOnly: true,
+                      keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 15),
                     _ProfileField(
@@ -837,7 +839,7 @@ class _ProfileFormCard extends StatelessWidget {
                           controller: emailController,
                           label: isArabic ? 'البريد الإلكتروني' : 'Email',
                           icon: Icons.email_outlined,
-                          readOnly: true,
+                          keyboardType: TextInputType.emailAddress,
                         ),
                       ),
                     ],
@@ -1055,8 +1057,8 @@ class _ProfileSideCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     isArabic
-                        ? 'البريد الإلكتروني ونوع الحساب محميان ولا يمكن تغييرهما من هنا.'
-                        : 'Email and account role are protected and cannot be changed here.',
+                        ? 'نوع الحساب محمي ولا يمكن تغييره من هنا.'
+                        : 'Account role is protected and cannot be changed here.',
                     style: const TextStyle(
                       color: _profileMuted,
                       fontSize: 12,

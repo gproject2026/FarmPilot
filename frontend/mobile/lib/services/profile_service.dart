@@ -8,37 +8,45 @@ class ProfileService {
 
   Future<UserModel> getProfile() async {
     try {
-      final response = await apiClient.dio.get('/users/profile');
+      final response =
+          await apiClient.dio.get('/users/profile');
 
       return UserModel.fromJson(response.data);
     } on DioException catch (e) {
       throw Exception(
-        e.response?.data['message'] ?? 'Failed to load profile',
+        e.response?.data['message'] ??
+            'Failed to load profile',
       );
     }
   }
 
   Future<UserModel> updateProfile({
     String? fullName,
+    String? email,
     String? phone,
     String? address,
     String? profileImage,
   }) async {
     try {
-      final response = await apiClient.dio.patch(
+      final response =
+          await apiClient.dio.patch(
         '/users/profile',
         data: {
           'fullName': fullName,
+          'email': email,
           'phone': phone,
           'address': address,
           'profileImage': profileImage,
         },
       );
 
-      return UserModel.fromJson(response.data);
+      return UserModel.fromJson(
+        response.data,
+      );
     } on DioException catch (e) {
       throw Exception(
-        e.response?.data['message'] ?? 'Failed to update profile',
+        e.response?.data['message'] ??
+            'Failed to update profile',
       );
     }
   }
