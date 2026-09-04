@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/locale_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../notifications_screen.dart';
+import '../farmer/profile_screen.dart';
 import 'supplier_categories_screen.dart';
 import 'supplier_inventory_screen.dart';
 import 'supplier_orders_screen.dart';
@@ -791,6 +792,20 @@ class _SupplierDashboardScreenState
         notificationProvider,
   }) {
     final items = [
+      _ActionInfo(
+        title: 'My Profile',
+        subtitle: 'View and update your personal information',
+        icon: Icons.person_outline_rounded,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  const ProfileScreen(),
+            ),
+          );
+        },
+      ),
       _ActionInfo(
         title:
             notificationProvider
