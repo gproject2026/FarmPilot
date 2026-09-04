@@ -16,6 +16,7 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> loadProfile() async {
     isLoading = true;
     errorMessage = null;
+    user = null;
     notifyListeners();
 
     try {

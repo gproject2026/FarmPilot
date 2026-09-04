@@ -63,24 +63,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void initializeFields(ProfileProvider provider) {
-    if (fieldsInitialized || provider.user == null) {
-      return;
-    }
-
-    final user = provider.user!;
-
-    fullNameController.text = user.fullName;
-
-    phoneController.text = user.phone ?? '';
-
-    addressController.text = user.address ?? '';
-
-    emailController.text = user.email;
-
-    roleController.text = user.role;
-
-    fieldsInitialized = true;
+  if (provider.user == null) {
+    return;
   }
+
+  final user = provider.user!;
+
+  if (emailController.text == user.email &&
+      roleController.text == user.role &&
+      fieldsInitialized) {
+    return;
+  }
+
+  fullNameController.text = user.fullName;
+  phoneController.text = user.phone ?? '';
+  addressController.text = user.address ?? '';
+  emailController.text = user.email;
+  roleController.text = user.role;
+
+  fieldsInitialized = true;
+}
 
   Future<void> enableNotifications() async {
     if (_isEnablingNotifications) {
