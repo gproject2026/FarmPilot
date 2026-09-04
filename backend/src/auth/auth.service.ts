@@ -7,13 +7,14 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import {
   createHash,
-  randomBytes,
+  randomInt,
 } from 'crypto';
 
 import { UsersService } from '../users/users.service';
 
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { MailService } from './mail.service';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
@@ -22,6 +23,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async register(
@@ -33,7 +35,7 @@ export class AuthService {
       );
 
     if (existingUser) {
-      throw new BadRequestException(  
+      throw new BadRequestException(
         'Email is already registered',
       );
     }
@@ -138,19 +140,23 @@ export class AuthService {
         email,
       );
 
+    const responseMessage =
+      'If this email is registered, a password reset code has been sent';
+
     if (!user) {
       return {
-        message:
-          'If this email is registered, a password reset token has been generated',
+        message: responseMessage,
       };
     }
 
-    const resetToken =
-      randomBytes(32).toString('hex');
+    const resetCode =
+      randomInt(0, 1000000)
+        .toString()
+        .padStart(6, '0');
 
-    const hashedResetToken =
+    const hashedResetCode =
       this.hashResetToken(
-        resetToken,
+        resetCode,
       );
 
     const expiresAt = new Date(
@@ -160,16 +166,18 @@ export class AuthService {
     await this.usersService
       .saveResetPasswordToken(
         user.id,
-        hashedResetToken,
+        hashedResetCode,
         expiresAt,
       );
 
-    
+    await this.mailService
+      .sendPasswordResetCode(
+        user.email,
+        resetCode,
+      );
+
     return {
-      message:
-        'Password reset token generated successfully',
-      resetToken,
-      expiresAt,
+      message: responseMessage,
     };
   }
 
@@ -190,7 +198,7 @@ export class AuthService {
 
     if (!user) {
       throw new BadRequestException(
-        'Invalid or expired reset token',
+        'Invalid or expired reset code',
       );
     }
 
@@ -231,4 +239,4 @@ export class AuthService {
       .update(token)
       .digest('hex');
   }
-}  
+}
