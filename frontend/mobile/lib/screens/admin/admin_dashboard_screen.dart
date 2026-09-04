@@ -5,6 +5,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/locale_provider.dart';
+import '../farmer/profile_screen.dart';
 import 'admin_categories_screen.dart';
 import 'admin_supplier_categories_screen.dart';
 import 'admin_orders_screen.dart';
@@ -480,6 +481,25 @@ class _AdminDashboardScreenState
                       physics:
                           const NeverScrollableScrollPhysics(),
                       children: [
+                        _adminToolCard(
+                          icon: Icons.person_outline_rounded,
+                          title:
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'ملفي الشخصي'
+                                  : 'My Profile',
+                          subtitle:
+                              Localizations.localeOf(context).languageCode == 'ar'
+                                  ? 'عرض وتحديث معلوماتك الشخصية.'
+                                  : 'View and update your personal information.',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const ProfileScreen(),
+                              ),
+                            );
+                          },
+                        ),
                         _adminToolCard(
                           icon: Icons
                               .manage_accounts_outlined,
